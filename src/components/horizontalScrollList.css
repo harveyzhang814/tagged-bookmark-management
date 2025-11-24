@@ -1,0 +1,97 @@
+.horizontal-scroll-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-muted);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.horizontal-scroll-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.horizontal-scroll-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.horizontal-scroll-more {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-muted);
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  transition: all 0.2s ease;
+}
+
+.horizontal-scroll-more:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+[data-theme='dark'] .horizontal-scroll-more:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.horizontal-scroll-more svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.horizontal-scroll-more:hover svg {
+  transform: translateX(2px);
+}
+
+.horizontal-scroll-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-muted) transparent;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--border-muted);
+  border-radius: 3px;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.horizontal-scroll-content {
+  display: flex;
+  gap: 16px;
+  padding: 4px 0 8px 0;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 4px 16px;
+}
+
+.horizontal-scroll-content > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+

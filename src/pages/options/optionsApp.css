@@ -1,0 +1,69 @@
+.options-shell {
+  min-height: 100vh;
+  padding: 32px;
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: var(--font-family);
+}
+
+.options-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.options-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+.options-header p {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.options-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.options-tab {
+  font-family: var(--font-family);
+  padding: 10px 20px;
+  border: 1px solid var(--border-muted);
+  background: var(--bg-panel);
+  color: var(--text-main);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.options-tab:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: var(--accent);
+}
+
+[data-theme='dark'] .options-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.options-tab.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+

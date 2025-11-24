@@ -1,0 +1,131 @@
+.tag-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.tag-input-wrapper * {
+  box-sizing: border-box;
+}
+
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-muted);
+  background: var(--bg-panel);
+  border-radius: 8px;
+  min-height: 40px;
+  align-items: center;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.tag-chips:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
+  background: var(--bg-panel);
+  outline: none;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.tag-chip-remove {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  flex-shrink: 0;
+  margin-left: 3px;
+}
+
+.tag-chip-remove:hover {
+  background: rgba(229, 115, 115, 0.15);
+  color: var(--danger);
+}
+
+.tag-input {
+  flex: 1;
+  min-width: 140px;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text-main);
+  font-size: 14px;
+  font-family: var(--font-family);
+  padding: 0;
+  margin: 0;
+  outline: none !important;
+  height: 28px;
+  line-height: 28px;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.tag-input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.tag-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.tag-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+}
+
+.tag-suggestion-item {
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: 14px;
+}
+
+.tag-suggestion-item:hover {
+  background: rgba(91, 155, 213, 0.1);
+}
+
