@@ -1,40 +1,39 @@
-# 标签书签管家隐私政策
+# Tagged Bookmark Manager Privacy Policy
 
-最后更新：2025 年 11 月 25 日
+Last Updated: November 25, 2025
 
-感谢您使用「标签书签管家」Chrome 扩展。我们非常重视您的隐私，并致力于以透明、最小化的方式处理数据。本政策说明扩展会收集哪些信息、如何使用这些信息，以及您如何控制自己的数据。
+Thank you for using the "Tagged Bookmark Manager" Chrome extension. We take your privacy seriously and are committed to handling data in a transparent and minimal manner. This policy explains what information the extension collects, how it is used, and how you can control your data.
 
-## 收集与使用
+## Collection and Use
 
-扩展仅在本地或 Chrome 同步服务中处理下列信息：
+The extension only processes the following information locally or through Chrome's sync service:
 
-- **书签与标签数据**：当您创建、编辑、删除书签或标签时，我们会将相关记录保存到 `chrome.storage.sync`，以便在登录同一账号的设备之间同步。
-- **界面偏好**：主题模式、最近访问的标签页等偏好设置同样存放在 `chrome.storage.sync`。
-- **Chrome 书签导入**：当您主动执行“导入 Chrome 书签”操作时，扩展会调用 `chrome.bookmarks.getTree` 读取浏览器内置书签树，仅用于在本地生成新的扩展书签。该过程不会上传或传输至任何服务器。
-- **网站缩略图**：为展示 favicon，扩展会向 Google 提供的 `https://www.google.com/s2/favicons` 接口发起请求，并附带被收藏网站的域名。该调用仅用于获取图标，不包含其他用户数据。
+- **Bookmark and Tag Data**: When you create, edit, or delete bookmarks or tags, we save the relevant records to `chrome.storage.sync` to enable synchronization across devices logged into the same account.
+- **Interface Preferences**: Theme mode, recently visited tabs, and other preference settings are also stored in `chrome.storage.sync`.
+- **Chrome Bookmark Import**: When you actively perform the "Import Chrome Bookmarks" action, the extension calls `chrome.bookmarks.getTree` to read the browser's built-in bookmark tree, solely for generating new extension bookmarks locally. This process does not upload or transmit data to any server.
+- **Website Thumbnails**: To display favicons, the extension makes requests to Google's `https://www.google.com/s2/favicons` service, including the domain name of the bookmarked website. This call is only used to retrieve icons and does not include other user data.
 
-除上述场景外，扩展不会收集、跟踪或分享任何个人可识别信息。
+Beyond the above scenarios, the extension does not collect, track, or share any personally identifiable information.
 
-## 数据存储
+## Data Storage
 
-- 扩展不运行自建服务器。
-- 所有数据均存放在您的浏览器本地或由 Google 维护的 `chrome.storage.sync` 中，受您 Google 账号的同步和加密机制保护。
-- 您可随时在扩展 options 页中删除书签或标签，或通过 Chrome 扩展管理页面移除本扩展以彻底清空数据。
+- The extension does not operate its own servers.
+- All data is stored locally in your browser or in Google-maintained `chrome.storage.sync`, protected by your Google account's sync and encryption mechanisms.
+- You can delete bookmarks or tags at any time in the extension's options page, or remove the extension entirely through Chrome's extension management page to completely clear all data.
 
-## 权限说明
+## Permission Explanations
 
-- `storage`：在 `chrome.storage.sync` 中保存书签和标签。
-- `tabs`：在 popup 中打开 options 页面或站点链接时创建新标签页。
-- `bookmarks`：在您手动触发导入时读取浏览器原生书签树。
-- `contextMenus`：在右键菜单中提供“加入复古收藏”快捷操作。
+- `storage`: Saves bookmarks and tags in `chrome.storage.sync`.
+- `tabs`: Creates new tabs when opening the options page or site links from the popup.
+- `bookmarks`: Reads the browser's native bookmark tree when you manually trigger an import.
+- `contextMenus`: Provides a "Add to Retro Bookmarks" shortcut in the right-click menu.
 
-扩展遵循最小权限原则，不会访问网页内容或收集浏览历史。
+The extension follows the principle of least privilege and does not access webpage content or collect browsing history.
 
-## 政策更新
+## Policy Updates
 
-如我们对数据实践进行重大变更，会在本文件中更新并标注生效日期。继续使用扩展即表示您接受最新政策。
+If we make significant changes to our data practices, we will update this document and mark the effective date. Continued use of the extension indicates your acceptance of the latest policy.
 
-## 联系方式
+## Contact
 
-如有任何问题或建议，欢迎在 GitHub 仓库提交 issue。
-
+If you have any questions or suggestions, please submit an issue in the GitHub repository.
