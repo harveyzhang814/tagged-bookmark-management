@@ -6,6 +6,7 @@ export interface Tag {
   updatedAt: number;
   usageCount: number;
   clickCount: number;
+  pinned: boolean;
 }
 
 export interface BookmarkItem {

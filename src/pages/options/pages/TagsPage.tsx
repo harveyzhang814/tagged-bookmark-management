@@ -4,6 +4,7 @@ import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
 import { TagPill } from '../../../components/TagPill';
 import { IconButton } from '../../../components/IconButton';
+import { ToggleSwitch } from '../../../components/ToggleSwitch';
 import {
   createTag,
   deleteTag,
@@ -22,6 +23,11 @@ export const TagsPage = () => {
     const list = await getAllTags();
     setTags(
       list.sort((a, b) => {
+        // 首先按 pinned 排序（置顶在前）
+        if (a.pinned !== b.pinned) {
+          return a.pinned ? -1 : 1;
+        }
+        // 然后按原有的逻辑排序（usageCount 降序，相同则按 updatedAt 降序）
         if (b.usageCount === a.usageCount) return b.updatedAt - a.updatedAt;
         return b.usageCount - a.usageCount;
       })
@@ -59,6 +65,12 @@ export const TagsPage = () => {
   const handleColorChange = async (tagId: string, color: string) => {
     updateLocalTag(tagId, { color });
     await updateTag(tagId, { color });
+    await refresh();
+  };
+
+  const handlePinnedToggle = async (tagId: string, pinned: boolean) => {
+    updateLocalTag(tagId, { pinned });
+    await updateTag(tagId, { pinned });
     await refresh();
   };
 
@@ -116,6 +128,13 @@ export const TagsPage = () => {
                 value={tag.color}
                 onChange={(e) => updateLocalTag(tag.id, { color: e.target.value })}
                 onBlur={(e) => handleColorChange(tag.id, e.target.value)}
+              />
+            </label>
+            <label>
+              置顶
+              <ToggleSwitch
+                checked={tag.pinned ?? false}
+                onChange={(checked) => handlePinnedToggle(tag.id, checked)}
               />
             </label>
             <p>使用 {tag.usageCount} 次 · 点击 {tag.clickCount} 次</p>

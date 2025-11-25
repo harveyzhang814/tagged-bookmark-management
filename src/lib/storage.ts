@@ -3,7 +3,8 @@ import type { BookmarkItem, StorageShape, Tag } from './types';
 const STORAGE_KEYS = {
   BOOKMARKS: 'tbm.bookmarks',
   TAGS: 'tbm.tags',
-  THEME: 'tbm.theme'
+  THEME: 'tbm.theme',
+  ACTIVE_TAB: 'tbm.activeTab'
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
@@ -128,5 +129,13 @@ export const getTheme = async (): Promise<Theme> =>
 
 export const saveTheme = async (theme: Theme) =>
   writeValue(STORAGE_KEYS.THEME, theme);
+
+export type ActiveTab = 'home' | 'bookmarks' | 'tags';
+
+export const getActiveTab = async (): Promise<ActiveTab> =>
+  readValue<ActiveTab>(STORAGE_KEYS.ACTIVE_TAB, 'home');
+
+export const saveActiveTab = async (tab: ActiveTab) =>
+  writeValue(STORAGE_KEYS.ACTIVE_TAB, tab);
 
 

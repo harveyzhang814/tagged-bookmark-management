@@ -56,6 +56,7 @@ export const ensureDefaults = async () => {
         color: '#ffcc00',
         usageCount: 0,
         clickCount: 0,
+        pinned: false,
         createdAt: now,
         updatedAt: now
       },
@@ -65,6 +66,7 @@ export const ensureDefaults = async () => {
         color: '#12c2e9',
         usageCount: 0,
         clickCount: 0,
+        pinned: false,
         createdAt: now,
         updatedAt: now
       },
@@ -74,6 +76,7 @@ export const ensureDefaults = async () => {
         color: '#6c63ff',
         usageCount: 0,
         clickCount: 0,
+        pinned: false,
         createdAt: now,
         updatedAt: now
       }
@@ -100,7 +103,11 @@ export const getAllBookmarks = async (): Promise<BookmarkItem[]> => {
 
 export const getAllTags = async (): Promise<Tag[]> => {
   const tags = await getTagsMap();
-  return Object.values(tags);
+  // 确保向后兼容：如果标签缺少 pinned 字段，默认为 false
+  return Object.values(tags).map((tag) => ({
+    ...tag,
+    pinned: tag.pinned ?? false
+  }));
 };
 
 export const createTag = async (payload: Pick<Tag, 'name' | 'color'>): Promise<Tag> => {
@@ -113,6 +120,7 @@ export const createTag = async (payload: Pick<Tag, 'name' | 'color'>): Promise<T
     color: ensureTagColor(payload.color),
     usageCount: 0,
     clickCount: 0,
+    pinned: false,
     createdAt: now,
     updatedAt: now
   };
@@ -121,7 +129,7 @@ export const createTag = async (payload: Pick<Tag, 'name' | 'color'>): Promise<T
   return tag;
 };
 
-export const updateTag = async (tagId: string, patch: Partial<Pick<Tag, 'name' | 'color'>>) => {
+export const updateTag = async (tagId: string, patch: Partial<Pick<Tag, 'name' | 'color' | 'pinned'>>) => {
   const tags = await getTagsMap();
   const target = tags[tagId];
   if (!target) return null;
@@ -230,13 +238,7 @@ const syncUsageCounts = async () => {
 export const getHotTags = async (limit = 6): Promise<HotTag[]> => {
   const tags = await getAllTags();
   return tags
-    .sort((a, b) => {
-      // 先按点击次数降序，点击次数相同时按使用次数降序
-      if (b.clickCount !== a.clickCount) {
-        return b.clickCount - a.clickCount;
-      }
-      return b.usageCount - a.usageCount;
-    })
+    .sort((a, b) => b.clickCount - a.clickCount)
     .slice(0, limit)
     .map((tag) => ({ tag, clickCount: tag.clickCount }));
 };
