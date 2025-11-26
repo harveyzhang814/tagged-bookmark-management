@@ -14,7 +14,8 @@ import type {
   Tag
 } from './types';
 
-const tagPalette = ['#ffcc00', '#ff6b6b', '#1dd3b0', '#6c63ff', '#ff9472', '#12c2e9'];
+// 预定义的调色板，所有颜色HSL中L>75%
+const tagPalette = ['#ffcc00', '#ffb3ba', '#bae1ff', '#baffc9', '#ffffba', '#ffdfba', '#e0bbff', '#ffcccb'];
 
 const generateId = (prefix: string) => `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 
@@ -34,9 +35,81 @@ const recalcTagUsage = (bookmarks: Record<string, BookmarkItem>, tags: Record<st
   });
 };
 
+/**
+ * 生成HSL中L>75%的随机颜色
+ */
+const generateLightColor = (): string => {
+  // HSL中L在75%-95%之间，确保颜色足够亮
+  const hue = Math.floor(Math.random() * 360); // 0-360度
+  const saturation = Math.floor(Math.random() * 40) + 40; // 40%-80%
+  const lightness = Math.floor(Math.random() * 20) + 75; // 75%-95%
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
+
 const ensureTagColor = (color?: string) => {
-  if (color) return color;
-  return tagPalette[Math.floor(Math.random() * tagPalette.length)];
+  if (color) {
+    // 如果提供了颜色，检查HSL中L是否>75%
+    // 如果是hex颜色，转换为HSL检查
+    const hsl = hexToHsl(color);
+    if (hsl && hsl.l > 75) {
+      return color;
+    }
+    // 如果提供的颜色L<=75%，生成新的亮色
+    return generateLightColor();
+  }
+  // 从调色板随机选择或生成新颜色
+  if (Math.random() < 0.5) {
+    return tagPalette[Math.floor(Math.random() * tagPalette.length)];
+  }
+  return generateLightColor();
+};
+
+/**
+ * 将hex颜色转换为HSL
+ */
+const hexToHsl = (hex: string): { h: number; s: number; l: number } | null => {
+  // 移除#号
+  hex = hex.replace('#', '');
+  
+  // 处理3位hex
+  if (hex.length === 3) {
+    hex = hex.split('').map(char => char + char).join('');
+  }
+  
+  if (hex.length !== 6) return null;
+  
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+  
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    
+    switch (max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        break;
+      case g:
+        h = ((b - r) / d + 2) / 6;
+        break;
+      case b:
+        h = ((r - g) / d + 4) / 6;
+        break;
+    }
+  }
+  
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100)
+  };
 };
 
 const normalizeBookmark = (bookmark: BookmarkItem): BookmarkItem => {

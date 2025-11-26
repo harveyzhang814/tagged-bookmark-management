@@ -35,47 +35,6 @@
   }
 }
 
-.bookmark-row {
-  border: 1px solid var(--border-muted);
-  padding: 20px;
-  background: var(--bg-card);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
-  min-width: 0;
-  transition: all 0.2s ease;
-}
-
-.bookmark-row:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.bookmark-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-width: 0;
-}
-
-.bookmark-row-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 4px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border-muted);
-}
-
-.bookmark-title,
-.bookmark-url-input {
-  font-size: 14px;
-  font-family: var(--font-family);
-}
-
 .form-field {
   display: flex;
   flex-direction: column;

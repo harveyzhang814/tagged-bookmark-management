@@ -1,6 +1,5 @@
 .tag-pill {
-  border: 1px solid var(--border-muted);
-  background: var(--bg-panel);
+  border: none;
   font-family: var(--font-family);
   font-size: 12px;
   font-weight: 400;
@@ -15,7 +14,11 @@
   height: 24px;
   line-height: 16px;
   box-sizing: border-box;
-  color: var(--text-main);
+  color: #000000;
+}
+
+[data-theme='dark'] .tag-pill {
+  color: #ffffff;
 }
 
 .tag-pill button {
@@ -23,16 +26,18 @@
 }
 
 .tag-pill--active {
-  background: var(--accent);
   color: #ffffff !important;
-  border-color: var(--accent);
+}
+
+[data-theme='dark'] .tag-pill--active {
+  color: #ffffff !important;
 }
 
 .tag-pill--small {
-  font-size: 11px;
-  padding: 3px 8px;
-  height: 20px;
-  line-height: 14px;
+  font-size: 13px;
+  padding: 4px 10px;
+  height: 24px;
+  line-height: 16px;
   border-radius: 12px;
 }
 

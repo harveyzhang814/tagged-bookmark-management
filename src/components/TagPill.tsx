@@ -10,7 +10,7 @@ interface Props {
 
 export const TagPill = ({ label, color, active, onClick, size = 'default' }: Props) => {
   const className = `tag-pill ${active ? 'tag-pill--active' : ''} ${size === 'small' ? 'tag-pill--small' : ''}`;
-  const style = { borderColor: color, color };
+  const style = { backgroundColor: color };
   
   if (onClick) {
     return (

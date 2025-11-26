@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
 import { TagFilter } from '../../../components/TagFilter';
 import { TagInput } from '../../../components/TagInput';
-import { IconButton } from '../../../components/IconButton';
 import { ToggleSwitch } from '../../../components/ToggleSwitch';
-import { createBookmark, deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark } from '../../../lib/bookmarkService';
+import { BookmarkCard } from '../../../components/BookmarkCard';
+import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
+import { createBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import './bookmarksPage.css';
 
@@ -32,7 +33,7 @@ export const BookmarksPage = () => {
     message: null,
     type: null
   });
-  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
 
   const refresh = async () => {
     const [bookmarksList, tagsList] = await Promise.all([getAllBookmarks(), getAllTags()]);
@@ -44,12 +45,6 @@ export const BookmarksPage = () => {
     void refresh();
   }, []);
 
-  useEffect(
-    () => () => {
-      Object.values(saveTimers.current).forEach((timer) => clearTimeout(timer));
-    },
-    []
-  );
 
   const filtered = useMemo(() => {
     let list = bookmarks;
@@ -62,7 +57,12 @@ export const BookmarksPage = () => {
         return matchQuery && matchTags;
       });
     }
-    return list.sort((a, b) => b.updatedAt - a.updatedAt);
+    // 置顶的书签排在前面，然后按更新时间排序
+    return list.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return b.updatedAt - a.updatedAt;
+    });
   }, [bookmarks, query, selectedTags]);
 
   const handleTagToggle = (tagId: string) => {
@@ -78,38 +78,6 @@ export const BookmarksPage = () => {
     await refresh();
   };
 
-  const clearSaveTimer = (bookmarkId: string) => {
-    const timer = saveTimers.current[bookmarkId];
-    if (timer) {
-      clearTimeout(timer);
-      delete saveTimers.current[bookmarkId];
-    }
-  };
-
-  const persistBookmark = async (bookmark: BookmarkItem) => {
-    clearSaveTimer(bookmark.id);
-    await updateBookmark(bookmark.id, {
-      title: bookmark.title,
-      url: bookmark.url,
-      tags: bookmark.tags,
-      pinned: bookmark.pinned
-    });
-  };
-
-  const scheduleSave = (bookmark: BookmarkItem) => {
-    clearSaveTimer(bookmark.id);
-    saveTimers.current[bookmark.id] = setTimeout(() => {
-      void persistBookmark(bookmark);
-    }, 800);
-  };
-
-  const flushBookmarkChanges = (bookmarkId: string) => {
-    const snapshot = bookmarks.find((item) => item.id === bookmarkId);
-    if (snapshot) {
-      void persistBookmark(snapshot);
-    }
-  };
-
   const handleBookmarkChange = (id: string, patch: Partial<BookmarkItem>) => {
     let updatedBookmark: BookmarkItem | null = null;
     setBookmarks((prev) =>
@@ -119,16 +87,40 @@ export const BookmarksPage = () => {
         return updatedBookmark;
       })
     );
+    // 立即保存置顶状态变化
     if (updatedBookmark) {
-      scheduleSave(updatedBookmark);
+      void updateBookmark(id, {
+        title: updatedBookmark.title,
+        url: updatedBookmark.url,
+        tags: updatedBookmark.tags,
+        pinned: updatedBookmark.pinned
+      });
     }
   };
 
-  const handleDelete = async (bookmarkId: string) => {
-    clearSaveTimer(bookmarkId);
-    await deleteBookmark(bookmarkId);
+  const handleTogglePin = (bookmarkId: string) => {
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (bookmark) {
+      handleBookmarkChange(bookmarkId, { pinned: !bookmark.pinned });
+    }
+  };
+
+  const handleEdit = (bookmark: BookmarkItem) => {
+    setEditingBookmark(bookmark);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingBookmark(null);
+  };
+
+  const handleSaveEdit = async (
+    bookmarkId: string,
+    data: { title: string; url: string; tags: string[]; pinned: boolean }
+  ) => {
+    await updateBookmark(bookmarkId, data);
     await refresh();
   };
+
 
   const handleImport = async () => {
     setImportStatus({ isImporting: true, message: null, type: null });
@@ -219,48 +211,21 @@ export const BookmarksPage = () => {
 
       <div className="bookmark-list">
         {filtered.map((bookmark) => (
-          <div key={bookmark.id} className="bookmark-row">
-            <div className="bookmark-info">
-              <input
-                className="bookmark-title"
-                value={bookmark.title}
-                onChange={(e) => handleBookmarkChange(bookmark.id, { title: e.target.value })}
-                onBlur={() => flushBookmarkChanges(bookmark.id)}
-              />
-              <div className="form-field">
-                <label>URL</label>
-                <input
-                  className="bookmark-url-input"
-                  value={bookmark.url}
-                  onChange={(e) => handleBookmarkChange(bookmark.id, { url: e.target.value })}
-                  onBlur={() => flushBookmarkChanges(bookmark.id)}
-                />
-              </div>
-              <div className="form-field">
-                <label>标签</label>
-                <TagInput
-                  value={bookmark.tags}
-                  onChange={(tagIds) => handleBookmarkChange(bookmark.id, { tags: tagIds })}
-                  onBlur={() => flushBookmarkChanges(bookmark.id)}
-                />
-              </div>
-              <div className="bookmark-row-footer">
-                <ToggleSwitch
-                  checked={bookmark.pinned}
-                  onChange={(checked) => handleBookmarkChange(bookmark.id, { pinned: checked })}
-                  label="置顶"
-                />
-                <IconButton
-                  variant="danger"
-                  icon="×"
-                  aria-label="删除收藏"
-                  onClick={() => handleDelete(bookmark.id)}
-                />
-              </div>
-            </div>
-          </div>
+          <BookmarkCard
+            key={bookmark.id}
+            bookmark={bookmark}
+            tags={tags}
+            onEdit={handleEdit}
+            onTogglePin={handleTogglePin}
+          />
         ))}
       </div>
+
+      <BookmarkEditModal
+        bookmark={editingBookmark}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 };
