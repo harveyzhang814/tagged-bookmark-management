@@ -51,23 +51,11 @@ export const HomePage = ({ onNavigate }: HomePageProps) => {
   };
 
   if (isLoading) {
-    return (
-      <div className="home-page">
-        <div className="home-header">
-          <h1 className="home-title">标签书签管家</h1>
-          <p className="home-subtitle">加载中...</p>
-        </div>
-      </div>
-    );
+    return <div className="home-page" aria-busy="true" />;
   }
 
   return (
     <div className="home-page">
-      <div className="home-header">
-        <h1 className="home-title">标签书签管家</h1>
-        <p className="home-subtitle">快速访问你的收藏和标签</p>
-      </div>
-
       <HorizontalScrollList
         title="置顶收藏"
         onMoreClick={pinnedBookmarks.length > 0 ? handlePinnedMoreClick : undefined}

@@ -17,9 +17,11 @@ npm install
 npm run dev     # 启动 Vite watch，输出 dist
 npm run build   # 生成 release 版本
 npm run test    # Vitest + jsdom 单元测试
+npm run release # 构建并生成可上传压缩包
 ```
 
 开发时可同时在 `npm run dev` 的输出目录内加载扩展。
+如需在本地调试时生成 sourcemap，可在构建命令前设置 `ENABLE_SOURCEMAP=true`。
 
 ## 在 Chrome 中加载
 
@@ -27,6 +29,18 @@ npm run test    # Vitest + jsdom 单元测试
 2. 打开 Chrome 扩展管理 (`chrome://extensions`)，启用“开发者模式”。
 3. 点击“加载已解压的扩展程序”，选择 `dist` 目录。
 4. 点击工具栏图标即可打开 popup；在扩展详情页打开 options 管理页。
+
+## 打包发布
+
+1. 执行 `npm run release`，脚本会：
+   - 以无 sourcemap 模式构建；
+   - 清理 `.map`、`.vite` 等调试产物；
+   - 将 `dist/` 根目录内容直接压缩到 `release/tagged-bookmark-management.zip`。
+2. 在 Chrome Web Store 后台上传上面生成的压缩包即可。
+
+## 隐私政策
+
+本项目会在 `chrome.storage.sync` 中保存您的书签、标签、主题和活动页签信息，并在导入功能中读取本地 Chrome 书签树。数据仅在本地计算及 Chrome 同步服务中使用，从不发送到第三方服务器。详情参见 [`PRIVACY_POLICY.md`](./PRIVACY_POLICY.md)。
 
 ## 目录结构
 

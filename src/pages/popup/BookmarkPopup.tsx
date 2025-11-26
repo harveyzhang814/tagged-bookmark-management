@@ -87,8 +87,10 @@ export const BookmarkPopup = () => {
                 variant="secondary"
                 icon={
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="8" cy="8" r="2" fill="currentColor"/>
-                    <path d="M8 1V3M8 13V15M15 8H13M3 8H1M12.364 3.636L11.314 4.686M4.686 11.314L3.636 12.364M12.364 12.364L11.314 11.314M4.686 4.686L3.636 3.636" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M2 4H14M2 8H14M2 12H10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="4" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="8" r="1.5" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
                   </svg>
                 }
                 aria-label="打开管理页面"

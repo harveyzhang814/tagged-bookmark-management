@@ -19,7 +19,6 @@ const manifest = defineManifest({
     type: 'module'
   },
   permissions: ['storage', 'tabs', 'bookmarks', 'contextMenus'],
-  host_permissions: ['<all_urls>'],
   icons: {
     '16': 'icons/icon-16.png',
     '48': 'icons/icon-48.png',

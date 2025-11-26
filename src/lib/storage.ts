@@ -16,7 +16,10 @@ const getChromeStorage = () => {
     return null;
   }
 
-  return chrome.storage?.sync ?? null;
+  // 使用 local 存储作为临时方案，避免未发布扩展的 sync 配额限制
+  // 未发布的扩展使用 sync 存储有配额限制（约100KB），local 存储没有限制
+  // 发布后可以考虑迁移到 sync 以实现跨设备同步
+  return chrome.storage?.local ?? null;
 };
 
 const readValue = async <T>(key: StorageKey, defaultValue: T): Promise<T> => {
@@ -107,7 +110,7 @@ export const watchStorage = <T>(
   }
 
   const handler = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
-    if (areaName !== 'sync') return;
+    if (areaName !== 'local') return;
     if (changes[key]) {
       callback(changes[key].newValue as T);
     }
