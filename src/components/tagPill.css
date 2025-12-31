@@ -14,23 +14,11 @@
   height: 20px;
   line-height: 14px;
   box-sizing: border-box;
-  color: #000000;
-}
-
-[data-theme='dark'] .tag-pill {
-  color: #ffffff;
+  /* 颜色通过内联样式动态设置 */
 }
 
 .tag-pill button {
   cursor: pointer;
-}
-
-.tag-pill--active {
-  color: #ffffff !important;
-}
-
-[data-theme='dark'] .tag-pill--active {
-  color: #ffffff !important;
 }
 
 .tag-pill--small {
