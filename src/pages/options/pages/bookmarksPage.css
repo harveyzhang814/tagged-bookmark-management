@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  height: 100%;
+  min-height: 0;
 }
 
 .bookmarks-toolbar-merged {
@@ -12,6 +14,24 @@
   padding: 12px 0;
   margin: 0;
   flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.bookmarks-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bookmarks-sidebar-toggle {
+  flex-shrink: 0;
+}
+
+.bookmarks-sidebar-toggle:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .bookmarks-filters {
@@ -20,6 +40,43 @@
   gap: 12px;
   flex: 1;
   min-width: 0;
+}
+
+.bookmarks-content-wrapper {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.bookmarks-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  align-self: stretch;
+}
+
+/* 自定义滚动条样式 */
+.bookmarks-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.bookmarks-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bookmarks-content::-webkit-scrollbar-thumb {
+  background: var(--border-muted);
+  border-radius: 4px;
+}
+
+.bookmarks-content::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color);
 }
 
 .bookmarks-filters .search-input {
@@ -148,6 +205,12 @@
   
   .function-item .pixel-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .bookmarks-content-wrapper {
+    position: relative;
   }
 }
 

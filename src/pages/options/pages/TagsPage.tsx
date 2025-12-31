@@ -119,7 +119,7 @@ export const TagsPage = () => {
     <div className="tags-page">
       <div className="tags-toolbar-merged">
         <div className="tags-filters">
-          <SearchInput value={search} placeholder="输入名称..." onChange={setSearch} />
+          <SearchInput value={search} placeholder="搜索标签" onChange={setSearch} />
         </div>
         <div className="tags-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>

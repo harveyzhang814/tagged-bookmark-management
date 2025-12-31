@@ -2,9 +2,9 @@ import { defineManifest } from '@crxjs/vite-plugin';
 
 const manifest = defineManifest({
   manifest_version: 3,
-  name: '标签书签管家',
+  name: '标签书签',
   description: '快速收藏网页、添加多标签并以简洁优雅的方式管理收藏。',
-  version: '0.1.0',
+  version: '0.2.0',
   action: {
     default_popup: 'src/pages/popup/main.html',
     default_icon: {

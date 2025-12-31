@@ -1,4 +1,4 @@
-import { type MouseEvent } from 'react';
+import { type MouseEvent, useState } from 'react';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { BookmarkItem, Tag } from '../lib/types';
@@ -10,9 +10,11 @@ interface BookmarkCardProps {
   tags: Tag[];
   onEdit: (bookmark: BookmarkItem) => void;
   onTogglePin: (bookmarkId: string) => void;
+  onTagDrop?: (tagId: string) => void;
 }
 
-export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin }: BookmarkCardProps) => {
+export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop }: BookmarkCardProps) => {
+  const [isDragOver, setIsDragOver] = useState(false);
   const bookmarkTags = bookmark.tags
     .map((tagId) => tags.find((t) => t.id === tagId))
     .filter((t): t is Tag => t !== undefined);
@@ -32,6 +34,29 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin }: BookmarkCa
     onTogglePin(bookmark.id);
   };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    
+    const tagId = e.dataTransfer.getData('tagId');
+    if (tagId && onTagDrop) {
+      onTagDrop(tagId);
+    }
+  };
+
   const thumbnailUrl = bookmark.thumbnail || `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(bookmark.url)}`;
   const faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(bookmark.url)}`;
   
@@ -40,8 +65,11 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin }: BookmarkCa
 
   return (
     <div
-      className={`bookmark-card ${bookmark.pinned ? 'bookmark-card--pinned' : ''}`}
+      className={`bookmark-card ${bookmark.pinned ? 'bookmark-card--pinned' : ''} ${isDragOver ? 'bookmark-card--drag-over' : ''}`}
       onClick={handleCardClick}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
       {isCustomThumbnail && (
         <div className="bookmark-card__thumbnail">

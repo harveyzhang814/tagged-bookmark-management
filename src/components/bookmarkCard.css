@@ -147,3 +147,14 @@
   flex-shrink: 0;
 }
 
+.bookmark-card--drag-over {
+  border-color: var(--accent);
+  background: var(--bg-panel);
+  box-shadow: 0 0 0 2px rgba(91, 155, 213, 0.2), var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+[data-theme='dark'] .bookmark-card--drag-over {
+  box-shadow: 0 0 0 2px rgba(100, 181, 246, 0.3), var(--shadow-md);
+}
+

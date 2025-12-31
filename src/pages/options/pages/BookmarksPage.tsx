@@ -8,6 +8,8 @@ import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
 import { Tooltip } from '../../../components/Tooltip';
 import { Pagination } from '../../../components/Pagination';
+import { TagSidebar } from '../../../components/TagSidebar';
+import { IconButton } from '../../../components/IconButton';
 import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import './bookmarksPage.css';
@@ -33,6 +35,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
   const ITEMS_PER_PAGE = 20;
 
   const refresh = async () => {
@@ -57,11 +60,11 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         return matchQuery && matchTags;
       });
     }
-    // 置顶的书签排在前面，然后按更新时间排序
+    // 置顶的书签排在前面，然后按创建时间排序（最新的在前）
     return list.sort((a, b) => {
       if (a.pinned && !b.pinned) return -1;
       if (!a.pinned && b.pinned) return 1;
-      return b.updatedAt - a.updatedAt;
+      return b.createdAt - a.createdAt;
     });
   }, [bookmarks, query, selectedTags]);
 
@@ -150,6 +153,26 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
     }
   };
 
+  const handleTagDrop = async (bookmarkId: string, tagId: string) => {
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (!bookmark) return;
+    
+    // 检查书签是否已有该标签
+    if (bookmark.tags.includes(tagId)) {
+      return; // 已有该标签，不重复添加
+    }
+    
+    // 添加标签到书签
+    await updateBookmark(bookmarkId, {
+      title: bookmark.title,
+      url: bookmark.url,
+      tags: [...bookmark.tags, tagId],
+      pinned: bookmark.pinned
+    });
+    
+    await refresh();
+  };
+
 
   const handleImport = async () => {
     setImportStatus({ isImporting: true, message: null, type: null });
@@ -185,9 +208,11 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   return (
     <div className="bookmarks-page">
       <div className="bookmarks-toolbar-merged">
-        <div className="bookmarks-filters">
-          <SearchInput value={query} placeholder="搜索标题/url" onChange={setQuery} />
-          <TagFilter tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
+        <div className="bookmarks-toolbar-left">
+          <div className="bookmarks-filters">
+            <SearchInput value={query} placeholder="搜索标题或URL" onChange={setQuery} />
+            <TagFilter tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
+          </div>
         </div>
         <div className="bookmarks-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
@@ -201,6 +226,30 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
               {importStatus.isImporting ? '同步中...' : '一键同步'}
             </PixelButton>
           </Tooltip>
+          <IconButton
+            variant="secondary"
+            icon={
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 16 16" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ transform: isTagSidebarOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
+              >
+                <path
+                  d="M4 2L10 8L4 14"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+            aria-label={isTagSidebarOpen ? '隐藏标签栏' : '显示标签栏'}
+            onClick={() => setIsTagSidebarOpen(!isTagSidebarOpen)}
+            className="bookmarks-sidebar-toggle"
+          />
         </div>
         {importStatus.message && (
           <div className={`import-message import-message--${importStatus.type}`}>
@@ -209,25 +258,34 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         )}
       </div>
 
-      <div className="bookmark-list">
-        {paginatedBookmarks.map((bookmark) => (
-          <BookmarkCard
-            key={bookmark.id}
-            bookmark={bookmark}
-            tags={tags}
-            onEdit={handleEdit}
-            onTogglePin={handleTogglePin}
-          />
-        ))}
-      </div>
+      <div className="bookmarks-content-wrapper">
+        <div className="bookmarks-content">
+          <div className="bookmark-list">
+            {paginatedBookmarks.map((bookmark) => (
+              <BookmarkCard
+                key={bookmark.id}
+                bookmark={bookmark}
+                tags={tags}
+                onEdit={handleEdit}
+                onTogglePin={handleTogglePin}
+                onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
+              />
+            ))}
+          </div>
 
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      )}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </div>
+
+        {isTagSidebarOpen && (
+          <TagSidebar tags={tags} />
+        )}
+      </div>
 
       <BookmarkEditModal
         bookmark={editingBookmark}
