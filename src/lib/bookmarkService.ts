@@ -66,70 +66,16 @@ const generateLightColor = (): string => {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };
 
-const ensureTagColor = (color?: string) => {
-  if (color) {
-    // 如果提供了颜色，检查HSL中L是否>75%
-    // 如果是hex颜色，转换为HSL检查
-    const hsl = hexToHsl(color);
-    if (hsl && hsl.l > 75) {
-      return color;
-    }
-    // 如果提供的颜色L<=75%，生成新的亮色
-    return generateLightColor();
-  }
-  // 从调色板随机选择或生成新颜色
-  if (Math.random() < 0.5) {
-    return tagPalette[Math.floor(Math.random() * tagPalette.length)];
-  }
-  return generateLightColor();
-};
+/**
+ * 默认标签颜色（浅灰色）
+ */
+const DEFAULT_TAG_COLOR = '#d3d3d3';
 
 /**
- * 将hex颜色转换为HSL
+ * 获取默认标签颜色（当用户未提供颜色时使用）
  */
-const hexToHsl = (hex: string): { h: number; s: number; l: number } | null => {
-  // 移除#号
-  hex = hex.replace('#', '');
-  
-  // 处理3位hex
-  if (hex.length === 3) {
-    hex = hex.split('').map(char => char + char).join('');
-  }
-  
-  if (hex.length !== 6) return null;
-  
-  const r = parseInt(hex.substring(0, 2), 16) / 255;
-  const g = parseInt(hex.substring(2, 4), 16) / 255;
-  const b = parseInt(hex.substring(4, 6), 16) / 255;
-  
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-  
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
-    }
-  }
-  
-  return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100)
-  };
+const getDefaultTagColor = (): string => {
+  return DEFAULT_TAG_COLOR;
 };
 
 const normalizeBookmark = (bookmark: BookmarkItem): BookmarkItem => {
@@ -146,7 +92,7 @@ export const ensureDefaults = async () => {
       {
         id: generateId('tag'),
         name: '灵感',
-        color: '#ffcc00',
+        color: DEFAULT_TAG_COLOR,
         usageCount: 0,
         clickCount: 0,
         pinned: false,
@@ -156,7 +102,7 @@ export const ensureDefaults = async () => {
       {
         id: generateId('tag'),
         name: '阅读清单',
-        color: '#12c2e9',
+        color: DEFAULT_TAG_COLOR,
         usageCount: 0,
         clickCount: 0,
         pinned: false,
@@ -166,7 +112,7 @@ export const ensureDefaults = async () => {
       {
         id: generateId('tag'),
         name: '工具',
-        color: '#6c63ff',
+        color: DEFAULT_TAG_COLOR,
         usageCount: 0,
         clickCount: 0,
         pinned: false,
@@ -210,7 +156,7 @@ export const createTag = async (payload: Pick<Tag, 'name' | 'color' | 'descripti
   const tag: Tag = {
     id,
     name: payload.name,
-    color: ensureTagColor(payload.color),
+    color: payload.color && payload.color.trim() ? payload.color.trim() : getDefaultTagColor(),
     description: payload.description,
     usageCount: 0,
     clickCount: 0,
@@ -232,6 +178,10 @@ export const updateTag = async (tagId: string, patch: Partial<Pick<Tag, 'name' |
     ...patch,
     updatedAt: Date.now()
   };
+  // 如果更新了颜色，直接使用用户提供的颜色（去除首尾空格）
+  if (patch.color !== undefined) {
+    updated.color = patch.color.trim();
+  }
   tags[tagId] = updated;
   await saveTagsMap(tags);
   return updated;

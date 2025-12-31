@@ -5,11 +5,18 @@ import { SearchInput } from '../../../components/SearchInput';
 import { TagFilter } from '../../../components/TagFilter';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
-import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark } from '../../../lib/bookmarkService';
+import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
+import { Tooltip } from '../../../components/Tooltip';
+import { Pagination } from '../../../components/Pagination';
+import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import './bookmarksPage.css';
 
-export const BookmarksPage = () => {
+interface BookmarksPageProps {
+  onRefresh?: () => void;
+}
+
+export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [query, setQuery] = useState('');
@@ -24,6 +31,9 @@ export const BookmarksPage = () => {
     type: null
   });
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
 
   const refresh = async () => {
     const [bookmarksList, tagsList] = await Promise.all([getAllBookmarks(), getAllTags()]);
@@ -55,6 +65,28 @@ export const BookmarksPage = () => {
     });
   }, [bookmarks, query, selectedTags]);
 
+  // 分页计算
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedBookmarks = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, endIndex);
+  }, [filtered, currentPage]);
+
+  // 当筛选条件改变时，重置到第一页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, selectedTags]);
+
+  // 当总页数变化时，确保当前页不超过总页数
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0 && currentPage > 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
   const handleTagToggle = (tagId: string) => {
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
@@ -62,23 +94,22 @@ export const BookmarksPage = () => {
   };
 
   const handleBookmarkChange = (id: string, patch: Partial<BookmarkItem>) => {
-    let updatedBookmark: BookmarkItem | null = null;
-    setBookmarks((prev) =>
-      prev.map((item) => {
-        if (item.id !== id) return item;
-        updatedBookmark = { ...item, ...patch };
-        return updatedBookmark;
-      })
-    );
-    // 立即保存置顶状态变化
-    if (updatedBookmark) {
+    setBookmarks((prev) => {
+      const item = prev.find((b) => b.id === id);
+      if (!item) return prev;
+      
+      const updated: BookmarkItem = { ...item, ...patch };
+      
+      // 立即保存置顶状态变化
       void updateBookmark(id, {
-        title: updatedBookmark.title,
-        url: updatedBookmark.url,
-        tags: updatedBookmark.tags,
-        pinned: updatedBookmark.pinned
+        title: updated.title,
+        url: updated.url,
+        tags: updated.tags,
+        pinned: updated.pinned
       });
-    }
+      
+      return prev.map((b) => (b.id === id ? updated : b));
+    });
   };
 
   const handleTogglePin = (bookmarkId: string) => {
@@ -107,6 +138,16 @@ export const BookmarksPage = () => {
   const handleDeleteBookmark = async (bookmarkId: string) => {
     await deleteBookmark(bookmarkId);
     await refresh();
+  };
+
+  const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
+    await createBookmark(data);
+    setIsCreateModalOpen(false);
+    await refresh();
+    // 触发父组件刷新
+    if (onRefresh) {
+      onRefresh();
+    }
   };
 
 
@@ -143,37 +184,33 @@ export const BookmarksPage = () => {
 
   return (
     <div className="bookmarks-page">
-      <PixelCard title="功能">
-        <div className="functions-panel">
-          <div className="function-item">
-            <div className="function-description">
-              <h3>导入 Chrome 书签</h3>
-              <p>一键导入 Chrome 收藏夹中的所有书签，已存在的书签会自动跳过</p>
-            </div>
+      <div className="bookmarks-toolbar-merged">
+        <div className="bookmarks-filters">
+          <SearchInput value={query} placeholder="搜索标题/url" onChange={setQuery} />
+          <TagFilter tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
+        </div>
+        <div className="bookmarks-actions">
+          <PixelButton onClick={() => setIsCreateModalOpen(true)}>
+            新建收藏
+          </PixelButton>
+          <Tooltip content="一键导入 Chrome 收藏夹中的所有书签，已存在的书签会自动跳过">
             <PixelButton 
               onClick={handleImport} 
               disabled={importStatus.isImporting}
             >
-              {importStatus.isImporting ? '导入中...' : '一键导入'}
+              {importStatus.isImporting ? '同步中...' : '一键同步'}
             </PixelButton>
+          </Tooltip>
+        </div>
+        {importStatus.message && (
+          <div className={`import-message import-message--${importStatus.type}`}>
+            {importStatus.message}
           </div>
-          {importStatus.message && (
-            <div className={`import-message import-message--${importStatus.type}`}>
-              {importStatus.message}
-            </div>
-          )}
-        </div>
-      </PixelCard>
-
-      <PixelCard title="筛选">
-        <div className="filter-panel">
-          <SearchInput value={query} placeholder="搜索标题/url" onChange={setQuery} />
-          <TagFilter tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
-        </div>
-      </PixelCard>
+        )}
+      </div>
 
       <div className="bookmark-list">
-        {filtered.map((bookmark) => (
+        {paginatedBookmarks.map((bookmark) => (
           <BookmarkCard
             key={bookmark.id}
             bookmark={bookmark}
@@ -184,11 +221,25 @@ export const BookmarksPage = () => {
         ))}
       </div>
 
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
+
       <BookmarkEditModal
         bookmark={editingBookmark}
         onClose={handleCloseEditModal}
         onSave={handleSaveEdit}
         onDelete={handleDeleteBookmark}
+      />
+
+      <BookmarkCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateBookmark}
       />
     </div>
   );

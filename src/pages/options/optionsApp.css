@@ -6,66 +6,91 @@
   font-family: var(--font-family);
 }
 
-.options-header {
+.options-navigator {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 16px 24px;
+  margin: -20px -20px 20px -20px;
+  background: var(--bg-panel);
+  border-radius: 12px 12px 0 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.options-header h1 {
+[data-theme='dark'] .options-navigator {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.options-navigator__brand {
+  flex-shrink: 0;
+}
+
+.options-navigator__brand h1 {
   margin: 0;
   font-size: 20px;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
 
-.options-header p {
+.options-navigator__brand p {
   margin: 4px 0 0;
   color: var(--text-muted);
   font-size: 13px;
 }
 
-.options-toolbar {
+.options-navigator__tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-start;
+  position: relative;
+}
+
+.options-navigator__tab {
+  font-family: var(--font-family);
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  position: relative;
+  white-space: nowrap;
+}
+
+.options-navigator__tab:hover {
+  color: var(--text-main);
+}
+
+.options-navigator__tab.active {
+  color: var(--accent);
+  background: transparent;
+}
+
+.options-navigator__tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.options-navigator__actions {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
-  padding: 12px 0;
-}
-
-.options-tabs {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
-.options-tab {
-  font-family: var(--font-family);
-  padding: 8px 16px;
-  border: 1px solid var(--border-muted);
-  background: var(--bg-panel);
-  color: var(--text-main);
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.options-tab:hover {
-  background: rgba(0, 0, 0, 0.02);
-  border-color: var(--accent);
-}
-
-[data-theme='dark'] .options-tab:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.options-tab.active {
-  background: var(--accent);
-  color: #ffffff;
-  border-color: var(--accent);
 }
 
 main {

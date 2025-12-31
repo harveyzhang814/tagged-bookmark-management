@@ -4,6 +4,7 @@ import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
 import { TagCard } from '../../../components/TagCard';
 import { TagEditModal } from '../../../components/TagEditModal';
+import { Pagination } from '../../../components/Pagination';
 import {
   createTag,
   deleteTag,
@@ -16,8 +17,10 @@ import './tagsPage.css';
 export const TagsPage = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [search, setSearch] = useState('');
-  const [form, setForm] = useState({ name: '', color: '#ffcc00' });
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 40;
 
   const refresh = async () => {
     const list = await getAllTags();
@@ -43,10 +46,39 @@ export const TagsPage = () => {
     return tags.filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
   }, [tags, search]);
 
-  const handleCreate = async () => {
-    if (!form.name.trim()) return;
-    await createTag({ name: form.name.trim(), color: form.color });
-    setForm({ name: '', color: '#ffcc00' });
+  // 分页计算
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedTags = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, endIndex);
+  }, [filtered, currentPage]);
+
+  // 当搜索条件改变时，重置到第一页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // 当总页数变化时，确保当前页不超过总页数
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0 && currentPage > 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
+  const handleCreateTag = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
+    const newTag = await createTag({ 
+      name: data.name, 
+      color: data.color, 
+      description: data.description 
+    });
+    // 如果设置了置顶，需要更新标签
+    if (data.pinned) {
+      await updateTag(newTag.id, { pinned: true });
+    }
+    setIsCreateModalOpen(false);
     await refresh();
   };
 
@@ -56,6 +88,10 @@ export const TagsPage = () => {
 
   const handleCloseEditModal = () => {
     setEditingTag(null);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
   };
 
   const handleSaveEdit = async (
@@ -81,28 +117,19 @@ export const TagsPage = () => {
 
   return (
     <div className="tags-page">
-      <PixelCard title="创建新标签">
-        <div className="tag-form">
-          <input
-            value={form.name}
-            placeholder="标签名称"
-            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
-          />
-          <input
-            type="color"
-            value={form.color}
-            onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
-          />
-          <PixelButton onClick={handleCreate}>添加</PixelButton>
+      <div className="tags-toolbar-merged">
+        <div className="tags-filters">
+          <SearchInput value={search} placeholder="输入名称..." onChange={setSearch} />
         </div>
-      </PixelCard>
-
-      <PixelCard title="搜索标签">
-        <SearchInput value={search} placeholder="输入名称..." onChange={setSearch} />
-      </PixelCard>
+        <div className="tags-actions">
+          <PixelButton onClick={() => setIsCreateModalOpen(true)}>
+            新建标签
+          </PixelButton>
+        </div>
+      </div>
 
       <div className="tag-grid">
-        {filtered.map((tag) => (
+        {paginatedTags.map((tag) => (
           <TagCard
             key={tag.id}
             tag={tag}
@@ -112,12 +139,30 @@ export const TagsPage = () => {
         ))}
       </div>
 
-      <TagEditModal
-        tag={editingTag}
-        onClose={handleCloseEditModal}
-        onSave={handleSaveEdit}
-        onDelete={handleDeleteTag}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
+
+      {editingTag && (
+        <TagEditModal
+          tag={editingTag}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveEdit}
+          onDelete={handleDeleteTag}
+        />
+      )}
+
+      {isCreateModalOpen && (
+        <TagEditModal
+          tag={null}
+          onClose={handleCloseCreateModal}
+          onCreate={handleCreateTag}
+        />
+      )}
     </div>
   );
 };

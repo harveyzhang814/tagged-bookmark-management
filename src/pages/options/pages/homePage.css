@@ -4,6 +4,36 @@
   gap: 20px;
 }
 
+.home-toolbar-merged {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.home-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.home-filters .search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.home-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
 .empty-state {
   padding: 24px 16px;
   text-align: center;

@@ -8,17 +8,21 @@ import './tagEditModal.css';
 interface TagEditModalProps {
   tag: Tag | null;
   onClose: () => void;
-  onSave: (tagId: string, data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
+  onSave?: (tagId: string, data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
+  onCreate?: (data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
   onDelete?: (tagId: string) => Promise<void>;
 }
 
-export const TagEditModal = ({ tag, onClose, onSave, onDelete }: TagEditModalProps) => {
+const DEFAULT_TAG_COLOR = '#d3d3d3';
+
+export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEditModalProps) => {
   const [name, setName] = useState('');
-  const [color, setColor] = useState('#ffcc00');
+  const [color, setColor] = useState(DEFAULT_TAG_COLOR);
   const [description, setDescription] = useState('');
   const [pinned, setPinned] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isCreateMode = !tag;
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -31,6 +35,12 @@ export const TagEditModal = ({ tag, onClose, onSave, onDelete }: TagEditModalPro
       setColor(tag.color);
       setDescription(tag.description || '');
       setPinned(tag.pinned);
+    } else {
+      // 创建模式：重置表单
+      setName('');
+      setColor(DEFAULT_TAG_COLOR);
+      setDescription('');
+      setPinned(false);
     }
   }, [tag]);
 
@@ -47,16 +57,25 @@ export const TagEditModal = ({ tag, onClose, onSave, onDelete }: TagEditModalPro
   };
 
   const handleSave = async () => {
-    if (!tag || !name.trim()) return;
+    if (!name.trim()) return;
     
     setIsSaving(true);
     try {
-      await onSave(tag.id, { 
-        name: name.trim(), 
-        color: color.trim(), 
-        description: description.trim() || undefined,
-        pinned 
-      });
+      if (isCreateMode && onCreate) {
+        await onCreate({ 
+          name: name.trim(), 
+          color: color.trim(), 
+          description: description.trim() || undefined,
+          pinned 
+        });
+      } else if (tag && onSave) {
+        await onSave(tag.id, { 
+          name: name.trim(), 
+          color: color.trim(), 
+          description: description.trim() || undefined,
+          pinned 
+        });
+      }
       onClose();
     } catch (error) {
       console.error('Failed to save tag:', error);
@@ -85,13 +104,14 @@ export const TagEditModal = ({ tag, onClose, onSave, onDelete }: TagEditModalPro
     }
   };
 
-  if (!tag) return null;
+  // 如果没有 tag 且没有 onCreate，则不显示弹窗
+  if (!tag && !onCreate) return null;
 
   return (
     <div className="tag-edit-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="tag-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="tag-edit-modal__header">
-          <h2 className="tag-edit-modal__title">编辑标签</h2>
+          <h2 className="tag-edit-modal__title">{isCreateMode ? '创建标签' : '编辑标签'}</h2>
           <button
             className="tag-edit-modal__close"
             onClick={onClose}
@@ -158,7 +178,7 @@ export const TagEditModal = ({ tag, onClose, onSave, onDelete }: TagEditModalPro
           </div>
         </div>
         <div className="tag-edit-modal__footer">
-          {onDelete && (
+          {!isCreateMode && onDelete && (
             <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
               删除
             </PixelButton>
@@ -168,7 +188,7 @@ export const TagEditModal = ({ tag, onClose, onSave, onDelete }: TagEditModalPro
               取消
             </PixelButton>
             <PixelButton onClick={handleSave} disabled={isSaving || !name.trim()}>
-              {isSaving ? '保存中...' : '保存'}
+              {isSaving ? (isCreateMode ? '创建中...' : '保存中...') : (isCreateMode ? '创建' : '保存')}
             </PixelButton>
           </div>
         </div>

@@ -3,9 +3,6 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
 import { HomePage } from './pages/HomePage';
 import { ThemeToggle } from '../../components/ThemeToggle';
-import { BookmarkCreateModal } from '../../components/BookmarkCreateModal';
-import { PixelButton } from '../../components/PixelButton';
-import { createBookmark } from '../../lib/bookmarkService';
 import { initTheme } from '../../lib/theme';
 import { getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
@@ -21,7 +18,6 @@ const tabs: { key: TabKey; label: string }[] = [
 export const OptionsApp = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('home');
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // 初始化：从存储或URL参数读取tab
@@ -57,11 +53,10 @@ export const OptionsApp = () => {
     window.history.replaceState({}, '', url.toString());
   }, []);
 
-  const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
-    await createBookmark(data);
+  const handleRefresh = useCallback(() => {
     // 触发刷新：增加refreshKey，子组件会监听这个变化
     setRefreshKey((prev) => prev + 1);
-  };
+  }, []);
 
   const renderContent = useMemo(() => {
     if (!isInitialized) {
@@ -70,51 +65,41 @@ export const OptionsApp = () => {
     
     switch (activeTab) {
       case 'home':
-        return <HomePage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} />;
+        return <HomePage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'tags':
         return <TagsPage key={refreshKey} />;
       case 'bookmarks':
       default:
-        return <BookmarksPage key={refreshKey} />;
+        return <BookmarksPage key={refreshKey} onRefresh={handleRefresh} />;
     }
-  }, [activeTab, isInitialized, handleTabChange, refreshKey]);
+  }, [activeTab, isInitialized, handleTabChange, refreshKey, handleRefresh]);
 
   return (
     <div className="options-shell">
-      <header className="options-header">
-        <div>
+      <header className="options-navigator">
+        <div className="options-navigator__brand">
           <h1>标签书签管家</h1>
-          <p>管理你的书签和标签</p>
         </div>
-        <ThemeToggle />
+        
+        <nav className="options-navigator__tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`options-navigator__tab ${tab.key === activeTab ? 'active' : ''}`}
+              onClick={() => void handleTabChange(tab.key)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="options-navigator__actions">
+          <ThemeToggle />
+        </div>
       </header>
 
-      <div className="options-toolbar">
-        <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-          新建
-        </PixelButton>
-      </div>
-
-      <nav className="options-tabs">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            className={`options-tab ${tab.key === activeTab ? 'active' : ''}`}
-            onClick={() => void handleTabChange(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
-
       <main>{renderContent}</main>
-
-      <BookmarkCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateBookmark}
-      />
     </div>
   );
 };

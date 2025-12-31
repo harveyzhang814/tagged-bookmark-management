@@ -6,6 +6,13 @@
   border-radius: 8px;
 }
 
+.pixel-card-shell--toolbar {
+  background: var(--bg-panel);
+  border-color: var(--border-color);
+  box-shadow: none;
+  border-radius: 6px;
+}
+
 .pixel-card-header {
   display: flex;
   justify-content: space-between;

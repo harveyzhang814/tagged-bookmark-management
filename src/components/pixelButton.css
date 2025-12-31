@@ -1,9 +1,9 @@
 .pixel-btn {
   font-family: var(--font-family);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: -0.01em;
-  padding: 8px 16px;
+  padding: 0 12px;
   border: 1px solid transparent;
   background: var(--bg-panel);
   color: var(--text-main);
@@ -12,12 +12,12 @@
   transition: all 0.2s ease;
   width: auto;
   border-radius: 6px;
-  min-height: 36px;
-  line-height: 1.4;
   box-sizing: border-box;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
+  height: 30px; /* 30px is the height of the pixel button */
 }
 
 .pixel-btn--block {

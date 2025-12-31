@@ -4,6 +4,41 @@
   gap: 16px;
 }
 
+.bookmarks-toolbar-merged {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.bookmarks-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bookmarks-filters .search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.bookmarks-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.bookmarks-toolbar-merged .import-message {
+  width: 100%;
+  margin-top: 8px;
+}
+
 .bookmark-form,
 .filter-panel {
   display: flex;
