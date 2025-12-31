@@ -17,7 +17,7 @@
 }
 
 .icon-button:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--button-hover-bg);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -32,7 +32,7 @@
 }
 
 .icon-button--danger:hover {
-  background: rgba(229, 115, 115, 0.1);
+  background: var(--button-danger-hover-bg);
   border-color: var(--danger);
 }
 
@@ -42,7 +42,7 @@
 }
 
 .icon-button--primary:hover {
-  background: rgba(91, 155, 213, 0.1);
+  background: var(--button-primary-hover-bg);
 }
 
 .icon-button__icon {

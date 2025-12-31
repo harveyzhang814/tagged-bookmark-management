@@ -72,7 +72,7 @@ export function getContrastRatio(color1: string, color2: string): number {
 /**
  * 根据背景色和主题模式选择文字颜色
  * @param backgroundColor 背景色（hex 格式）
- * @param theme 主题模式：'light' 或 'dark'
+ * @param theme 主题模式：'light' 或 'dark'（当前未使用，保留以保持接口兼容性）
  * @returns 文字颜色（hex 格式）
  */
 export function getTextColor(
@@ -87,27 +87,15 @@ export function getTextColor(
   const pureBlack = '#000000';
   const pureWhite = '#ffffff';
   
-  if (theme === 'light') {
-    // 明模式：使用 WCAG 算法选择对比度更高的颜色
-    const contrastWithBlack = getContrastRatio(backgroundColor, pureBlack);
-    const contrastWithWhite = getContrastRatio(backgroundColor, pureWhite);
-    
-    // 选择对比度更高的颜色，使用项目风格的近色
-    if (contrastWithBlack > contrastWithWhite) {
-      return darkText; // #2c2c2c
-    } else {
-      return lightText; // #e0e0e0
-    }
+  // 使用 WCAG 算法选择对比度更高的颜色
+  // 明模式和暗模式使用相同的逻辑，不再取反
+  const contrastWithBlack = getContrastRatio(backgroundColor, pureBlack);
+  const contrastWithWhite = getContrastRatio(backgroundColor, pureWhite);
+  
+  // 选择对比度更高的颜色，使用项目风格的近色
+  if (contrastWithBlack > contrastWithWhite) {
+    return darkText; // #2c2c2c
   } else {
-    // 暗模式：先计算明模式应该选什么颜色，然后取相反
-    const contrastWithBlack = getContrastRatio(backgroundColor, pureBlack);
-    const contrastWithWhite = getContrastRatio(backgroundColor, pureWhite);
-    
-    // 如果明模式会选择黑色，暗模式选择白色；反之亦然
-    if (contrastWithBlack > contrastWithWhite) {
-      return lightText; // #e0e0e0
-    } else {
-      return darkText; // #2c2c2c
-    }
+    return lightText; // #e0e0e0
   }
 }

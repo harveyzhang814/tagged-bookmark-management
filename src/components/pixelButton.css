@@ -28,9 +28,15 @@
   display: inline-block;
 }
 
+/* 所有按钮共用的 hover 效果 */
 .pixel-btn:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
+}
+
+/* 默认按钮的 hover 背景色（无 variant 时） */
+.pixel-btn:not(.pixel-btn--primary):not(.pixel-btn--secondary):not(.pixel-btn--danger):hover {
+  background: var(--button-hover-bg);
 }
 
 .pixel-btn:active {
@@ -39,36 +45,54 @@
 }
 
 .pixel-btn--primary {
-  background: var(--accent);
-  color: #ffffff;
-  border-color: var(--accent);
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: var(--accent) !important;
 }
 
 .pixel-btn--primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
+  color: #ffffff !important;
+}
+
+.pixel-btn--primary:active {
+  background: var(--accent-hover) !important;
+  border-color: var(--accent-hover) !important;
 }
 
 .pixel-btn--secondary {
-  background: var(--accent-2);
-  color: #ffffff;
-  border-color: var(--accent-2);
+  background: var(--accent-2) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-2) !important;
 }
 
 .pixel-btn--secondary:hover {
-  background: #5fb3a3;
-  border-color: #5fb3a3;
+  background: var(--accent-2-hover) !important;
+  border-color: var(--accent-2-hover) !important;
+  color: #ffffff !important;
+}
+
+.pixel-btn--secondary:active {
+  background: var(--accent-2-hover) !important;
+  border-color: var(--accent-2-hover) !important;
 }
 
 .pixel-btn--danger {
-  background: var(--danger);
-  color: #ffffff;
-  border-color: var(--danger);
+  background: var(--danger) !important;
+  color: #ffffff !important;
+  border-color: var(--danger) !important;
 }
 
 .pixel-btn--danger:hover {
-  background: var(--danger-hover);
-  border-color: var(--danger-hover);
+  background: var(--danger-hover) !important;
+  border-color: var(--danger-hover) !important;
+  color: #ffffff !important;
+}
+
+.pixel-btn--danger:active {
+  background: var(--danger-hover) !important;
+  border-color: var(--danger-hover) !important;
 }
 
 .pixel-btn:disabled {
@@ -81,5 +105,3 @@
   box-shadow: var(--shadow-sm);
   transform: none;
 }
-
-
