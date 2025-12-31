@@ -9,9 +9,10 @@ interface BookmarkEditModalProps {
   bookmark: BookmarkItem | null;
   onClose: () => void;
   onSave: (bookmarkId: string, data: { title: string; url: string; tags: string[]; pinned: boolean }) => Promise<void>;
+  onDelete?: (bookmarkId: string) => Promise<void>;
 }
 
-export const BookmarkEditModal = ({ bookmark, onClose, onSave }: BookmarkEditModalProps) => {
+export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: BookmarkEditModalProps) => {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -66,6 +67,20 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave }: BookmarkEditMod
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       onClose();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!bookmark || !onDelete) return;
+    
+    const confirmed = window.confirm('确定要删除这个书签吗？此操作无法撤销。');
+    if (!confirmed) return;
+    
+    try {
+      await onDelete(bookmark.id);
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete bookmark:', error);
     }
   };
 
@@ -136,12 +151,19 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave }: BookmarkEditMod
           </div>
         </div>
         <div className="bookmark-edit-modal__footer">
-          <PixelButton variant="secondary" onClick={onClose} disabled={isSaving}>
-            取消
-          </PixelButton>
-          <PixelButton onClick={handleSave} disabled={isSaving || !title.trim() || !url.trim()}>
-            {isSaving ? '保存中...' : '保存'}
-          </PixelButton>
+          {onDelete && (
+            <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
+              删除
+            </PixelButton>
+          )}
+          <div className="bookmark-edit-modal__footer-actions">
+            <PixelButton variant="secondary" onClick={onClose} disabled={isSaving}>
+              取消
+            </PixelButton>
+            <PixelButton onClick={handleSave} disabled={isSaving || !title.trim() || !url.trim()}>
+              {isSaving ? '保存中...' : '保存'}
+            </PixelButton>
+          </div>
         </div>
       </div>
     </div>

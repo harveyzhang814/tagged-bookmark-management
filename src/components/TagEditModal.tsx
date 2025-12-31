@@ -9,9 +9,10 @@ interface TagEditModalProps {
   tag: Tag | null;
   onClose: () => void;
   onSave: (tagId: string, data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
+  onDelete?: (tagId: string) => Promise<void>;
 }
 
-export const TagEditModal = ({ tag, onClose, onSave }: TagEditModalProps) => {
+export const TagEditModal = ({ tag, onClose, onSave, onDelete }: TagEditModalProps) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#ffcc00');
   const [description, setDescription] = useState('');
@@ -70,6 +71,20 @@ export const TagEditModal = ({ tag, onClose, onSave }: TagEditModalProps) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!tag || !onDelete) return;
+    
+    const confirmed = window.confirm('确定要删除这个标签吗？此操作将从所有网页中移除该标签，且无法撤销。');
+    if (!confirmed) return;
+    
+    try {
+      await onDelete(tag.id);
+      onClose();
+    } catch (error) {
+      console.error('Failed to delete tag:', error);
+    }
+  };
+
   if (!tag) return null;
 
   return (
@@ -106,15 +121,6 @@ export const TagEditModal = ({ tag, onClose, onSave }: TagEditModalProps) => {
             />
           </div>
           <div className="tag-edit-modal__field">
-            <label className="tag-edit-modal__label">颜色</label>
-            <input
-              type="color"
-              className="tag-edit-modal__input tag-edit-modal__color-input"
-              value={color}
-              onChange={(e) => setColor(e.target.value)}
-            />
-          </div>
-          <div className="tag-edit-modal__field">
             <label className="tag-edit-modal__label">描述</label>
             <textarea
               ref={descriptionTextareaRef}
@@ -129,6 +135,15 @@ export const TagEditModal = ({ tag, onClose, onSave }: TagEditModalProps) => {
             />
           </div>
           <div className="tag-edit-modal__field">
+            <label className="tag-edit-modal__label">颜色</label>
+            <input
+              type="color"
+              className="tag-edit-modal__input tag-edit-modal__color-input"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+            />
+          </div>
+          <div className="tag-edit-modal__field">
             <ToggleSwitch
               checked={pinned}
               onChange={setPinned}
@@ -138,17 +153,24 @@ export const TagEditModal = ({ tag, onClose, onSave }: TagEditModalProps) => {
           <div className="tag-edit-modal__preview">
             <div className="tag-edit-modal__preview-label">预览效果</div>
             <div className="tag-edit-modal__preview-content">
-              <TagPill label={name || '标签名称'} color={color} />
+              <TagPill label={name || '标签名称'} color={color} size="large" />
             </div>
           </div>
         </div>
         <div className="tag-edit-modal__footer">
-          <PixelButton variant="secondary" onClick={onClose} disabled={isSaving}>
-            取消
-          </PixelButton>
-          <PixelButton onClick={handleSave} disabled={isSaving || !name.trim()}>
-            {isSaving ? '保存中...' : '保存'}
-          </PixelButton>
+          {onDelete && (
+            <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
+              删除
+            </PixelButton>
+          )}
+          <div className="tag-edit-modal__footer-actions">
+            <PixelButton variant="secondary" onClick={onClose} disabled={isSaving}>
+              取消
+            </PixelButton>
+            <PixelButton onClick={handleSave} disabled={isSaving || !name.trim()}>
+              {isSaving ? '保存中...' : '保存'}
+            </PixelButton>
+          </div>
         </div>
       </div>
     </div>

@@ -5,7 +5,7 @@ import { SearchInput } from '../../../components/SearchInput';
 import { TagFilter } from '../../../components/TagFilter';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
-import { getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark } from '../../../lib/bookmarkService';
+import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import './bookmarksPage.css';
 
@@ -104,6 +104,11 @@ export const BookmarksPage = () => {
     await refresh();
   };
 
+  const handleDeleteBookmark = async (bookmarkId: string) => {
+    await deleteBookmark(bookmarkId);
+    await refresh();
+  };
+
 
   const handleImport = async () => {
     setImportStatus({ isImporting: true, message: null, type: null });
@@ -183,6 +188,7 @@ export const BookmarksPage = () => {
         bookmark={editingBookmark}
         onClose={handleCloseEditModal}
         onSave={handleSaveEdit}
+        onDelete={handleDeleteBookmark}
       />
     </div>
   );

@@ -140,10 +140,17 @@
 .bookmark-edit-modal__footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 10px;
   padding: 16px 20px;
   border-top: 1px solid var(--border-muted);
+}
+
+.bookmark-edit-modal__footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
 }
 
 @media (max-width: 640px) {

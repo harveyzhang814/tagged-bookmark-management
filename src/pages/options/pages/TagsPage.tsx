@@ -6,6 +6,7 @@ import { TagCard } from '../../../components/TagCard';
 import { TagEditModal } from '../../../components/TagEditModal';
 import {
   createTag,
+  deleteTag,
   getAllTags,
   updateTag
 } from '../../../lib/bookmarkService';
@@ -65,6 +66,11 @@ export const TagsPage = () => {
     await refresh();
   };
 
+  const handleDeleteTag = async (tagId: string) => {
+    await deleteTag(tagId);
+    await refresh();
+  };
+
   const handleTogglePin = async (tagId: string) => {
     const tag = tags.find((t) => t.id === tagId);
     if (tag) {
@@ -110,6 +116,7 @@ export const TagsPage = () => {
         tag={editingTag}
         onClose={handleCloseEditModal}
         onSave={handleSaveEdit}
+        onDelete={handleDeleteTag}
       />
     </div>
   );
