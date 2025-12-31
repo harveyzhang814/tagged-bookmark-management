@@ -103,6 +103,21 @@
   gap: 12px;
 }
 
+.bookmarks-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bookmarks-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+  padding: 8px 0;
+}
+
 .bookmark-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -212,6 +227,19 @@
   .bookmarks-content-wrapper {
     position: relative;
   }
+}
+
+.bookmarks-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.bookmarks-empty p {
+  margin: 0;
 }
 
 

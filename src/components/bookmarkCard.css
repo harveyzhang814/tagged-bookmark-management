@@ -69,7 +69,7 @@
 
 .bookmark-card__title-wrapper {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   flex: 1;
   min-width: 0;
@@ -79,8 +79,8 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
-  margin-top: 2px;
   border-radius: 3px;
+  color: var(--text-muted);
 }
 
 .bookmark-card__title {

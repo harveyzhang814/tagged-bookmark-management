@@ -60,21 +60,24 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         return matchQuery && matchTags;
       });
     }
-    // 置顶的书签排在前面，然后按创建时间排序（最新的在前）
-    return list.sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return b.createdAt - a.createdAt;
-    });
+    // 按创建时间排序（最新的在前）
+    return list.sort((a, b) => b.createdAt - a.createdAt);
   }, [bookmarks, query, selectedTags]);
 
-  // 分页计算
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  // 分离置顶和普通书签
+  const { pinnedBookmarks, normalBookmarks } = useMemo(() => {
+    const pinned = filtered.filter((bookmark) => bookmark.pinned);
+    const normal = filtered.filter((bookmark) => !bookmark.pinned);
+    return { pinnedBookmarks: pinned, normalBookmarks: normal };
+  }, [filtered]);
+
+  // 普通书签分页计算
+  const totalPages = Math.ceil(normalBookmarks.length / ITEMS_PER_PAGE);
   const paginatedBookmarks = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filtered.slice(startIndex, endIndex);
-  }, [filtered, currentPage]);
+    return normalBookmarks.slice(startIndex, endIndex);
+  }, [normalBookmarks, currentPage]);
 
   // 当筛选条件改变时，重置到第一页
   useEffect(() => {
@@ -260,25 +263,58 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
       <div className="bookmarks-content-wrapper">
         <div className="bookmarks-content">
-          <div className="bookmark-list">
-            {paginatedBookmarks.map((bookmark) => (
-              <BookmarkCard
-                key={bookmark.id}
-                bookmark={bookmark}
-                tags={tags}
-                onEdit={handleEdit}
-                onTogglePin={handleTogglePin}
-                onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
-              />
-            ))}
-          </div>
+          {/* 置顶书签区域 */}
+          {pinnedBookmarks.length > 0 && (
+            <div className="bookmarks-section">
+              <h2 className="bookmarks-section-title">置顶收藏</h2>
+              <div className="bookmark-list">
+                {pinnedBookmarks.map((bookmark) => (
+                  <BookmarkCard
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    tags={tags}
+                    onEdit={handleEdit}
+                    onTogglePin={handleTogglePin}
+                    onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+          {/* 普通书签区域 */}
+          {normalBookmarks.length > 0 && (
+            <div className="bookmarks-section">
+              {pinnedBookmarks.length > 0 && (
+                <h2 className="bookmarks-section-title">普通收藏</h2>
+              )}
+              <div className="bookmark-list">
+                {paginatedBookmarks.map((bookmark) => (
+                  <BookmarkCard
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    tags={tags}
+                    onEdit={handleEdit}
+                    onTogglePin={handleTogglePin}
+                    onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
+                  />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </div>
+          )}
+
+          {/* 空状态 */}
+          {pinnedBookmarks.length === 0 && normalBookmarks.length === 0 && (
+            <div className="bookmarks-empty">
+              <p>暂无书签</p>
+            </div>
           )}
         </div>
 

@@ -15,6 +15,7 @@ interface BookmarkCardProps {
 
 export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop }: BookmarkCardProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [faviconError, setFaviconError] = useState(false);
   const bookmarkTags = bookmark.tags
     .map((tagId) => tags.find((t) => t.id === tagId))
     .filter((t): t is Tag => t !== undefined);
@@ -82,15 +83,56 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop }:
       <div className="bookmark-card__content">
         <div className="bookmark-card__header">
           <div className="bookmark-card__title-wrapper">
-            <img
-              className="bookmark-card__favicon"
-              src={faviconUrl}
-              alt=""
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
+            {!faviconError ? (
+              <img
+                className="bookmark-card__favicon"
+                src={faviconUrl}
+                alt=""
+                onError={() => setFaviconError(true)}
+              />
+            ) : (
+              <svg
+                className="bookmark-card__favicon"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8 1.33333C4.318 1.33333 1.33333 4.318 1.33333 8C1.33333 11.682 4.318 14.6667 8 14.6667C11.682 14.6667 14.6667 11.682 14.6667 8C14.6667 4.318 11.682 1.33333 8 1.33333Z"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                <path
+                  d="M1.33333 5.33333C2.4 4.26667 4.13333 3.33333 8 3.33333C11.8667 3.33333 13.6 4.26667 14.6667 5.33333"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                <path
+                  d="M1.33333 10.6667C2.4 11.7333 4.13333 12.6667 8 12.6667C11.8667 12.6667 13.6 11.7333 14.6667 10.6667"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                <path
+                  d="M8 1.33333V14.6667"
+                  stroke="currentColor"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+              </svg>
+            )}
             <h3 className="bookmark-card__title">{bookmark.title}</h3>
           </div>
           <div className="bookmark-card__actions">
