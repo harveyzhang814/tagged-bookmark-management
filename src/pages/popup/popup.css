@@ -1,16 +1,15 @@
 .popup-shell {
   width: 420px;
-  min-height: 500px;
   background: var(--bg-main);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  border: 1px solid var(--border-muted);
 }
 
 .popup-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
   max-height: 600px;
 }
 
@@ -53,13 +52,12 @@
 
 /* Content */
 .popup-content {
-  flex: 1;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  min-height: 0;
+  flex-shrink: 0;
 }
 
 /* Page Info */
