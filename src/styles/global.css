@@ -1,6 +1,6 @@
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --grid-unit: 8px;
+  --grid-unit: 6px;
   
   /* Light mode (default) */
   --bg-main: #fafafa;
@@ -71,28 +71,28 @@ button {
 .pixel-panel {
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
-  padding: calc(var(--grid-unit) * 2);
+  padding: calc(var(--grid-unit) * 1.5);
   box-shadow: var(--shadow-sm);
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .pixel-card {
   border: 1px solid var(--border-muted);
   background: var(--bg-card);
-  padding: calc(var(--grid-unit) * 2);
+  padding: calc(var(--grid-unit) * 1.5);
   box-shadow: var(--shadow-sm);
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .pixel-grid {
   display: grid;
-  gap: calc(var(--grid-unit) * 2);
+  gap: calc(var(--grid-unit) * 1.5);
 }
 
 .section-title {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--accent);
-  margin-bottom: calc(var(--grid-unit) * 1.5);
+  margin-bottom: calc(var(--grid-unit) * 1);
   letter-spacing: -0.01em;
   font-weight: 500;
 }
@@ -104,8 +104,8 @@ textarea {
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
   color: var(--text-main);
-  padding: calc(var(--grid-unit) * 1.5);
-  border-radius: 8px;
+  padding: calc(var(--grid-unit) * 1.2);
+  border-radius: 6px;
   transition: all 0.2s ease;
 }
 

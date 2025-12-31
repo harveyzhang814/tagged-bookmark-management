@@ -10,7 +10,11 @@ export default defineConfig({
   server: {
     port: 5177,
     strictPort: true,
-    cors: true
+    cors: true,
+    host: 'localhost',
+    hmr: {
+      port: 5177
+    }
   },
   build: {
     sourcemap: enableSourceMap,

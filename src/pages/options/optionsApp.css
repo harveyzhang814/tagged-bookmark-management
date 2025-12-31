@@ -1,6 +1,6 @@
 .options-shell {
   min-height: 100vh;
-  padding: 32px;
+  padding: 20px;
   background: var(--bg-main);
   color: var(--text-main);
   font-family: var(--font-family);
@@ -10,38 +10,38 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .options-header h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
 
 .options-header p {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .options-tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 32px;
+  gap: 6px;
+  margin-bottom: 20px;
 }
 
 .options-tab {
   font-family: var(--font-family);
-  padding: 10px 20px;
+  padding: 8px 16px;
   border: 1px solid var(--border-muted);
   background: var(--bg-panel);
   color: var(--text-main);
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 6px;
   transition: all 0.2s ease;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -63,7 +63,7 @@
 main {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 

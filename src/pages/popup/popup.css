@@ -16,7 +16,7 @@
 
 /* Header */
 .popup-header {
-  padding: 24px 24px 20px;
+  padding: 16px 16px 12px;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-muted);
   flex-shrink: 0;
@@ -29,7 +29,7 @@
 }
 
 .popup-title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-main);
   margin: 0;
@@ -39,7 +39,7 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .settings-button {
@@ -54,10 +54,10 @@
 /* Content */
 .popup-content {
   flex: 1;
-  padding: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
   overflow-y: auto;
   min-height: 0;
 }
@@ -66,11 +66,11 @@
 .page-info {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 12px;
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
-  border-radius: 12px;
+  border-radius: 8px;
   transition: all 0.2s ease;
 }
 
@@ -80,14 +80,14 @@
 }
 
 .page-info-icon {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(91, 155, 213, 0.08);
-  border-radius: 10px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -98,8 +98,8 @@
 }
 
 .page-info-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   color: var(--accent);
 }
 
@@ -108,11 +108,11 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .page-domain {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-main);
   letter-spacing: -0.01em;
@@ -130,17 +130,17 @@
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .form-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-main);
   letter-spacing: -0.01em;
@@ -148,16 +148,16 @@
 
 .form-input {
   width: 100%;
-  font-size: 14px;
-  padding: 14px 16px;
+  font-size: 13px;
+  padding: 10px 12px;
   border: 1.5px solid var(--border-muted);
   background: var(--bg-panel);
   color: var(--text-main);
-  border-radius: 10px;
+  border-radius: 6px;
   font-family: var(--font-family);
   transition: all 0.2s ease;
   box-sizing: border-box;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .form-input:hover {
@@ -184,10 +184,10 @@
 .popup-status {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  border-radius: 10px;
-  font-size: 13px;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   animation: slideIn 0.3s ease;
 }
@@ -222,15 +222,15 @@
 /* Save Button */
 .save-button {
   width: 100%;
-  margin-top: 4px;
+  margin-top: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 24px;
-  font-size: 15px;
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
   font-weight: 500;
-  border-radius: 10px;
+  border-radius: 6px;
   transition: all 0.2s ease;
 }
 

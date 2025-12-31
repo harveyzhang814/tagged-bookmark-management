@@ -1,9 +1,9 @@
 .horizontal-scroll-section {
-  margin-bottom: 32px;
-  padding: 24px;
+  margin-bottom: 20px;
+  padding: 16px;
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -11,11 +11,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .horizontal-scroll-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
   margin: 0;
@@ -25,14 +25,14 @@
 .horizontal-scroll-more {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 3px;
+  padding: 5px 10px;
   border: 1px solid var(--border-muted);
   background: var(--bg-card);
   color: var(--text-main);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   font-family: var(--font-family);
   transition: all 0.2s ease;
@@ -84,10 +84,10 @@
 
 .horizontal-scroll-content {
   display: flex;
-  gap: 16px;
-  padding: 4px 0 8px 0;
+  gap: 12px;
+  padding: 3px 0 6px 0;
   scroll-snap-type: x mandatory;
-  scroll-padding: 4px 16px;
+  scroll-padding: 3px 12px;
 }
 
 .horizontal-scroll-content > * {

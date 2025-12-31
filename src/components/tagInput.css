@@ -10,12 +10,12 @@
 .tag-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 4px 10px;
   border: 1px solid var(--border-muted);
   background: var(--bg-panel);
-  border-radius: 8px;
-  min-height: 40px;
+  border-radius: 6px;
+  min-height: 32px;
   align-items: center;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -32,7 +32,7 @@
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   position: relative;
   flex-shrink: 0;
 }
@@ -41,12 +41,12 @@
   background: rgba(0, 0, 0, 0.05);
   border: none;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -54,7 +54,7 @@
   transition: all 0.2s ease;
   font-family: var(--font-family);
   flex-shrink: 0;
-  margin-left: 3px;
+  margin-left: 2px;
 }
 
 .tag-chip-remove:hover {
@@ -64,17 +64,17 @@
 
 .tag-input {
   flex: 1;
-  min-width: 140px;
+  min-width: 120px;
   border: none !important;
   background: transparent !important;
   color: var(--text-main);
-  font-size: 14px;
+  font-size: 13px;
   font-family: var(--font-family);
   padding: 0;
   margin: 0;
   outline: none !important;
-  height: 28px;
-  line-height: 28px;
+  height: 24px;
+  line-height: 24px;
   box-shadow: none !important;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -94,17 +94,17 @@
 
 .tag-suggestions {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
-  border-radius: 8px;
-  padding: 8px;
+  border-radius: 6px;
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  max-height: 200px;
+  gap: 3px;
+  max-height: 180px;
   overflow-y: auto;
   z-index: 1000;
   box-shadow: var(--shadow-lg);
@@ -113,16 +113,16 @@
 .tag-suggestion-item {
   background: transparent;
   border: none;
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-align: left;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 4px;
   transition: background 0.2s ease;
   display: flex;
   align-items: center;
   color: var(--text-main);
   font-family: var(--font-family);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .tag-suggestion-item:hover {

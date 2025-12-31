@@ -1,15 +1,15 @@
 .pinned-bookmark-card {
-  width: 200px;
-  min-width: 200px;
-  padding: 16px;
+  width: 180px;
+  min-width: 180px;
+  padding: 12px;
   background: var(--bg-card);
   border: 1px solid var(--border-muted);
-  border-radius: 12px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -20,11 +20,11 @@
 }
 
 .pinned-bookmark-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-main);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -36,7 +36,7 @@
 .pinned-bookmark-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
 }
 

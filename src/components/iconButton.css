@@ -1,18 +1,18 @@
 .icon-button {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 1px solid var(--border-muted);
   background: var(--bg-panel);
   color: var(--text-main);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
   font-family: var(--font-family);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
 }
 

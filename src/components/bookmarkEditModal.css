@@ -9,7 +9,7 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
   animation: fadeIn 0.2s ease;
 }
 
@@ -24,7 +24,7 @@
 
 .bookmark-edit-modal {
   background: var(--bg-card);
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 500px;
@@ -50,12 +50,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border-muted);
 }
 
 .bookmark-edit-modal__title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
   margin: 0;
@@ -63,8 +63,8 @@
 }
 
 .bookmark-edit-modal__close {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
   background: transparent;
@@ -73,7 +73,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 4px;
   transition: all 0.2s ease;
 }
 
@@ -83,35 +83,35 @@
 }
 
 .bookmark-edit-modal__content {
-  padding: 24px;
+  padding: 16px 20px;
   overflow-y: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
 }
 
 .bookmark-edit-modal__field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .bookmark-edit-modal__label {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
   letter-spacing: -0.01em;
   font-weight: 500;
 }
 
 .bookmark-edit-modal__input {
-  font-size: 14px;
+  font-size: 13px;
   font-family: var(--font-family);
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
   color: var(--text-main);
-  padding: 12px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
   transition: all 0.2s ease;
   width: 100%;
 }
@@ -128,9 +128,9 @@
 
 .bookmark-edit-modal__textarea {
   resize: none;
-  min-height: 40px;
-  max-height: 200px;
-  line-height: 1.5;
+  min-height: 32px;
+  max-height: 180px;
+  line-height: 1.4;
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
@@ -141,8 +141,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
+  gap: 10px;
+  padding: 16px 20px;
   border-top: 1px solid var(--border-muted);
 }
 
