@@ -1,0 +1,67 @@
+.tag-card {
+  border: 1px solid var(--border-muted);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  padding: 12px;
+  gap: 10px;
+}
+
+.tag-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.tag-card--pinned {
+  border-color: var(--accent);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-md);
+}
+
+.tag-card--pinned::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 8px 8px 0 0;
+  z-index: 1;
+}
+
+.tag-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.tag-card__actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: flex-start;
+}
+
+.tag-card__description {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  word-break: break-word;
+  margin-top: -2px;
+}
+
+.tag-card__stats {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-family);
+  margin-top: auto;
+}

@@ -5,11 +5,11 @@ interface Props {
   color: string;
   active?: boolean;
   onClick?: () => void;
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | 'large';
 }
 
 export const TagPill = ({ label, color, active, onClick, size = 'default' }: Props) => {
-  const className = `tag-pill ${active ? 'tag-pill--active' : ''} ${size === 'small' ? 'tag-pill--small' : ''}`;
+  const className = `tag-pill ${active ? 'tag-pill--active' : ''} ${size === 'small' ? 'tag-pill--small' : ''} ${size === 'large' ? 'tag-pill--large' : ''}`;
   const style = { backgroundColor: color };
   
   if (onClick) {

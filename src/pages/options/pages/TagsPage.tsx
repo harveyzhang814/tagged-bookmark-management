@@ -2,12 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
-import { TagPill } from '../../../components/TagPill';
-import { IconButton } from '../../../components/IconButton';
-import { ToggleSwitch } from '../../../components/ToggleSwitch';
+import { TagCard } from '../../../components/TagCard';
+import { TagEditModal } from '../../../components/TagEditModal';
 import {
   createTag,
-  deleteTag,
   getAllTags,
   updateTag
 } from '../../../lib/bookmarkService';
@@ -18,6 +16,7 @@ export const TagsPage = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [search, setSearch] = useState('');
   const [form, setForm] = useState({ name: '', color: '#ffcc00' });
+  const [editingTag, setEditingTag] = useState<Tag | null>(null);
 
   const refresh = async () => {
     const list = await getAllTags();
@@ -50,33 +49,28 @@ export const TagsPage = () => {
     await refresh();
   };
 
-  const updateLocalTag = (tagId: string, patch: Partial<Tag>) => {
-    setTags((current) =>
-      current.map((tag) => (tag.id === tagId ? { ...tag, ...patch, updatedAt: Date.now() } : tag))
-    );
+  const handleEdit = (tag: Tag) => {
+    setEditingTag(tag);
   };
 
-  const handleRename = async (tagId: string, value: string) => {
-    updateLocalTag(tagId, { name: value });
-    await updateTag(tagId, { name: value });
+  const handleCloseEditModal = () => {
+    setEditingTag(null);
+  };
+
+  const handleSaveEdit = async (
+    tagId: string,
+    data: { name: string; color: string; description?: string; pinned: boolean }
+  ) => {
+    await updateTag(tagId, data);
     await refresh();
   };
 
-  const handleColorChange = async (tagId: string, color: string) => {
-    updateLocalTag(tagId, { color });
-    await updateTag(tagId, { color });
-    await refresh();
-  };
-
-  const handlePinnedToggle = async (tagId: string, pinned: boolean) => {
-    updateLocalTag(tagId, { pinned });
-    await updateTag(tagId, { pinned });
-    await refresh();
-  };
-
-  const handleDelete = async (tagId: string) => {
-    await deleteTag(tagId);
-    await refresh();
+  const handleTogglePin = async (tagId: string) => {
+    const tag = tags.find((t) => t.id === tagId);
+    if (tag) {
+      await updateTag(tagId, { pinned: !tag.pinned });
+      await refresh();
+    }
   };
 
   return (
@@ -103,44 +97,20 @@ export const TagsPage = () => {
 
       <div className="tag-grid">
         {filtered.map((tag) => (
-          <div key={tag.id} className="tag-card">
-            <div className="tag-card__header">
-              <TagPill label={tag.name} color={tag.color} />
-              <IconButton
-                variant="danger"
-                icon="×"
-                aria-label="删除标签"
-                onClick={() => handleDelete(tag.id)}
-              />
-            </div>
-            <label>
-              名称
-              <input
-                value={tag.name}
-                onChange={(e) => updateLocalTag(tag.id, { name: e.target.value })}
-                onBlur={(e) => handleRename(tag.id, e.target.value)}
-              />
-            </label>
-            <label>
-              颜色
-              <input
-                type="color"
-                value={tag.color}
-                onChange={(e) => updateLocalTag(tag.id, { color: e.target.value })}
-                onBlur={(e) => handleColorChange(tag.id, e.target.value)}
-              />
-            </label>
-            <label>
-              置顶
-              <ToggleSwitch
-                checked={tag.pinned ?? false}
-                onChange={(checked) => handlePinnedToggle(tag.id, checked)}
-              />
-            </label>
-            <p>使用 {tag.usageCount} 次 · 点击 {tag.clickCount} 次</p>
-          </div>
+          <TagCard
+            key={tag.id}
+            tag={tag}
+            onEdit={handleEdit}
+            onTogglePin={handleTogglePin}
+          />
         ))}
       </div>
+
+      <TagEditModal
+        tag={editingTag}
+        onClose={handleCloseEditModal}
+        onSave={handleSaveEdit}
+      />
     </div>
   );
 };

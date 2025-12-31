@@ -41,4 +41,12 @@
   border-radius: 10px;
 }
 
+.tag-pill--large {
+  font-size: 13px;
+  padding: 5px 12px;
+  height: 26px;
+  line-height: 16px;
+  border-radius: 13px;
+}
+
 

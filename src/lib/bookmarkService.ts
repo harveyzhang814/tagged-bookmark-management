@@ -183,7 +183,7 @@ export const getAllTags = async (): Promise<Tag[]> => {
   }));
 };
 
-export const createTag = async (payload: Pick<Tag, 'name' | 'color'>): Promise<Tag> => {
+export const createTag = async (payload: Pick<Tag, 'name' | 'color' | 'description'>): Promise<Tag> => {
   const tags = await getTagsMap();
   const id = generateId('tag');
   const now = Date.now();
@@ -191,6 +191,7 @@ export const createTag = async (payload: Pick<Tag, 'name' | 'color'>): Promise<T
     id,
     name: payload.name,
     color: ensureTagColor(payload.color),
+    description: payload.description,
     usageCount: 0,
     clickCount: 0,
     pinned: false,
@@ -202,7 +203,7 @@ export const createTag = async (payload: Pick<Tag, 'name' | 'color'>): Promise<T
   return tag;
 };
 
-export const updateTag = async (tagId: string, patch: Partial<Pick<Tag, 'name' | 'color' | 'pinned'>>) => {
+export const updateTag = async (tagId: string, patch: Partial<Pick<Tag, 'name' | 'color' | 'description' | 'pinned'>>) => {
   const tags = await getTagsMap();
   const target = tags[tagId];
   if (!target) return null;
