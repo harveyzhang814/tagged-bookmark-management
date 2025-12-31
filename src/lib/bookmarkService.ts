@@ -36,6 +36,26 @@ const recalcTagUsage = (bookmarks: Record<string, BookmarkItem>, tags: Record<st
 };
 
 /**
+ * 重新计算标签的点击次数：该标签下所有书签的点击次数之和
+ */
+const recalcTagClickCounts = (bookmarks: Record<string, BookmarkItem>, tags: Record<string, Tag>) => {
+  const clickCounts = new Map<string, number>();
+  
+  // 遍历所有书签，累加每个标签的点击次数
+  Object.values(bookmarks).forEach((bookmark) => {
+    bookmark.tags.forEach((tagId) => {
+      const currentCount = clickCounts.get(tagId) ?? 0;
+      clickCounts.set(tagId, currentCount + (bookmark.clickCount || 0));
+    });
+  });
+
+  // 更新所有标签的点击次数
+  Object.entries(tags).forEach(([tagId, tag]) => {
+    tags[tagId] = { ...tag, clickCount: clickCounts.get(tagId) ?? 0 };
+  });
+};
+
+/**
  * 生成HSL中L>75%的随机颜色
  */
 const generateLightColor = (): string => {
@@ -279,33 +299,23 @@ export const deleteBookmark = async (bookmarkId: string) => {
 };
 
 export const incrementBookmarkClick = async (bookmarkId: string) => {
-  const bookmarks = await getBookmarksMap();
+  const [bookmarks, tags] = await Promise.all([getBookmarksMap(), getTagsMap()]);
   const bookmark = bookmarks[bookmarkId];
   if (!bookmark) return null;
   bookmark.clickCount += 1;
   bookmark.updatedAt = Date.now();
   bookmarks[bookmarkId] = bookmark;
   await saveBookmarksMap(bookmarks);
-  await incrementTagClicks(bookmark.tags);
-  return bookmark;
-};
-
-const incrementTagClicks = async (tagIds: string[]) => {
-  const tags = await getTagsMap();
-  tagIds.forEach((tagId) => {
-    if (!tags[tagId]) return;
-    tags[tagId] = {
-      ...tags[tagId],
-      clickCount: tags[tagId].clickCount + 1,
-      updatedAt: Date.now()
-    };
-  });
+  // 重新计算相关标签的点击次数（基于所有书签的点击次数之和）
+  recalcTagClickCounts(bookmarks, tags);
   await saveTagsMap(tags);
+  return bookmark;
 };
 
 const syncUsageCounts = async () => {
   const [bookmarks, tags] = await Promise.all([getBookmarksMap(), getTagsMap()]);
   recalcTagUsage(bookmarks, tags);
+  recalcTagClickCounts(bookmarks, tags);
   await saveTagsMap(tags);
 };
 

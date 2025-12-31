@@ -54,3 +54,18 @@
   align-items: center;
 }
 
+.pinned-bookmark-click-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.pinned-bookmark-click-count svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+

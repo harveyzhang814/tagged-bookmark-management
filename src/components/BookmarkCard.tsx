@@ -2,6 +2,7 @@ import { type MouseEvent } from 'react';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { BookmarkItem, Tag } from '../lib/types';
+import { incrementBookmarkClick } from '../lib/bookmarkService';
 import './bookmarkCard.css';
 
 interface BookmarkCardProps {
@@ -16,7 +17,8 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin }: BookmarkCa
     .map((tagId) => tags.find((t) => t.id === tagId))
     .filter((t): t is Tag => t !== undefined);
 
-  const handleCardClick = () => {
+  const handleCardClick = async () => {
+    await incrementBookmarkClick(bookmark.id);
     window.open(bookmark.url, '_blank');
   };
 
@@ -100,13 +102,35 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin }: BookmarkCa
           </div>
         </div>
         <div className="bookmark-card__url">{bookmark.url}</div>
-        {bookmarkTags.length > 0 && (
-          <div className="bookmark-card__tags">
-            {bookmarkTags.map((tag) => (
-              <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
-            ))}
+        <div className="bookmark-card__meta">
+          {bookmarkTags.length > 0 && (
+            <div className="bookmark-card__tags">
+              {bookmarkTags.map((tag) => (
+                <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
+              ))}
+            </div>
+          )}
+          <div className="bookmark-card__click-count">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M2.66667 2.66667L6.66667 2.66667L13.3333 9.33333L13.3333 13.3333L9.33333 13.3333L2.66667 6.66667L2.66667 2.66667Z"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+              <path
+                d="M6.66667 2.66667L2.66667 6.66667"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>{bookmark.clickCount || 0}</span>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
