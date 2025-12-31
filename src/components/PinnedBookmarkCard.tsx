@@ -41,7 +41,7 @@ export const PinnedBookmarkCard = ({ bookmark, tags }: PinnedBookmarkCardProps) 
       <div className="pinned-bookmark-click-count">
         <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
-            d="M2.66667 2.66667L6.66667 2.66667L13.3333 9.33333L13.3333 13.3333L9.33333 13.3333L2.66667 6.66667L2.66667 2.66667Z"
+            d="M8 2.66667C4.66667 2.66667 2.07333 5.04 1.33333 8C2.07333 10.96 4.66667 13.3333 8 13.3333C11.3333 13.3333 13.9267 10.96 14.6667 8C13.9267 5.04 11.3333 2.66667 8 2.66667Z"
             stroke="currentColor"
             strokeWidth="1.2"
             strokeLinecap="round"
@@ -49,14 +49,15 @@ export const PinnedBookmarkCard = ({ bookmark, tags }: PinnedBookmarkCardProps) 
             fill="none"
           />
           <path
-            d="M6.66667 2.66667L2.66667 6.66667"
+            d="M8 10.6667C9.47276 10.6667 10.6667 9.47276 10.6667 8C10.6667 6.52724 9.47276 5.33333 8 5.33333C6.52724 5.33333 5.33333 6.52724 5.33333 8C5.33333 9.47276 6.52724 10.6667 8 10.6667Z"
             stroke="currentColor"
             strokeWidth="1.2"
             strokeLinecap="round"
             strokeLinejoin="round"
+            fill="none"
           />
         </svg>
-        <span>{bookmark.clickCount || 0}</span>
+        <span>x{bookmark.clickCount || 0}</span>
       </div>
     </div>
   );

@@ -135,10 +135,11 @@
 .bookmark-card__click-count {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   font-size: 12px;
   color: var(--text-muted);
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .bookmark-card__click-count svg {

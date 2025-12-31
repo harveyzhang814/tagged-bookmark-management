@@ -57,7 +57,7 @@
 .pinned-bookmark-click-count {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   font-size: 11px;
   color: var(--text-muted);
   margin-top: 4px;
