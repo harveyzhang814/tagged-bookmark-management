@@ -3,6 +3,9 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
 import { HomePage } from './pages/HomePage';
 import { ThemeToggle } from '../../components/ThemeToggle';
+import { BookmarkCreateModal } from '../../components/BookmarkCreateModal';
+import { PixelButton } from '../../components/PixelButton';
+import { createBookmark } from '../../lib/bookmarkService';
 import { initTheme } from '../../lib/theme';
 import { getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
@@ -18,6 +21,8 @@ const tabs: { key: TabKey; label: string }[] = [
 export const OptionsApp = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('home');
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // 初始化：从存储或URL参数读取tab
   useEffect(() => {
@@ -52,6 +57,12 @@ export const OptionsApp = () => {
     window.history.replaceState({}, '', url.toString());
   }, []);
 
+  const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
+    await createBookmark(data);
+    // 触发刷新：增加refreshKey，子组件会监听这个变化
+    setRefreshKey((prev) => prev + 1);
+  };
+
   const renderContent = useMemo(() => {
     if (!isInitialized) {
       return null; // 等待初始化完成
@@ -59,14 +70,14 @@ export const OptionsApp = () => {
     
     switch (activeTab) {
       case 'home':
-        return <HomePage onNavigate={(tab) => void handleTabChange(tab)} />;
+        return <HomePage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} />;
       case 'tags':
-        return <TagsPage />;
+        return <TagsPage key={refreshKey} />;
       case 'bookmarks':
       default:
-        return <BookmarksPage />;
+        return <BookmarksPage key={refreshKey} />;
     }
-  }, [activeTab, isInitialized, handleTabChange]);
+  }, [activeTab, isInitialized, handleTabChange, refreshKey]);
 
   return (
     <div className="options-shell">
@@ -77,6 +88,12 @@ export const OptionsApp = () => {
         </div>
         <ThemeToggle />
       </header>
+
+      <div className="options-toolbar">
+        <PixelButton onClick={() => setIsCreateModalOpen(true)}>
+          新建
+        </PixelButton>
+      </div>
 
       <nav className="options-tabs">
         {tabs.map((tab) => (
@@ -92,6 +109,12 @@ export const OptionsApp = () => {
       </nav>
 
       <main>{renderContent}</main>
+
+      <BookmarkCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateBookmark}
+      />
     </div>
   );
 };

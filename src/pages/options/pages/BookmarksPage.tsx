@@ -3,27 +3,17 @@ import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
 import { TagFilter } from '../../../components/TagFilter';
-import { TagInput } from '../../../components/TagInput';
-import { ToggleSwitch } from '../../../components/ToggleSwitch';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
-import { createBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark } from '../../../lib/bookmarkService';
+import { getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import './bookmarksPage.css';
-
-const emptyForm = {
-  title: '',
-  url: '',
-  tags: [] as string[],
-  pinned: false
-};
 
 export const BookmarksPage = () => {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [query, setQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [form, setForm] = useState(emptyForm);
   const [importStatus, setImportStatus] = useState<{
     isImporting: boolean;
     message: string | null;
@@ -69,13 +59,6 @@ export const BookmarksPage = () => {
     setSelectedTags((prev) =>
       prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
     );
-  };
-
-  const handleCreate = async () => {
-    if (!form.title || !form.url) return;
-    await createBookmark(form);
-    setForm(emptyForm);
-    await refresh();
   };
 
   const handleBookmarkChange = (id: string, patch: Partial<BookmarkItem>) => {
@@ -155,31 +138,6 @@ export const BookmarksPage = () => {
 
   return (
     <div className="bookmarks-page">
-      <PixelCard title="新增收藏">
-        <div className="bookmark-form">
-          <input
-            value={form.title}
-            onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-            placeholder="网页标题"
-          />
-          <input
-            value={form.url}
-            onChange={(e) => setForm((prev) => ({ ...prev, url: e.target.value }))}
-            placeholder="https://example.com"
-          />
-          <div className="form-field">
-            <label>标签</label>
-            <TagInput value={form.tags} onChange={(tagIds) => setForm((prev) => ({ ...prev, tags: tagIds }))} />
-          </div>
-          <ToggleSwitch
-            checked={form.pinned}
-            onChange={(checked) => setForm((prev) => ({ ...prev, pinned: checked }))}
-            label="置顶"
-          />
-          <PixelButton onClick={handleCreate}>保存</PixelButton>
-        </div>
-      </PixelCard>
-
       <PixelCard title="功能">
         <div className="functions-panel">
           <div className="function-item">
