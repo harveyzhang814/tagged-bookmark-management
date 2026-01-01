@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
-import { TagFilter } from '../../../components/TagFilter';
+import { TagFilterDropdown } from '../../../components/TagFilterDropdown';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
@@ -36,7 +36,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
-  const ITEMS_PER_PAGE = 20;
+  const ITEMS_PER_PAGE = 18;
 
   const refresh = async () => {
     const [bookmarksList, tagsList] = await Promise.all([getAllBookmarks(), getAllTags()]);
@@ -214,7 +214,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         <div className="bookmarks-toolbar-left">
           <div className="bookmarks-filters">
             <SearchInput value={query} placeholder="搜索标题或URL" onChange={setQuery} />
-            <TagFilter tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
+            <TagFilterDropdown tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
           </div>
         </div>
         <div className="bookmarks-actions">
@@ -238,7 +238,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                 viewBox="0 0 16 16" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
-                style={{ transform: isTagSidebarOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }}
+                style={{ transform: isTagSidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s ease' }}
               >
                 <path
                   d="M4 2L10 8L4 14"
