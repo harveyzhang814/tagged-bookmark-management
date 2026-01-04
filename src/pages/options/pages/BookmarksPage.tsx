@@ -238,7 +238,11 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
             <SortDropdown
               sortBy={sortBy}
               sortOrder={sortOrder}
-              onSortByChange={setSortBy}
+              onSortByChange={(newSortBy) => {
+                if (newSortBy === 'createdAt' || newSortBy === 'clickCount') {
+                  setSortBy(newSortBy);
+                }
+              }}
               onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
               options={[
                 { value: 'createdAt', label: '创建日期' },
