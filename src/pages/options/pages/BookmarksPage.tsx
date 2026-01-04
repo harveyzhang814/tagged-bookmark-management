@@ -3,6 +3,7 @@ import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
 import { TagFilterDropdown } from '../../../components/TagFilterDropdown';
+import { SortDropdown } from '../../../components/SortDropdown';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
@@ -23,6 +24,8 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [query, setQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<'createdAt' | 'clickCount'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [importStatus, setImportStatus] = useState<{
     isImporting: boolean;
     message: string | null;
@@ -60,9 +63,21 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         return matchQuery && matchTags;
       });
     }
-    // 按创建时间排序（最新的在前）
-    return list.sort((a, b) => b.createdAt - a.createdAt);
-  }, [bookmarks, query, selectedTags]);
+    // 根据选择的排序字段和排序方向进行排序
+    const sortedList = [...list];
+    if (sortBy === 'createdAt') {
+      sortedList.sort((a, b) => {
+        const diff = sortOrder === 'desc' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt;
+        return diff;
+      });
+    } else if (sortBy === 'clickCount') {
+      sortedList.sort((a, b) => {
+        const diff = sortOrder === 'desc' ? b.clickCount - a.clickCount : a.clickCount - b.clickCount;
+        return diff;
+      });
+    }
+    return sortedList;
+  }, [bookmarks, query, selectedTags, sortBy, sortOrder]);
 
   // 分离置顶和普通书签
   const { pinnedBookmarks, normalBookmarks } = useMemo(() => {
@@ -79,10 +94,10 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
     return normalBookmarks.slice(startIndex, endIndex);
   }, [normalBookmarks, currentPage]);
 
-  // 当筛选条件改变时，重置到第一页
+  // 当筛选条件或排序改变时，重置到第一页
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, selectedTags]);
+  }, [query, selectedTags, sortBy, sortOrder]);
 
   // 当总页数变化时，确保当前页不超过总页数
   useEffect(() => {
@@ -220,6 +235,12 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           <div className="bookmarks-filters">
             <SearchInput value={query} placeholder="搜索标题或URL" onChange={setQuery} />
             <TagFilterDropdown tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
+            <SortDropdown
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSortByChange={setSortBy}
+              onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+            />
           </div>
         </div>
         <div className="bookmarks-actions">
