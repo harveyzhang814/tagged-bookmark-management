@@ -19,6 +19,7 @@ export interface BookmarkItem {
   thumbnail?: string;
   pinned: boolean;
   clickCount: number;
+  clickHistory?: number[];
   createdAt: number;
   updatedAt: number;
 }

@@ -80,7 +80,11 @@ const getDefaultTagColor = (): string => {
 
 const normalizeBookmark = (bookmark: BookmarkItem): BookmarkItem => {
   const uniqueTags = Array.from(new Set(bookmark.tags));
-  return { ...bookmark, tags: uniqueTags };
+  return { 
+    ...bookmark, 
+    tags: uniqueTags,
+    clickHistory: bookmark.clickHistory ?? []
+  };
 };
 
 export const ensureDefaults = async () => {
@@ -219,6 +223,7 @@ export const createBookmark = async (payload: BookmarkInput): Promise<BookmarkIt
     thumbnail: payload.thumbnail ?? getThumbnailForUrl(payload.url),
     pinned: Boolean(payload.pinned),
     clickCount: 0,
+    clickHistory: [],
     createdAt: now,
     updatedAt: now
   });
@@ -263,6 +268,18 @@ export const incrementBookmarkClick = async (bookmarkId: string) => {
   if (!bookmark) return null;
   bookmark.clickCount += 1;
   bookmark.updatedAt = Date.now();
+  
+  // 记录点击时间戳
+  const clickTimestamp = Date.now();
+  if (!bookmark.clickHistory) {
+    bookmark.clickHistory = [];
+  }
+  bookmark.clickHistory.unshift(clickTimestamp);
+  // 限制为最近100次点击
+  if (bookmark.clickHistory.length > 100) {
+    bookmark.clickHistory = bookmark.clickHistory.slice(0, 100);
+  }
+  
   bookmarks[bookmarkId] = bookmark;
   await saveBookmarksMap(bookmarks);
   // 重新计算相关标签的点击次数（基于所有书签的点击次数之和）
@@ -395,6 +412,7 @@ export const importChromeBookmarks = async (): Promise<ImportChromeBookmarksResu
       thumbnail: getThumbnailForUrl(node.url),
       pinned: false,
       clickCount: 0,
+      clickHistory: [],
       createdAt: node.dateAdded ? node.dateAdded : now,
       updatedAt: now
     });
