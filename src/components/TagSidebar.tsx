@@ -6,9 +6,10 @@ import './tagSidebar.css';
 
 interface TagSidebarProps {
   tags: Tag[];
+  onCreateTag?: (name: string) => Promise<void>;
 }
 
-export const TagSidebar = ({ tags }: TagSidebarProps) => {
+export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
@@ -21,6 +22,18 @@ export const TagSidebar = ({ tags }: TagSidebarProps) => {
     const query = searchQuery.toLowerCase();
     return tags.filter((tag) => tag.name.toLowerCase().includes(query));
   }, [tags, searchQuery]);
+
+  // 检查是否有完全匹配的标签
+  const hasExactMatch = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return false;
+    }
+    const query = searchQuery.trim().toLowerCase();
+    return tags.some((tag) => tag.name.toLowerCase() === query);
+  }, [tags, searchQuery]);
+
+  // 是否显示创建标签card
+  const showCreateCard = searchQuery.trim() && !hasExactMatch && onCreateTag;
 
   // 分页计算
   const totalPages = Math.ceil(filteredTags.length / ITEMS_PER_PAGE);
@@ -40,6 +53,13 @@ export const TagSidebar = ({ tags }: TagSidebarProps) => {
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  const handleCreateTag = async () => {
+    if (onCreateTag && searchQuery.trim()) {
+      await onCreateTag(searchQuery.trim());
+      setSearchQuery(''); // 创建后清空搜索
+    }
+  };
+
   return (
     <div className="tag-sidebar">
       <div className="tag-sidebar__header">
@@ -55,12 +75,37 @@ export const TagSidebar = ({ tags }: TagSidebarProps) => {
       </div>
 
       <div className="tag-sidebar__content">
-        {paginatedTags.length === 0 ? (
+        {paginatedTags.length === 0 && !showCreateCard ? (
           <div className="tag-sidebar__empty">
             {searchQuery ? '未找到匹配的标签' : '暂无标签'}
           </div>
         ) : (
           <div className="tag-sidebar__list">
+            {showCreateCard && (
+              <div
+                className="tag-sidebar__item tag-sidebar__item--create"
+                onClick={handleCreateTag}
+                draggable={false}
+              >
+                <svg 
+                  className="tag-sidebar__create-icon"
+                  width="12" 
+                  height="12" 
+                  viewBox="0 0 12 12" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    d="M6 2V10M2 6H10" 
+                    stroke="currentColor" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="tag-sidebar__name">创建标签: {searchQuery.trim()}</span>
+              </div>
+            )}
             {paginatedTags.map((tag) => (
               <div
                 key={tag.id}

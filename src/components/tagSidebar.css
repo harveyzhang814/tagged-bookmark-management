@@ -106,6 +106,34 @@
   transform: scale(0.98);
 }
 
+.tag-sidebar__item--create {
+  border-style: dashed;
+  border-color: var(--accent);
+  background: var(--bg-panel);
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.tag-sidebar__item--create:hover {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.tag-sidebar__item--create:active {
+  cursor: pointer;
+  opacity: 0.9;
+  transform: scale(0.98);
+}
+
+.tag-sidebar__create-icon {
+  flex-shrink: 0;
+  color: var(--accent);
+  width: 12px;
+  height: 12px;
+}
+
 .tag-sidebar__empty {
   padding: 32px 16px;
   text-align: center;

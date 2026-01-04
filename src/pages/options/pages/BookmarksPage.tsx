@@ -10,7 +10,7 @@ import { Tooltip } from '../../../components/Tooltip';
 import { Pagination } from '../../../components/Pagination';
 import { TagSidebar } from '../../../components/TagSidebar';
 import { IconButton } from '../../../components/IconButton';
-import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark } from '../../../lib/bookmarkService';
+import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark, createTag } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import './bookmarksPage.css';
 
@@ -176,6 +176,11 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
     await refresh();
   };
 
+  const handleCreateTag = async (name: string) => {
+    await createTag({ name, color: '' });
+    await refresh();
+  };
+
 
   const handleImport = async () => {
     setImportStatus({ isImporting: true, message: null, type: null });
@@ -319,7 +324,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         </div>
 
         {isTagSidebarOpen && (
-          <TagSidebar tags={tags} />
+          <TagSidebar tags={tags} onCreateTag={handleCreateTag} />
         )}
       </div>
 
