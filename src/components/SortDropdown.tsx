@@ -1,14 +1,22 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import './sortDropdown.css';
 
-interface SortDropdownProps {
-  sortBy: 'createdAt' | 'clickCount';
-  sortOrder: 'asc' | 'desc';
-  onSortByChange: (sortBy: 'createdAt' | 'clickCount') => void;
-  onSortOrderToggle: () => void;
+type SortField = 'createdAt' | 'clickCount' | 'usageCount';
+
+interface SortOption {
+  value: SortField;
+  label: string;
 }
 
-export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderToggle }: SortDropdownProps) => {
+interface SortDropdownProps {
+  sortBy: SortField;
+  sortOrder: 'asc' | 'desc';
+  onSortByChange: (sortBy: SortField) => void;
+  onSortOrderToggle: () => void;
+  options: SortOption[];
+}
+
+export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderToggle, options }: SortDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -16,14 +24,14 @@ export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderTog
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 排序字段显示文本
-  const sortByText = sortBy === 'createdAt' ? '创建日期' : '点击数量';
+  const sortByText = options.find(opt => opt.value === sortBy)?.label || '排序';
 
   // 计算下拉菜单位置的函数
   const updateMenuPosition = useCallback(() => {
     if (triggerRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect();
       const menuWidth = 200; // 菜单宽度
-      const menuHeight = 120; // 最大高度
+      const menuHeight = Math.min(80 + options.length * 40, 400); // 根据选项数量动态调整高度
       const gap = 8;
       
       // 计算左侧位置（尽量与触发器左对齐）
@@ -56,7 +64,7 @@ export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderTog
       
       setMenuPosition({ top, left });
     }
-  }, []);
+  }, [options.length]);
 
   // 计算下拉菜单位置
   useEffect(() => {
@@ -115,7 +123,7 @@ export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderTog
   }, []);
 
   // 处理排序字段选择
-  const handleSortBySelect = useCallback((newSortBy: 'createdAt' | 'clickCount') => {
+  const handleSortBySelect = useCallback((newSortBy: SortField) => {
     if (newSortBy !== sortBy) {
       onSortByChange(newSortBy);
     }
@@ -178,48 +186,33 @@ export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderTog
             left: `${menuPosition.left}px`
           }}
         >
-          <div className="sort-dropdown__item" onClick={() => handleSortBySelect('createdAt')}>
-            <span className="sort-dropdown__item-text">创建日期</span>
-            {sortBy === 'createdAt' && (
-              <svg
-                className="sort-dropdown__check"
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 7L6 10L11 3"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </div>
-          <div className="sort-dropdown__item" onClick={() => handleSortBySelect('clickCount')}>
-            <span className="sort-dropdown__item-text">点击数量</span>
-            {sortBy === 'clickCount' && (
-              <svg
-                className="sort-dropdown__check"
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M3 7L6 10L11 3"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </div>
+          {options.map((option) => (
+            <div
+              key={option.value}
+              className="sort-dropdown__item"
+              onClick={() => handleSortBySelect(option.value)}
+            >
+              <span className="sort-dropdown__item-text">{option.label}</span>
+              {sortBy === option.value && (
+                <svg
+                  className="sort-dropdown__check"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 7L6 10L11 3"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

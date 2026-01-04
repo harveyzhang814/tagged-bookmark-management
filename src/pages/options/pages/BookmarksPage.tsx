@@ -240,6 +240,10 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
               sortOrder={sortOrder}
               onSortByChange={setSortBy}
               onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+              options={[
+                { value: 'createdAt', label: '创建日期' },
+                { value: 'clickCount', label: '点击数量' }
+              ]}
             />
           </div>
         </div>

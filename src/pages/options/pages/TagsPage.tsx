@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
+import { SortDropdown } from '../../../components/SortDropdown';
 import { TagCard } from '../../../components/TagCard';
 import { TagEditModal } from '../../../components/TagEditModal';
 import { Pagination } from '../../../components/Pagination';
@@ -21,6 +22,8 @@ export const TagsPage = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'createdAt' | 'usageCount' | 'clickCount'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,16 +37,7 @@ export const TagsPage = () => {
       getAllTags(),
       getAllBookmarks()
     ]);
-    setTags(
-      tagsList.sort((a, b) => {
-        // 首先按 pinned 排序（置顶在前）
-        if (a.pinned !== b.pinned) {
-          return a.pinned ? -1 : 1;
-        }
-        // 然后按创建时间倒序（最新的在前）
-        return b.createdAt - a.createdAt;
-      })
-    );
+    setTags(tagsList);
     setBookmarks(bookmarksList);
   };
 
@@ -52,9 +46,31 @@ export const TagsPage = () => {
   }, []);
 
   const filtered = useMemo(() => {
-    if (!search) return tags;
-    return tags.filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
-  }, [tags, search]);
+    let list = tags;
+    // 搜索过滤
+    if (search) {
+      list = list.filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
+    }
+    // 排序
+    const sortedList = [...list];
+    sortedList.sort((a, b) => {
+      // 首先按 pinned 排序（置顶在前）
+      if (a.pinned !== b.pinned) {
+        return a.pinned ? -1 : 1;
+      }
+      // 然后根据选择的排序字段和排序方向进行排序
+      let diff = 0;
+      if (sortBy === 'createdAt') {
+        diff = sortOrder === 'desc' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt;
+      } else if (sortBy === 'usageCount') {
+        diff = sortOrder === 'desc' ? b.usageCount - a.usageCount : a.usageCount - b.usageCount;
+      } else if (sortBy === 'clickCount') {
+        diff = sortOrder === 'desc' ? b.clickCount - a.clickCount : a.clickCount - b.clickCount;
+      }
+      return diff;
+    });
+    return sortedList;
+  }, [tags, search, sortBy, sortOrder]);
 
   // 分页计算
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -64,10 +80,10 @@ export const TagsPage = () => {
     return filtered.slice(startIndex, endIndex);
   }, [filtered, currentPage]);
 
-  // 当搜索条件改变时，重置到第一页
+  // 当搜索条件或排序改变时，重置到第一页
   useEffect(() => {
     setCurrentPage(1);
-  }, [search]);
+  }, [search, sortBy, sortOrder]);
 
   // 当总页数变化时，确保当前页不超过总页数
   useEffect(() => {
@@ -200,6 +216,17 @@ export const TagsPage = () => {
       <div className="tags-toolbar-merged">
         <div className="tags-filters">
           <SearchInput value={search} placeholder="搜索标签" onChange={setSearch} />
+          <SortDropdown
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortByChange={setSortBy}
+            onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+            options={[
+              { value: 'createdAt', label: '创建日期' },
+              { value: 'usageCount', label: '书签数量' },
+              { value: 'clickCount', label: '点击数量' }
+            ]}
+          />
         </div>
         <div className="tags-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
