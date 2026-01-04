@@ -8,9 +8,10 @@ interface TagCardProps {
   tag: Tag;
   onEdit: (tag: Tag) => void;
   onTogglePin: (tagId: string) => void;
+  onClick?: (tagId: string) => void;
 }
 
-export const TagCard = ({ tag, onEdit, onTogglePin }: TagCardProps) => {
+export const TagCard = ({ tag, onEdit, onTogglePin, onClick }: TagCardProps) => {
   const handleEditClick = (e: MouseEvent) => {
     e.stopPropagation();
     onEdit(tag);
@@ -21,8 +22,17 @@ export const TagCard = ({ tag, onEdit, onTogglePin }: TagCardProps) => {
     onTogglePin(tag.id);
   };
 
+  const handleCardClick = () => {
+    if (onClick) {
+      onClick(tag.id);
+    }
+  };
+
   return (
-    <div className={`tag-card ${tag.pinned ? 'tag-card--pinned' : ''}`}>
+    <div 
+      className={`tag-card ${tag.pinned ? 'tag-card--pinned' : ''}`}
+      onClick={handleCardClick}
+    >
       <div className="tag-card__header">
         <TagPill label={tag.name} color={tag.color} size="large" />
         <div className="tag-card__actions">

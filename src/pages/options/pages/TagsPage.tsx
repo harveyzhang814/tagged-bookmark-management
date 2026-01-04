@@ -5,27 +5,35 @@ import { SearchInput } from '../../../components/SearchInput';
 import { TagCard } from '../../../components/TagCard';
 import { TagEditModal } from '../../../components/TagEditModal';
 import { Pagination } from '../../../components/Pagination';
+import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import {
   createTag,
   deleteTag,
   getAllTags,
+  getAllBookmarks,
   updateTag
 } from '../../../lib/bookmarkService';
-import type { Tag } from '../../../lib/types';
+import type { Tag, BookmarkItem } from '../../../lib/types';
 import './tagsPage.css';
 
 export const TagsPage = () => {
   const [tags, setTags] = useState<Tag[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [search, setSearch] = useState('');
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const ITEMS_PER_PAGE = 40;
 
   const refresh = async () => {
-    const list = await getAllTags();
+    const [tagsList, bookmarksList] = await Promise.all([
+      getAllTags(),
+      getAllBookmarks()
+    ]);
     setTags(
-      list.sort((a, b) => {
+      tagsList.sort((a, b) => {
         // 首先按 pinned 排序（置顶在前）
         if (a.pinned !== b.pinned) {
           return a.pinned ? -1 : 1;
@@ -35,6 +43,7 @@ export const TagsPage = () => {
         return b.usageCount - a.usageCount;
       })
     );
+    setBookmarks(bookmarksList);
   };
 
   useEffect(() => {
@@ -115,6 +124,21 @@ export const TagsPage = () => {
     }
   };
 
+  const handleTagClick = (tagId: string) => {
+    if (!isBookmarkSidebarOpen || selectedTagId !== tagId) {
+      setSelectedTagId(tagId);
+      setIsBookmarkSidebarOpen(true);
+    } else {
+      // 如果已经打开且是同一个标签，刷新数据
+      void refresh();
+    }
+  };
+
+  const handleCloseSidebar = () => {
+    setIsBookmarkSidebarOpen(false);
+    setSelectedTagId(null);
+  };
+
   return (
     <div className="tags-page">
       <div className="tags-toolbar-merged">
@@ -128,24 +152,38 @@ export const TagsPage = () => {
         </div>
       </div>
 
-      <div className="tag-grid">
-        {paginatedTags.map((tag) => (
-          <TagCard
-            key={tag.id}
-            tag={tag}
-            onEdit={handleEdit}
-            onTogglePin={handleTogglePin}
-          />
-        ))}
-      </div>
+      <div className="tags-content-wrapper">
+        <div className="tags-content">
+          <div className="tag-grid">
+            {paginatedTags.map((tag) => (
+              <TagCard
+                key={tag.id}
+                tag={tag}
+                onEdit={handleEdit}
+                onTogglePin={handleTogglePin}
+                onClick={handleTagClick}
+              />
+            ))}
+          </div>
 
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      )}
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </div>
+
+        {isBookmarkSidebarOpen && (
+          <BookmarkSidebar
+            tagId={selectedTagId}
+            bookmarks={bookmarks}
+            tags={tags}
+            onClose={handleCloseSidebar}
+          />
+        )}
+      </div>
 
       {editingTag && (
         <TagEditModal

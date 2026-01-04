@@ -11,6 +11,7 @@
   overflow: hidden;
   padding: 12px;
   gap: 10px;
+  cursor: pointer;
 }
 
 .tag-card:hover {
