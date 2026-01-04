@@ -119,7 +119,7 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
                 setTitle(e.target.value);
                 adjustTextareaHeight(e.target);
               }}
-              placeholder="网页标题"
+              placeholder="书签标题"
               autoFocus
               rows={1}
             />

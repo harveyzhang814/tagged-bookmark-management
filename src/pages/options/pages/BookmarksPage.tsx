@@ -249,7 +249,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         </div>
         <div className="bookmarks-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建收藏
+            新建书签
           </PixelButton>
           <Tooltip content="一键导入 Chrome 收藏夹中的所有书签，已存在的书签会自动跳过">
             <PixelButton 
@@ -296,7 +296,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           {/* 置顶书签区域 */}
           {pinnedBookmarks.length > 0 && (
             <div className="bookmarks-section">
-              <h2 className="bookmarks-section-title">置顶收藏</h2>
+              <h2 className="bookmarks-section-title">置顶书签</h2>
               <div className="bookmark-list">
                 {pinnedBookmarks.map((bookmark) => (
                   <BookmarkCard
@@ -316,7 +316,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           {normalBookmarks.length > 0 && (
             <div className="bookmarks-section">
               {pinnedBookmarks.length > 0 && (
-                <h2 className="bookmarks-section-title">普通收藏</h2>
+                <h2 className="bookmarks-section-title">普通书签</h2>
               )}
               <div className="bookmark-list">
                 {paginatedBookmarks.map((bookmark) => (

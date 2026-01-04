@@ -11,7 +11,7 @@ type TabKey = 'home' | 'bookmarks' | 'tags';
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'home', label: '首页' },
-  { key: 'bookmarks', label: '网页' },
+  { key: 'bookmarks', label: '书签' },
   { key: 'tags', label: '标签' }
 ];
 

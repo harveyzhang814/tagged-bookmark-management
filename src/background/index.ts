@@ -6,7 +6,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   await ensureDefaults();
   chrome.contextMenus.create({
     id: QUICK_ADD_MENU_ID,
-    title: '加入复古收藏',
+    title: '加入bi书签',
     contexts: ['page', 'selection']
   });
 });

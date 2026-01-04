@@ -100,7 +100,7 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
 
     const query = searchQuery.toLowerCase().trim();
 
-    // 过滤置顶收藏
+    // 过滤置顶书签
     const filteredPinnedBookmarks = pinnedBookmarks.filter((bookmark) => {
       const titleMatch = bookmark.title.toLowerCase().includes(query);
       const urlMatch = bookmark.url.toLowerCase().includes(query);
@@ -210,13 +210,13 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
         <div className="home-filters">
           <SearchInput 
             value={searchQuery} 
-            placeholder="搜索收藏、标签..." 
+            placeholder="搜索书签、标签..." 
             onChange={setSearchQuery} 
           />
         </div>
         <div className="home-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建收藏
+            新建书签
           </PixelButton>
         </div>
       </div>
@@ -224,7 +224,7 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
       <div className="home-content-wrapper">
         <div className="home-content">
           <HorizontalScrollList
-            title="置顶收藏"
+            title="置顶书签"
             onMoreClick={pinnedBookmarks.length > 0 ? handlePinnedMoreClick : undefined}
           >
             {filterBySearch.filteredPinnedBookmarks.length > 0 ? (
@@ -232,7 +232,7 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
                 <PinnedBookmarkCard key={bookmark.id} bookmark={bookmark} tags={allTags} />
               ))
             ) : (
-              <div className="empty-state">暂无置顶收藏</div>
+              <div className="empty-state">暂无置顶书签</div>
             )}
           </HorizontalScrollList>
 

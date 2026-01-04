@@ -93,7 +93,7 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
   const handleDelete = async () => {
     if (!tag || !onDelete) return;
     
-    const confirmed = window.confirm('确定要删除这个标签吗？此操作将从所有网页中移除该标签，且无法撤销。');
+    const confirmed = window.confirm('确定要删除这个标签吗？此操作将从所有书签中移除该标签，且无法撤销。');
     if (!confirmed) return;
     
     try {

@@ -78,7 +78,7 @@ export const BookmarkCreateModal = ({ isOpen, onClose, onCreate }: BookmarkCreat
     <div className="bookmark-create-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="bookmark-create-modal" onClick={(e) => e.stopPropagation()}>
         <div className="bookmark-create-modal__header">
-          <h2 className="bookmark-create-modal__title">新建收藏</h2>
+          <h2 className="bookmark-create-modal__title">新建书签</h2>
           <button
             className="bookmark-create-modal__close"
             onClick={onClose}
@@ -107,7 +107,7 @@ export const BookmarkCreateModal = ({ isOpen, onClose, onCreate }: BookmarkCreat
                 setTitle(e.target.value);
                 adjustTextareaHeight(e.target);
               }}
-              placeholder="网页标题"
+              placeholder="书签标题"
               autoFocus
               rows={1}
             />
