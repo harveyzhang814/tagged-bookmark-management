@@ -219,7 +219,6 @@
 
 /* Save Button */
 .save-button {
-  width: 100%;
   margin-top: 2px;
   display: flex;
   align-items: center;
@@ -230,6 +229,7 @@
   font-weight: 500;
   border-radius: 6px;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .save-button svg {

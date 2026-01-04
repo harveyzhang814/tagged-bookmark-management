@@ -140,6 +140,15 @@ export const getAllBookmarks = async (): Promise<BookmarkItem[]> => {
   return Object.values(bookmarks).map(normalizeBookmark);
 };
 
+export const getBookmarkByUrl = async (url: string): Promise<BookmarkItem | null> => {
+  const bookmarks = await getBookmarksMap();
+  const normalizedUrl = url.toLowerCase();
+  const bookmark = Object.values(bookmarks).find(
+    (bm) => bm.url.toLowerCase() === normalizedUrl
+  );
+  return bookmark || null;
+};
+
 export const getAllTags = async (): Promise<Tag[]> => {
   const tags = await getTagsMap();
   // 确保向后兼容：如果标签缺少 pinned 字段，默认为 false
