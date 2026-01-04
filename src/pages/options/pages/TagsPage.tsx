@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
@@ -11,7 +11,8 @@ import {
   deleteTag,
   getAllTags,
   getAllBookmarks,
-  updateTag
+  updateTag,
+  updateBookmark
 } from '../../../lib/bookmarkService';
 import type { Tag, BookmarkItem } from '../../../lib/types';
 import './tagsPage.css';
@@ -25,6 +26,7 @@ export const TagsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const ITEMS_PER_PAGE = 40;
 
   const refresh = async () => {
@@ -139,8 +141,63 @@ export const TagsPage = () => {
     setSelectedTagId(null);
   };
 
+  const handleRemoveTag = async (bookmarkId: string, tagId: string) => {
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (!bookmark) return;
+    
+    // 移除标签关系
+    const updatedTags = bookmark.tags.filter((id) => id !== tagId);
+    await updateBookmark(bookmarkId, {
+      title: bookmark.title,
+      url: bookmark.url,
+      tags: updatedTags,
+      pinned: bookmark.pinned
+    });
+    
+    // 刷新数据
+    await refresh();
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const bookmarkId = e.dataTransfer.getData('bookmarkId');
+    const source = e.dataTransfer.getData('source');
+    
+    // 只处理来自侧边栏的拖拽
+    if (source !== 'bookmarkSidebar' || !bookmarkId || !selectedTagId) return;
+    
+    // 检查是否拖拽到侧边栏外
+    const sidebarElement = sidebarRef.current;
+    if (!sidebarElement) return;
+    
+    // 使用鼠标位置来判断是否在侧边栏内
+    const x = e.clientX;
+    const y = e.clientY;
+    const rect = sidebarElement.getBoundingClientRect();
+    const isInsideSidebar = 
+      x >= rect.left && 
+      x <= rect.right && 
+      y >= rect.top && 
+      y <= rect.bottom;
+    
+    // 如果拖拽到侧边栏外，移除标签关系
+    if (!isInsideSidebar) {
+      await handleRemoveTag(bookmarkId, selectedTagId);
+    }
+  };
+
   return (
-    <div className="tags-page">
+    <div 
+      className="tags-page"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       <div className="tags-toolbar-merged">
         <div className="tags-filters">
           <SearchInput value={search} placeholder="搜索标签" onChange={setSearch} />
@@ -176,12 +233,15 @@ export const TagsPage = () => {
         </div>
 
         {isBookmarkSidebarOpen && (
-          <BookmarkSidebar
-            tagId={selectedTagId}
-            bookmarks={bookmarks}
-            tags={tags}
-            onClose={handleCloseSidebar}
-          />
+          <div ref={sidebarRef}>
+            <BookmarkSidebar
+              tagId={selectedTagId}
+              bookmarks={bookmarks}
+              tags={tags}
+              onClose={handleCloseSidebar}
+              onRemoveTag={handleRemoveTag}
+            />
+          </div>
         )}
       </div>
 

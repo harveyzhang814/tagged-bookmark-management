@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import { TagPill } from './TagPill';
@@ -13,12 +13,15 @@ interface BookmarkSidebarProps {
   bookmarks: BookmarkItem[];
   tags: Tag[];
   onClose?: () => void;
+  onRemoveTag?: (bookmarkId: string, tagId: string) => Promise<void>;
+  onRefresh?: () => Promise<void>;
 }
 
-export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose }: BookmarkSidebarProps) => {
+export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose, onRemoveTag, onRefresh }: BookmarkSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('createdAt');
   const [currentPage, setCurrentPage] = useState(1);
+  const dragStartTime = useRef<number>(0);
   const ITEMS_PER_PAGE = 15;
 
   // 根据tagId过滤书签
@@ -81,6 +84,30 @@ export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose }: BookmarkSid
   const handleBookmarkClick = async (bookmark: BookmarkItem) => {
     await incrementBookmarkClick(bookmark.id);
     window.open(bookmark.url, '_blank');
+  };
+
+  const handleDragStart = (e: React.DragEvent, bookmarkId: string) => {
+    dragStartTime.current = Date.now();
+    e.dataTransfer.setData('bookmarkId', bookmarkId);
+    e.dataTransfer.setData('source', 'bookmarkSidebar');
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    // 重置拖拽开始时间
+    dragStartTime.current = 0;
+  };
+
+  const handleItemClick = async (bookmark: BookmarkItem, e: React.MouseEvent) => {
+    // 如果刚刚拖拽过（300ms内），不触发点击
+    const timeSinceDragStart = Date.now() - dragStartTime.current;
+    if (timeSinceDragStart < 300 && dragStartTime.current > 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragStartTime.current = 0;
+      return;
+    }
+    await handleBookmarkClick(bookmark);
   };
 
   const selectedTag = tags.find((t) => t.id === tagId);
@@ -152,7 +179,10 @@ export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose }: BookmarkSid
                 <div
                   key={bookmark.id}
                   className="bookmark-sidebar__item"
-                  onClick={() => handleBookmarkClick(bookmark)}
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, bookmark.id)}
+                  onDragEnd={handleDragEnd}
+                  onClick={(e) => handleItemClick(bookmark, e)}
                 >
                   <div className="bookmark-sidebar__item-header">
                     <h4 className="bookmark-sidebar__item-title">{bookmark.title}</h4>

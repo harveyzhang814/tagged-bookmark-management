@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getPinnedBookmarks, getHotTags, getAllTags, getAllBookmarks, createBookmark } from '../../../lib/bookmarkService';
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { getPinnedBookmarks, getHotTags, getAllTags, getAllBookmarks, createBookmark, updateBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import { HorizontalScrollList } from '../../../components/HorizontalScrollList';
 import { PinnedBookmarkCard } from '../../../components/PinnedBookmarkCard';
@@ -26,6 +26,7 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const loadData = async (showLoading = true) => {
     if (showLoading) {
@@ -144,12 +145,67 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
     setSelectedTagId(null);
   };
 
+  const handleRemoveTag = async (bookmarkId: string, tagId: string) => {
+    const bookmark = allBookmarks.find((b) => b.id === bookmarkId);
+    if (!bookmark) return;
+    
+    // 移除标签关系
+    const updatedTags = bookmark.tags.filter((id) => id !== tagId);
+    await updateBookmark(bookmarkId, {
+      title: bookmark.title,
+      url: bookmark.url,
+      tags: updatedTags,
+      pinned: bookmark.pinned
+    });
+    
+    // 刷新数据
+    await loadData(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const bookmarkId = e.dataTransfer.getData('bookmarkId');
+    const source = e.dataTransfer.getData('source');
+    
+    // 只处理来自侧边栏的拖拽
+    if (source !== 'bookmarkSidebar' || !bookmarkId || !selectedTagId) return;
+    
+    // 检查是否拖拽到侧边栏外
+    const sidebarElement = sidebarRef.current;
+    if (!sidebarElement) return;
+    
+    // 使用鼠标位置来判断是否在侧边栏内
+    const x = e.clientX;
+    const y = e.clientY;
+    const rect = sidebarElement.getBoundingClientRect();
+    const isInsideSidebar = 
+      x >= rect.left && 
+      x <= rect.right && 
+      y >= rect.top && 
+      y <= rect.bottom;
+    
+    // 如果拖拽到侧边栏外，移除标签关系
+    if (!isInsideSidebar) {
+      await handleRemoveTag(bookmarkId, selectedTagId);
+    }
+  };
+
   if (isLoading) {
     return <div className="home-page" aria-busy="true" />;
   }
 
   return (
-    <div className="home-page">
+    <div 
+      className="home-page"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       <div className="home-toolbar-merged">
         <div className="home-filters">
           <SearchInput 
@@ -208,12 +264,15 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
         </div>
 
         {isBookmarkSidebarOpen && (
-          <BookmarkSidebar
-            tagId={selectedTagId}
-            bookmarks={allBookmarks}
-            tags={allTags}
-            onClose={handleCloseSidebar}
-          />
+          <div ref={sidebarRef}>
+            <BookmarkSidebar
+              tagId={selectedTagId}
+              bookmarks={allBookmarks}
+              tags={allTags}
+              onClose={handleCloseSidebar}
+              onRemoveTag={handleRemoveTag}
+            />
+          </div>
         )}
       </div>
 
