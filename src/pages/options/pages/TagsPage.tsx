@@ -40,9 +40,8 @@ export const TagsPage = () => {
         if (a.pinned !== b.pinned) {
           return a.pinned ? -1 : 1;
         }
-        // 然后按原有的逻辑排序（usageCount 降序，相同则按 updatedAt 降序）
-        if (b.usageCount === a.usageCount) return b.updatedAt - a.updatedAt;
-        return b.usageCount - a.usageCount;
+        // 然后按创建时间倒序（最新的在前）
+        return b.createdAt - a.createdAt;
       })
     );
     setBookmarks(bookmarksList);
