@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getPinnedBookmarks, getHotTags, getAllTags, createBookmark } from '../../../lib/bookmarkService';
+import { getPinnedBookmarks, getHotTags, getAllTags, getAllBookmarks, createBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import { HorizontalScrollList } from '../../../components/HorizontalScrollList';
 import { PinnedBookmarkCard } from '../../../components/PinnedBookmarkCard';
 import { HotTagCard } from '../../../components/HotTagCard';
 import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
+import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import { PixelButton } from '../../../components/PixelButton';
 import { SearchInput } from '../../../components/SearchInput';
 import './homePage.css';
@@ -19,31 +20,41 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
   const [hotTags, setHotTags] = useState<Tag[]>([]);
   const [pinnedTags, setPinnedTags] = useState<Tag[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [allBookmarks, setAllBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
+  const loadData = async (showLoading = true) => {
+    if (showLoading) {
       setIsLoading(true);
-      try {
-        const [pinned, hotTagsData, tags] = await Promise.all([
-          getPinnedBookmarks(),
-          getHotTags(10),
-          getAllTags()
-        ]);
-        setPinnedBookmarks(pinned);
-        setHotTags(hotTagsData.map((ht) => ht.tag));
-        setAllTags(tags);
-        // 获取置顶标签，按点击次数倒序
-        const pinnedTagsData = tags.filter((tag) => tag.pinned).sort((a, b) => b.clickCount - a.clickCount);
-        setPinnedTags(pinnedTagsData);
-      } catch (error) {
-        console.error('Failed to load home page data:', error);
-      } finally {
+    }
+    try {
+      const [pinned, hotTagsData, tags, bookmarks] = await Promise.all([
+        getPinnedBookmarks(),
+        getHotTags(10),
+        getAllTags(),
+        getAllBookmarks()
+      ]);
+      setPinnedBookmarks(pinned);
+      setHotTags(hotTagsData.map((ht) => ht.tag));
+      setAllTags(tags);
+      setAllBookmarks(bookmarks);
+      // 获取置顶标签，按点击次数倒序
+      const pinnedTagsData = tags.filter((tag) => tag.pinned).sort((a, b) => b.clickCount - a.clickCount);
+      setPinnedTags(pinnedTagsData);
+    } catch (error) {
+      console.error('Failed to load home page data:', error);
+    } finally {
+      if (showLoading) {
         setIsLoading(false);
       }
-    };
+    }
+  };
+
+  useEffect(() => {
     void loadData();
   }, []);
 
@@ -56,25 +67,20 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
   };
 
   const handleHotTagClick = (tag: Tag) => {
-    onNavigate('tags');
-    // Note: 这里可以添加选中tag的逻辑，但需要TagsPage支持
+    if (!isBookmarkSidebarOpen || selectedTagId !== tag.id) {
+      setSelectedTagId(tag.id);
+      setIsBookmarkSidebarOpen(true);
+    } else {
+      // 如果已经打开且是同一个标签，刷新数据
+      void loadData(false);
+    }
   };
 
   const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
     await createBookmark(data);
     setIsCreateModalOpen(false);
     // 重新加载数据
-    const [pinned, hotTagsData, tags] = await Promise.all([
-      getPinnedBookmarks(),
-      getHotTags(10),
-      getAllTags()
-    ]);
-    setPinnedBookmarks(pinned);
-    setHotTags(hotTagsData.map((ht) => ht.tag));
-    setAllTags(tags);
-    // 更新置顶标签
-    const pinnedTagsData = tags.filter((tag) => tag.pinned).sort((a, b) => b.clickCount - a.clickCount);
-    setPinnedTags(pinnedTagsData);
+    await loadData(false);
     // 触发父组件刷新
     if (onRefresh) {
       onRefresh();
@@ -124,8 +130,18 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
   }, [searchQuery, pinnedBookmarks, hotTags, pinnedTags, allTags]);
 
   const handlePinnedTagClick = (tag: Tag) => {
-    onNavigate('tags');
-    // Note: 这里可以添加选中tag的逻辑，但需要TagsPage支持
+    if (!isBookmarkSidebarOpen || selectedTagId !== tag.id) {
+      setSelectedTagId(tag.id);
+      setIsBookmarkSidebarOpen(true);
+    } else {
+      // 如果已经打开且是同一个标签，刷新数据
+      void loadData(false);
+    }
+  };
+
+  const handleCloseSidebar = () => {
+    setIsBookmarkSidebarOpen(false);
+    setSelectedTagId(null);
   };
 
   if (isLoading) {
@@ -149,44 +165,57 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
         </div>
       </div>
 
-      <HorizontalScrollList
-        title="置顶收藏"
-        onMoreClick={filterBySearch.filteredPinnedBookmarks.length > 0 ? handlePinnedMoreClick : undefined}
-      >
-        {filterBySearch.filteredPinnedBookmarks.length > 0 ? (
-          filterBySearch.filteredPinnedBookmarks.map((bookmark) => (
-            <PinnedBookmarkCard key={bookmark.id} bookmark={bookmark} tags={allTags} />
-          ))
-        ) : (
-          <div className="empty-state">暂无置顶收藏</div>
-        )}
-      </HorizontalScrollList>
+      <div className="home-content-wrapper">
+        <div className="home-content">
+          <HorizontalScrollList
+            title="置顶收藏"
+            onMoreClick={pinnedBookmarks.length > 0 ? handlePinnedMoreClick : undefined}
+          >
+            {filterBySearch.filteredPinnedBookmarks.length > 0 ? (
+              filterBySearch.filteredPinnedBookmarks.map((bookmark) => (
+                <PinnedBookmarkCard key={bookmark.id} bookmark={bookmark} tags={allTags} />
+              ))
+            ) : (
+              <div className="empty-state">暂无置顶收藏</div>
+            )}
+          </HorizontalScrollList>
 
-      <HorizontalScrollList
-        title="置顶标签"
-        onMoreClick={filterBySearch.filteredPinnedTags.length > 0 ? () => onNavigate('tags') : undefined}
-      >
-        {filterBySearch.filteredPinnedTags.length > 0 ? (
-          filterBySearch.filteredPinnedTags.map((tag) => (
-            <HotTagCard key={tag.id} tag={tag} onClick={() => handlePinnedTagClick(tag)} />
-          ))
-        ) : (
-          <div className="empty-state">暂无置顶标签</div>
-        )}
-      </HorizontalScrollList>
+          <HorizontalScrollList
+            title="置顶标签"
+            onMoreClick={pinnedTags.length > 0 ? () => onNavigate('tags') : undefined}
+          >
+            {filterBySearch.filteredPinnedTags.length > 0 ? (
+              filterBySearch.filteredPinnedTags.map((tag) => (
+                <HotTagCard key={tag.id} tag={tag} onClick={() => handlePinnedTagClick(tag)} />
+              ))
+            ) : (
+              <div className="empty-state">暂无置顶标签</div>
+            )}
+          </HorizontalScrollList>
 
-      <HorizontalScrollList
-        title="热门标签"
-        onMoreClick={filterBySearch.filteredHotTags.length > 0 ? handleHotTagsMoreClick : undefined}
-      >
-        {filterBySearch.filteredHotTags.length > 0 ? (
-          filterBySearch.filteredHotTags.map((tag) => (
-            <HotTagCard key={tag.id} tag={tag} onClick={() => handleHotTagClick(tag)} />
-          ))
-        ) : (
-          <div className="empty-state">暂无热门标签</div>
+          <HorizontalScrollList
+            title="热门标签"
+            onMoreClick={filterBySearch.filteredHotTags.length > 0 ? handleHotTagsMoreClick : undefined}
+          >
+            {filterBySearch.filteredHotTags.length > 0 ? (
+              filterBySearch.filteredHotTags.map((tag) => (
+                <HotTagCard key={tag.id} tag={tag} onClick={() => handleHotTagClick(tag)} />
+              ))
+            ) : (
+              <div className="empty-state">暂无热门标签</div>
+            )}
+          </HorizontalScrollList>
+        </div>
+
+        {isBookmarkSidebarOpen && (
+          <BookmarkSidebar
+            tagId={selectedTagId}
+            bookmarks={allBookmarks}
+            tags={allTags}
+            onClose={handleCloseSidebar}
+          />
         )}
-      </HorizontalScrollList>
+      </div>
 
       <BookmarkCreateModal
         isOpen={isCreateModalOpen}
