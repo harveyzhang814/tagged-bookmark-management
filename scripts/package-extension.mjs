@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 
 import { execSync } from 'node:child_process';
-import { mkdirSync, rmSync, existsSync, readdirSync } from 'node:fs';
+import { mkdirSync, rmSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const workspaceRoot = fileURLToPath(new URL('..', import.meta.url));
 const distDir = path.join(workspaceRoot, 'dist');
 const releaseDir = path.join(workspaceRoot, 'release');
-const outputZip = path.join(releaseDir, 'tagged-bookmark-management.zip');
+
+// 读取 package.json 获取版本号
+const packageJson = JSON.parse(readFileSync(path.join(workspaceRoot, 'package.json'), 'utf-8'));
+const version = packageJson.version;
+const outputZip = path.join(releaseDir, `tagged-bookmark-management-v${version}.zip`);
 
 const run = (command, options = {}) => {
   execSync(command, {
