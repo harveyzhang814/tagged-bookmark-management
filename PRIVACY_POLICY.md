@@ -1,8 +1,8 @@
-# Tagged Bookmark Manager Privacy Policy
+# CrossTag Bookmarks Privacy Policy
 
 Last Updated: November 25, 2025
 
-Thank you for using the "Tagged Bookmark Manager" Chrome extension. We take your privacy seriously and are committed to handling data in a transparent and minimal manner. This policy explains what information the extension collects, how it is used, and how you can control your data.
+Thank you for using the "CrossTag Bookmarks" Chrome extension. We take your privacy seriously and are committed to handling data in a transparent and minimal manner. This policy explains what information the extension collects, how it is used, and how you can control your data.
 
 ## Collection and Use
 
@@ -26,7 +26,7 @@ Beyond the above scenarios, the extension does not collect, track, or share any 
 - `storage`: Saves bookmarks and tags in `chrome.storage.sync`.
 - `tabs`: Creates new tabs when opening the options page or site links from the popup.
 - `bookmarks`: Reads the browser's native bookmark tree when you manually trigger an import.
-- `contextMenus`: Provides a "Add to Retro Bookmarks" shortcut in the right-click menu.
+- `contextMenus`: Provides a "Add to CrossTag Bookmarks" shortcut in the right-click menu.
 
 The extension follows the principle of least privilege and does not access webpage content or collect browsing history.
 

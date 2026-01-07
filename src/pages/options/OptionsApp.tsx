@@ -78,7 +78,7 @@ export const OptionsApp = () => {
     <div className="options-shell">
       <header className="options-navigator">
         <div className="options-navigator__brand">
-          <h1>标签书签</h1>
+          <h1>CrossTag Bookmarks</h1>
         </div>
         
         <nav className="options-navigator__tabs">

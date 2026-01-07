@@ -1,4 +1,4 @@
-# 复古标签书签管家
+# CrossTag Bookmarks
 
 基于 **Manifest V3 + Vite + React + CRX** 打造的 Chrome 收藏管理扩展。主打复古像素风，可为网页添加多标签、置顶、热门统计与多维筛选。
 

@@ -6,7 +6,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   await ensureDefaults();
   chrome.contextMenus.create({
     id: QUICK_ADD_MENU_ID,
-    title: '加入标签书签',
+    title: '加入 CrossTag Bookmarks',
     contexts: ['page', 'selection']
   });
 });
