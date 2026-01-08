@@ -10,7 +10,7 @@ import type { Theme } from './theme';
  * 将 hex 颜色字符串转换为 RGB 值数组
  * 支持 #rgb 和 #rrggbb 格式
  */
-function hexToRgb(hex: string): [number, number, number] {
+export function hexToRgb(hex: string): [number, number, number] {
   // 移除 # 前缀
   hex = hex.replace('#', '');
   
@@ -30,7 +30,7 @@ function hexToRgb(hex: string): [number, number, number] {
 /**
  * 将 RGB 值转换为 hex 颜色字符串
  */
-function rgbToHex(r: number, g: number, b: number): string {
+export function rgbToHex(r: number, g: number, b: number): string {
   const toHex = (n: number) => {
     const hex = Math.round(Math.max(0, Math.min(255, n))).toString(16);
     return hex.length === 1 ? '0' + hex : hex;
@@ -45,7 +45,7 @@ function rgbToHex(r: number, g: number, b: number): string {
  * @param b 0-255
  * @returns [h, s, l] 其中 h: 0-360, s: 0-100, l: 0-100
  */
-function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+export function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -83,7 +83,7 @@ function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
  * @param l 0-100
  * @returns [r, g, b] 其中每个值 0-255
  */
-function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+export function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   h /= 360;
   s /= 100;
   l /= 100;
@@ -191,7 +191,7 @@ export function getTextColor(
 }
 
 /**
- * 对颜色进行柔化处理（用于 Dark 模式）
+ * 对颜色进行柔化处理（用于 Dark 模式的 Border）
  * 降低饱和度 20-30%，限制亮度上限为 70%
  * @param baseColor hex 颜色字符串
  * @returns 柔化后的 hex 颜色
@@ -213,6 +213,65 @@ export function softenColorForDark(baseColor: string): string {
 }
 
 /**
+ * 获取用于 Tint 背景色的颜色（用于 Dark 模式）
+ * 相比 Border 颜色，Tint 需要更亮一些以提高在暗色背景下的可见度
+ * @param baseColor hex 颜色字符串
+ * @returns 适合做 tint 的 hex 颜色
+ */
+export function getTintColorForDark(baseColor: string): string {
+  const [r, g, b] = hexToRgb(baseColor);
+  let [h, s, l] = rgbToHsl(r, g, b);
+  
+  // 对于 tint，在暗黑模式下需要：
+  // 1. 适当降低饱和度（但不如 border 那么低）
+  const saturationReduction = s > 80 ? 20 : 15;
+  s = Math.max(0, s - saturationReduction);
+  
+  // 2. 提高亮度以确保在暗色背景上可见
+  // 如果原亮度较低，提高更多；如果原亮度较高，稍微提高即可
+  if (l < 50) {
+    l = Math.min(75, l + 20); // 低亮度颜色提高 20%
+  } else {
+    l = Math.min(75, l + 10); // 中等亮度颜色提高 10%
+  }
+  
+  const [newR, newG, newB] = hslToRgb(h, s, l);
+  return rgbToHex(newR, newG, newB);
+}
+
+/**
+ * 对颜色进行增强处理（用于 Light 模式）
+ * 提高饱和度和适当调整亮度，使颜色在明亮背景下更鲜明、区分度更高
+ * @param baseColor hex 颜色字符串
+ * @returns 增强后的 hex 颜色
+ */
+export function enhanceColorForLight(baseColor: string): string {
+  const [r, g, b] = hexToRgb(baseColor);
+  let [h, s, l] = rgbToHsl(r, g, b);
+  
+  // 提高饱和度 20-30%（根据原饱和度调整）
+  // 如果原饱和度较低（<60%），提高 30%；否则提高 20%
+  const saturationIncrease = s < 60 ? 30 : 20;
+  s = Math.min(100, s + saturationIncrease);
+  
+  // 如果亮度太低（<40%），适当提高亮度以提高对比度
+  // 如果亮度太高（>75%），适当降低亮度以避免与白色背景太接近
+  if (l < 40) {
+    l = Math.min(50, l + 10); // 提高暗色，但不超过50%
+  } else if (l > 75) {
+    l = Math.max(60, l - 10); // 降低过亮的颜色，但不低于60%
+  }
+  
+  // 对于灰色系（饱和度<10%），提高饱和度以增加区分度
+  if (s < 10) {
+    s = Math.min(30, s + 20); // 给灰色增加一些颜色倾向
+  }
+  
+  const [newR, newG, newB] = hslToRgb(h, s, l);
+  return rgbToHex(newR, newG, newB);
+}
+
+/**
  * 获取 Tag 的 Border 颜色（根据主题适配）
  * @param baseColor 用户选择的基础颜色
  * @param theme 主题模式
@@ -223,8 +282,10 @@ export function getTagBorderColor(baseColor: string, theme: Theme): string {
   let borderColor: string;
   
   if (theme === 'light') {
-    borderColor = baseColor;
+    // Light 模式：增强颜色以提高对比度和区分度
+    borderColor = enhanceColorForLight(baseColor);
   } else {
+    // Dark 模式：柔化颜色以避免刺眼
     borderColor = softenColorForDark(baseColor);
   }
   
@@ -239,10 +300,18 @@ export function getTagBorderColor(baseColor: string, theme: Theme): string {
  * @returns Tint 颜色（rgba 格式）
  */
 export function getTagTintColor(baseColor: string, theme: Theme): string {
-  // Light 模式：使用原色，10% 透明度
-  // Dark 模式：使用柔化后的颜色，15% 透明度
-  const colorForTint = theme === 'light' ? baseColor : softenColorForDark(baseColor);
-  const opacity = theme === 'light' ? 0.10 : 0.15;
+  let colorForTint: string;
+  let opacity: number;
+  
+  if (theme === 'light') {
+    // Light 模式：使用增强后的颜色，10% 透明度（增强的颜色会让tint更明显）
+    colorForTint = enhanceColorForLight(baseColor);
+    opacity = 0.10;
+  } else {
+    // Dark 模式：使用专门优化的 tint 颜色，提高透明度和亮度以确保可见度
+    colorForTint = getTintColorForDark(baseColor);
+    opacity = 0.20; // 从 15% 提高到 20%，让 tint 更明显
+  }
   
   // 注意：tint 是半透明的，对比度验证在最终渲染时进行
   // 这里直接返回 tint 颜色，文本对比度由 CSS 变量 var(--text-main) 保证

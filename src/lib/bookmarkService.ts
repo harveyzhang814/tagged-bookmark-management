@@ -14,8 +14,36 @@ import type {
   Tag
 } from './types';
 
-// 预定义的调色板，所有颜色HSL中L>75%
-const tagPalette = ['#ffcc00', '#ffb3ba', '#bae1ff', '#baffc9', '#ffffba', '#ffdfba', '#e0bbff', '#ffcccb'];
+/**
+ * 16色预设模版 - 使用HEX编码存储
+ * 基于OKLCH色彩空间设计，确保在Light/Dark模式下都有良好表现
+ */
+export const TAG_COLOR_PALETTE_24: readonly string[] = [
+  // Green (绿色系)
+  '#4A9A5E', // green-1: oklch(0.62 0.120 150)
+  '#358660', // green-2: oklch(0.56 0.100 160)
+  // Teal (青色系)
+  '#0F9B89', // teal-1: oklch(0.62 0.110 180)
+  '#16827D', // teal-2: oklch(0.55 0.090 190)
+  // Cyan (青蓝色系)
+  '#33A3B4', // cyan-1: oklch(0.66 0.100 210)
+  '#398BA9', // cyan-2: oklch(0.60 0.090 225)
+  // Azure (天蓝色系)
+  '#5DA1C8', // azure-1: oklch(0.68 0.090 235)
+  // Blue (蓝色系)
+  '#488ACB', // blue-1: oklch(0.62 0.120 250)
+  '#537ABB', // blue-2: oklch(0.58 0.110 260)
+  '#5365A3', // blue-3: oklch(0.52 0.100 270)
+  // Indigo (靛蓝色系)
+  '#7470B9', // indigo-1: oklch(0.58 0.110 285)
+  '#6D5C9C', // indigo-2: oklch(0.52 0.100 295)
+  // Purple (紫色系)
+  '#8E70B0', // purple-1: oklch(0.60 0.100 305)
+  '#825E93', // purple-2: oklch(0.54 0.090 315)
+  // Slate (石板/灰色系)
+  '#798898', // slate-1: oklch(0.62 0.030 250)
+  '#576574', // slate-2: oklch(0.50 0.030 250)
+] as const;
 
 const generateId = (prefix: string) => `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 
@@ -67,15 +95,42 @@ const generateLightColor = (): string => {
 };
 
 /**
- * 默认标签颜色（浅灰色）
+ * 获取默认标签颜色（智能分配：优先使用最少被使用的颜色）
+ * @returns 返回预设16色中使用次数最少的颜色
  */
-const DEFAULT_TAG_COLOR = '#d3d3d3';
-
-/**
- * 获取默认标签颜色（当用户未提供颜色时使用）
- */
-const getDefaultTagColor = (): string => {
-  return DEFAULT_TAG_COLOR;
+const getDefaultTagColor = async (): Promise<string> => {
+  const tags = await getTagsMap();
+  const tagList = Object.values(tags);
+  
+  // 统计每种预设颜色的使用次数
+  const colorUsage = new Map<string, number>();
+  TAG_COLOR_PALETTE_24.forEach(color => {
+    colorUsage.set(color.toLowerCase(), 0);
+  });
+  
+  // 统计现有标签使用的颜色（忽略非预设颜色）
+  tagList.forEach(tag => {
+    const normalizedColor = tag.color.toLowerCase();
+    if (colorUsage.has(normalizedColor)) {
+      const count = colorUsage.get(normalizedColor) ?? 0;
+      colorUsage.set(normalizedColor, count + 1);
+    }
+  });
+  
+  // 找到使用次数最少的颜色
+  let minCount = Infinity;
+  let selectedColor = TAG_COLOR_PALETTE_24[0];
+  
+  for (const color of TAG_COLOR_PALETTE_24) {
+    const normalizedColor = color.toLowerCase();
+    const count = colorUsage.get(normalizedColor) ?? 0;
+    if (count < minCount) {
+      minCount = count;
+      selectedColor = color;
+    }
+  }
+  
+  return selectedColor;
 };
 
 const normalizeBookmark = (bookmark: BookmarkItem): BookmarkItem => {
@@ -92,11 +147,17 @@ export const ensureDefaults = async () => {
 
   if (Object.keys(tags).length === 0) {
     const now = Date.now();
+    // 为默认标签分配不同的颜色
+    const defaultTagColors = [
+      TAG_COLOR_PALETTE_24[0], // green-1
+      TAG_COLOR_PALETTE_24[7], // blue-1
+      TAG_COLOR_PALETTE_24[12], // purple-1
+    ];
     const defaultTags: Tag[] = [
       {
         id: generateId('tag'),
         name: '灵感',
-        color: DEFAULT_TAG_COLOR,
+        color: defaultTagColors[0],
         usageCount: 0,
         clickCount: 0,
         pinned: false,
@@ -106,7 +167,7 @@ export const ensureDefaults = async () => {
       {
         id: generateId('tag'),
         name: '阅读清单',
-        color: DEFAULT_TAG_COLOR,
+        color: defaultTagColors[1],
         usageCount: 0,
         clickCount: 0,
         pinned: false,
@@ -116,7 +177,7 @@ export const ensureDefaults = async () => {
       {
         id: generateId('tag'),
         name: '工具',
-        color: DEFAULT_TAG_COLOR,
+        color: defaultTagColors[2],
         usageCount: 0,
         clickCount: 0,
         pinned: false,
@@ -166,10 +227,20 @@ export const createTag = async (payload: Pick<Tag, 'name' | 'color' | 'descripti
   const tags = await getTagsMap();
   const id = generateId('tag');
   const now = Date.now();
+  
+  // 如果用户未提供颜色或颜色为空，使用智能分配获取默认颜色
+  let tagColor: string;
+  if (payload.color && payload.color.trim()) {
+    tagColor = payload.color.trim();
+  } else {
+    // 使用智能分配：优先选择使用次数最少的预设颜色
+    tagColor = await getDefaultTagColor();
+  }
+  
   const tag: Tag = {
     id,
     name: payload.name,
-    color: payload.color && payload.color.trim() ? payload.color.trim() : getDefaultTagColor(),
+    color: tagColor,
     description: payload.description,
     usageCount: 0,
     clickCount: 0,

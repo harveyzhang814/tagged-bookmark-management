@@ -136,17 +136,17 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid var(--border-muted);
+  border: 1.5px solid;
   background: var(--bg-card);
   display: flex;
   flex-direction: column;
   gap: 8px;
   user-select: none;
+  /* borderColor 和 backgroundColor 通过内联样式动态设置 */
 }
 
 .bookmark-sidebar__item:hover {
-  background: var(--bg-panel);
-  border-color: var(--accent);
+  border-width: 2px;
   box-shadow: var(--shadow-sm);
   transform: translateX(2px);
 }

@@ -1,5 +1,5 @@
 .tag-pill {
-  border: 1px solid;
+  border: 1.5px solid;
   font-family: var(--font-family);
   font-size: 11px;
   font-weight: 500;
@@ -24,11 +24,11 @@
 
 /* Hover 状态：border 加粗，tint 微增 */
 .tag-pill:hover:not(.tag-pill--disabled) {
-  border-width: 1.5px;
+  border-width: 2px;
 }
 
 .tag-pill button:hover:not(.tag-pill--disabled) {
-  border-width: 1.5px;
+  border-width: 2px;
 }
 
 /* Active/Selected 状态：使用 ring 效果，避免布局抖动 */

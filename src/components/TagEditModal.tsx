@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { PixelButton } from './PixelButton';
 import { TagPill } from './TagPill';
 import { ToggleSwitch } from './ToggleSwitch';
+import { ColorPicker } from './ColorPicker';
+import { TAG_COLOR_PALETTE_24 } from '../lib/bookmarkService';
+import { getAllTags } from '../lib/bookmarkService';
 import type { Tag } from '../lib/types';
 import './tagEditModal.css';
 
@@ -13,14 +16,50 @@ interface TagEditModalProps {
   onDelete?: (tagId: string) => Promise<void>;
 }
 
-const DEFAULT_TAG_COLOR = '#d3d3d3';
+/**
+ * 获取智能分配的默认颜色（基于现有标签使用情况）
+ */
+const getDefaultTagColor = async (): Promise<string> => {
+  const tags = await getAllTags();
+  
+  // 统计每种预设颜色的使用次数
+  const colorUsage = new Map<string, number>();
+  TAG_COLOR_PALETTE_24.forEach(color => {
+    colorUsage.set(color.toLowerCase(), 0);
+  });
+  
+  // 统计现有标签使用的颜色
+  tags.forEach(tag => {
+    const normalizedColor = tag.color.toLowerCase();
+    if (colorUsage.has(normalizedColor)) {
+      const count = colorUsage.get(normalizedColor) ?? 0;
+      colorUsage.set(normalizedColor, count + 1);
+    }
+  });
+  
+  // 找到使用次数最少的颜色
+  let minCount = Infinity;
+  let selectedColor = TAG_COLOR_PALETTE_24[0];
+  
+  for (const color of TAG_COLOR_PALETTE_24) {
+    const normalizedColor = color.toLowerCase();
+    const count = colorUsage.get(normalizedColor) ?? 0;
+    if (count < minCount) {
+      minCount = count;
+      selectedColor = color;
+    }
+  }
+  
+  return selectedColor;
+};
 
 export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEditModalProps) => {
   const [name, setName] = useState('');
-  const [color, setColor] = useState(DEFAULT_TAG_COLOR);
+  const [color, setColor] = useState(TAG_COLOR_PALETTE_24[0]);
   const [description, setDescription] = useState('');
   const [pinned, setPinned] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingDefaultColor, setIsLoadingDefaultColor] = useState(false);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const isCreateMode = !tag;
 
@@ -36,11 +75,18 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
       setDescription(tag.description || '');
       setPinned(tag.pinned);
     } else {
-      // 创建模式：重置表单
+      // 创建模式：重置表单并获取智能分配的默认颜色
       setName('');
-      setColor(DEFAULT_TAG_COLOR);
       setDescription('');
       setPinned(false);
+      setIsLoadingDefaultColor(true);
+      getDefaultTagColor().then((defaultColor) => {
+        setColor(defaultColor);
+        setIsLoadingDefaultColor(false);
+      }).catch(() => {
+        setColor(TAG_COLOR_PALETTE_24[0]);
+        setIsLoadingDefaultColor(false);
+      });
     }
   }, [tag]);
 
@@ -156,11 +202,10 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
           </div>
           <div className="tag-edit-modal__field">
             <label className="tag-edit-modal__label">颜色</label>
-            <input
-              type="color"
-              className="tag-edit-modal__input tag-edit-modal__color-input"
+            <ColorPicker
               value={color}
-              onChange={(e) => setColor(e.target.value)}
+              onChange={setColor}
+              disabled={isLoadingDefaultColor}
             />
           </div>
           <div className="tag-edit-modal__field">

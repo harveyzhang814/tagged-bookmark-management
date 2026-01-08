@@ -1,0 +1,112 @@
+.custom-color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.custom-color-picker__canvas-wrapper {
+  position: relative;
+  border: 1.5px solid var(--border-muted);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
+.custom-color-picker__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.custom-color-picker__picker-indicator {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.custom-color-picker__hue-slider-wrapper {
+  position: relative;
+  height: 20px;
+  border: 1.5px solid var(--border-muted);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-card);
+  cursor: pointer;
+}
+
+.custom-color-picker__hue-slider {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    #ff0000 0%,
+    #ffff00 16.66%,
+    #00ff00 33.33%,
+    #00ffff 50%,
+    #0000ff 66.66%,
+    #ff00ff 83.33%,
+    #ff0000 100%
+  );
+}
+
+.custom-color-picker__hue-indicator {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+}
+
+.custom-color-picker__inputs {
+  display: flex;
+  gap: 8px;
+}
+
+.custom-color-picker__hex-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border-muted);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 13px;
+  font-family: monospace;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-weight: 500;
+}
+
+.custom-color-picker__hex-input:hover:not(:disabled) {
+  border-color: var(--border-color);
+}
+
+.custom-color-picker__hex-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
+  background: var(--bg-panel);
+}
+
+[data-theme='dark'] .custom-color-picker__hex-input:focus {
+  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+}
+
+.custom-color-picker__hex-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--bg-panel);
+}

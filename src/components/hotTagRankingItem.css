@@ -3,8 +3,9 @@
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
-  border: 1px solid var(--border-muted);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+  border: 1.5px solid;
+  box-sizing: border-box;
+  /* borderColor 和 backgroundColor 通过内联样式动态设置 */
 }
 
 .hot-tag-ranking-title {
