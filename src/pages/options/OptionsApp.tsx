@@ -3,6 +3,8 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
 import { HomePage } from './pages/HomePage';
 import { ThemeToggle } from '../../components/ThemeToggle';
+import { ImportExportModal } from '../../components/ImportExportModal';
+import { IconButton } from '../../components/IconButton';
 import { initTheme } from '../../lib/theme';
 import { getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
@@ -19,6 +21,7 @@ export const OptionsApp = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('home');
   const [isInitialized, setIsInitialized] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
   // 初始化：从存储或URL参数读取tab
   useEffect(() => {
@@ -95,11 +98,47 @@ export const OptionsApp = () => {
         </nav>
 
         <div className="options-navigator__actions">
+          <IconButton
+            variant="secondary"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8 12h8M8 12l-2-2m2 2l-2 2M16 12l2-2m-2 2l2 2"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <circle
+                  cx="4"
+                  cy="12"
+                  r="2"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx="20"
+                  cy="12"
+                  r="2"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+              </svg>
+            }
+            aria-label="导入导出"
+            onClick={() => setIsImportExportModalOpen(true)}
+          />
           <ThemeToggle />
         </div>
       </header>
 
       <main>{renderContent}</main>
+
+      <ImportExportModal
+        isOpen={isImportExportModalOpen}
+        onClose={() => setIsImportExportModalOpen(false)}
+        onImportSuccess={handleRefresh}
+      />
     </div>
   );
 };

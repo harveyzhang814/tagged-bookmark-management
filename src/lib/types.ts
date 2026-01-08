@@ -49,4 +49,41 @@ export interface HotTag {
   clickCount: number;
 }
 
+// 导入导出相关类型
+export interface ImportExportMetadata {
+  version: string;
+  exportedAt: number;
+  hasClickHistory: boolean;
+  productName: string;
+  hash?: string; // 未来扩展：文件完整性校验
+}
+
+export interface ImportExportData {
+  bookmarks: Record<string, Omit<BookmarkItem, 'clickCount'>>;
+  tags: Record<string, Omit<Tag, 'clickCount' | 'usageCount'>>;
+}
+
+export interface ImportExportFile {
+  metadata: ImportExportMetadata;
+  data: ImportExportData;
+}
+
+export interface ImportFileData {
+  metadata: ImportExportMetadata;
+  data: ImportExportData;
+  bookmarksCount: number;
+  tagsCount: number;
+}
+
+export interface ImportResult {
+  imported: {
+    bookmarks: number;
+    tags: number;
+  };
+  skipped: {
+    bookmarks: number;
+    tags: number;
+  };
+}
+
 
