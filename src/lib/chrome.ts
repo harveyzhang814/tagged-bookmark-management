@@ -27,7 +27,7 @@ export const sendMessage = async <T extends object, R = void>(message: T): Promi
   });
 };
 
-export const openOptionsPage = async (tab?: 'home' | 'bookmarks' | 'tags') => {
+export const openOptionsPage = async (tab?: 'home' | 'bookmarks' | 'tags' | 'ranking') => {
   if (!isChromeRuntime() || !chrome.runtime?.openOptionsPage) {
     // Fallback: 手动打开 options 页面
     const url = chrome.runtime.getURL('src/pages/options/main.html');

@@ -133,10 +133,10 @@ export const getTheme = async (): Promise<Theme> =>
 export const saveTheme = async (theme: Theme) =>
   writeValue(STORAGE_KEYS.THEME, theme);
 
-export type ActiveTab = 'home' | 'bookmarks' | 'tags';
+export type ActiveTab = 'home' | 'bookmarks' | 'tags' | 'ranking';
 
 export const getActiveTab = async (): Promise<ActiveTab> =>
-  readValue<ActiveTab>(STORAGE_KEYS.ACTIVE_TAB, 'home');
+  readValue<ActiveTab>(STORAGE_KEYS.ACTIVE_TAB, 'bookmarks');
 
 export const saveActiveTab = async (tab: ActiveTab) =>
   writeValue(STORAGE_KEYS.ACTIVE_TAB, tab);

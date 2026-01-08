@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
 import { HomePage } from './pages/HomePage';
+import { RankingPage } from './pages/RankingPage';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { ImportExportModal } from '../../components/ImportExportModal';
 import { IconButton } from '../../components/IconButton';
@@ -9,16 +10,16 @@ import { initTheme } from '../../lib/theme';
 import { getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
 
-type TabKey = 'home' | 'bookmarks' | 'tags';
+type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking';
 
 const tabs: { key: TabKey; label: string }[] = [
-  { key: 'home', label: '首页' },
   { key: 'bookmarks', label: '书签' },
-  { key: 'tags', label: '标签' }
+  { key: 'tags', label: '标签' },
+  { key: 'ranking', label: '榜单' }
 ];
 
 export const OptionsApp = () => {
-  const [activeTab, setActiveTab] = useState<TabKey>('home');
+  const [activeTab, setActiveTab] = useState<TabKey>('bookmarks');
   const [isInitialized, setIsInitialized] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
@@ -30,14 +31,22 @@ export const OptionsApp = () => {
       const params = new URLSearchParams(window.location.search);
       const urlTab = params.get('tab') as TabKey | null;
       
-      if (urlTab && ['home', 'bookmarks', 'tags'].includes(urlTab)) {
-        setActiveTab(urlTab);
-        await saveActiveTab(urlTab);
+      if (urlTab && ['home', 'bookmarks', 'tags', 'ranking'].includes(urlTab)) {
+        // 如果 URL 参数是 'home'，跳转到默认 tab 'bookmarks'
+        const finalTab = urlTab === 'home' ? 'bookmarks' : urlTab;
+        setActiveTab(finalTab);
+        await saveActiveTab(finalTab);
         setIsInitialized(true);
       } else {
         // 从存储读取上次保存的tab
         const savedTab = await getActiveTab();
-        setActiveTab(savedTab);
+        // 如果保存的是 'home'，则跳转到默认 tab 'bookmarks'
+        const finalTab = savedTab === 'home' ? 'bookmarks' : savedTab;
+        setActiveTab(finalTab);
+        // 如果保存的是 'home'，更新存储为默认 tab
+        if (savedTab === 'home') {
+          await saveActiveTab('bookmarks');
+        }
         setIsInitialized(true);
       }
     };
@@ -71,6 +80,8 @@ export const OptionsApp = () => {
         return <HomePage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'tags':
         return <TagsPage key={refreshKey} />;
+      case 'ranking':
+        return <RankingPage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'bookmarks':
       default:
         return <BookmarksPage key={refreshKey} onRefresh={handleRefresh} />;
