@@ -1,0 +1,37 @@
+.hot-tag-ranking-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid var(--border-muted);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.hot-tag-ranking-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+}
+
+.hot-tag-ranking-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.hot-tag-ranking-stat-item svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}

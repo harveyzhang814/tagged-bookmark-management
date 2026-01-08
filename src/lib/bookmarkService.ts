@@ -303,6 +303,13 @@ export const getHotTags = async (limit = 6): Promise<HotTag[]> => {
     .map((tag) => ({ tag, clickCount: tag.clickCount }));
 };
 
+export const getHotBookmarks = async (limit = 10): Promise<BookmarkItem[]> => {
+  const bookmarks = await getAllBookmarks();
+  return bookmarks
+    .sort((a, b) => b.clickCount - a.clickCount)
+    .slice(0, limit);
+};
+
 export const getPinnedBookmarks = async (): Promise<BookmarkItem[]> => {
   const bookmarks = await getAllBookmarks();
   return bookmarks.filter((bookmark) => bookmark.pinned).sort((a, b) => b.updatedAt - a.updatedAt);

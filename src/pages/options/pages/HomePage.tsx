@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
-import { getPinnedBookmarks, getHotTags, getAllTags, getAllBookmarks, createBookmark, updateBookmark } from '../../../lib/bookmarkService';
+import { getPinnedBookmarks, getHotTags, getHotBookmarks, getAllTags, getAllBookmarks, createBookmark, updateBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import { HorizontalScrollList } from '../../../components/HorizontalScrollList';
 import { PinnedBookmarkCard } from '../../../components/PinnedBookmarkCard';
 import { HotTagCard } from '../../../components/HotTagCard';
+import { RankingList } from '../../../components/RankingList';
+import { HotTagRankingItem } from '../../../components/HotTagRankingItem';
+import { HotBookmarkRankingItem } from '../../../components/HotBookmarkRankingItem';
 import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
 import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import { PixelButton } from '../../../components/PixelButton';
@@ -18,6 +21,7 @@ interface HomePageProps {
 export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
   const [pinnedBookmarks, setPinnedBookmarks] = useState<BookmarkItem[]>([]);
   const [hotTags, setHotTags] = useState<Tag[]>([]);
+  const [hotBookmarks, setHotBookmarks] = useState<BookmarkItem[]>([]);
   const [pinnedTags, setPinnedTags] = useState<Tag[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [allBookmarks, setAllBookmarks] = useState<BookmarkItem[]>([]);
@@ -33,14 +37,16 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
       setIsLoading(true);
     }
     try {
-      const [pinned, hotTagsData, tags, bookmarks] = await Promise.all([
+      const [pinned, hotTagsData, hotBookmarksData, tags, bookmarks] = await Promise.all([
         getPinnedBookmarks(),
         getHotTags(10),
+        getHotBookmarks(10),
         getAllTags(),
         getAllBookmarks()
       ]);
       setPinnedBookmarks(pinned);
       setHotTags(hotTagsData.map((ht) => ht.tag));
+      setHotBookmarks(hotBookmarksData);
       setAllTags(tags);
       setAllBookmarks(bookmarks);
       // 获取置顶标签，按点击次数倒序
@@ -94,6 +100,7 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
       return {
         filteredPinnedBookmarks: pinnedBookmarks,
         filteredHotTags: hotTags,
+        filteredHotBookmarks: hotBookmarks,
         filteredPinnedTags: pinnedTags
       };
     }
@@ -117,6 +124,17 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
              (tag.description && tag.description.toLowerCase().includes(query));
     });
 
+    // 过滤热门书签
+    const filteredHotBookmarks = hotBookmarks.filter((bookmark) => {
+      const titleMatch = bookmark.title.toLowerCase().includes(query);
+      const urlMatch = bookmark.url.toLowerCase().includes(query);
+      const tagMatch = bookmark.tags.some((tagId) => {
+        const tag = allTags.find((t) => t.id === tagId);
+        return tag?.name.toLowerCase().includes(query);
+      });
+      return titleMatch || urlMatch || tagMatch;
+    });
+
     // 过滤置顶标签
     const filteredPinnedTags = pinnedTags.filter((tag) => {
       return tag.name.toLowerCase().includes(query) || 
@@ -126,9 +144,10 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
     return {
       filteredPinnedBookmarks,
       filteredHotTags,
+      filteredHotBookmarks,
       filteredPinnedTags
     };
-  }, [searchQuery, pinnedBookmarks, hotTags, pinnedTags, allTags]);
+  }, [searchQuery, pinnedBookmarks, hotTags, hotBookmarks, pinnedTags, allTags]);
 
   const handlePinnedTagClick = (tag: Tag) => {
     if (!isBookmarkSidebarOpen || selectedTagId !== tag.id) {
@@ -249,18 +268,43 @@ export const HomePage = ({ onNavigate, onRefresh }: HomePageProps) => {
             )}
           </HorizontalScrollList>
 
-          <HorizontalScrollList
-            title="热门标签"
-            onMoreClick={filterBySearch.filteredHotTags.length > 0 ? handleHotTagsMoreClick : undefined}
-          >
-            {filterBySearch.filteredHotTags.length > 0 ? (
-              filterBySearch.filteredHotTags.map((tag) => (
-                <HotTagCard key={tag.id} tag={tag} onClick={() => handleHotTagClick(tag)} />
-              ))
-            ) : (
-              <div className="empty-state">暂无热门标签</div>
-            )}
-          </HorizontalScrollList>
+          <div className="home-rankings-container">
+            <RankingList
+              title="热门标签"
+              onMoreClick={filterBySearch.filteredHotTags.length > 0 ? handleHotTagsMoreClick : undefined}
+            >
+              {filterBySearch.filteredHotTags.length > 0 ? (
+                filterBySearch.filteredHotTags.map((tag, index) => (
+                  <HotTagRankingItem
+                    key={tag.id}
+                    tag={tag}
+                    rank={index + 1}
+                    onClick={() => handleHotTagClick(tag)}
+                  />
+                ))
+              ) : (
+                <div className="empty-state">暂无热门标签</div>
+              )}
+            </RankingList>
+
+            <RankingList
+              title="热门书签"
+              onMoreClick={filterBySearch.filteredHotBookmarks.length > 0 ? handlePinnedMoreClick : undefined}
+            >
+              {filterBySearch.filteredHotBookmarks.length > 0 ? (
+                filterBySearch.filteredHotBookmarks.map((bookmark, index) => (
+                  <HotBookmarkRankingItem
+                    key={bookmark.id}
+                    bookmark={bookmark}
+                    tags={allTags}
+                    rank={index + 1}
+                  />
+                ))
+              ) : (
+                <div className="empty-state">暂无热门书签</div>
+              )}
+            </RankingList>
+          </div>
         </div>
 
         {isBookmarkSidebarOpen && (
