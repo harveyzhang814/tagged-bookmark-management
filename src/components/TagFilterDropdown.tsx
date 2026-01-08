@@ -1,6 +1,8 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { SearchInput } from './SearchInput';
 import type { Tag } from '../lib/types';
+import { getTheme, type Theme } from '../lib/theme';
+import { getTagDotColor } from '../lib/colorUtils';
 import './tagFilterDropdown.css';
 
 interface TagFilterDropdownProps {
@@ -14,6 +16,7 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(30); // 初始显示30个
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [theme, setTheme] = useState<Theme>('light');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -163,6 +166,29 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
     }
   }, [searchQuery, isOpen]);
 
+  // 初始化主题并监听变化
+  useEffect(() => {
+    const initTheme = async () => {
+      const currentTheme = await getTheme();
+      setTheme(currentTheme);
+    };
+    void initTheme();
+
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      setTheme(isDark ? 'dark' : 'light');
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   // 切换下拉列表
   const handleToggle = useCallback(() => {
     setIsOpen(prev => !prev);
@@ -242,7 +268,7 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
                     className="tag-filter-dropdown__selected-item"
                     onClick={(e) => handleRemoveSelected(tag.id, e)}
                   >
-                    <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: tag.color }} />
+                    <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, theme) }} />
                     <span className="tag-filter-dropdown__tag-name">{tag.name}</span>
                     <svg
                       className="tag-filter-dropdown__remove-icon"
@@ -281,7 +307,7 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
                       className="tag-filter-dropdown__item"
                       onClick={() => handleTagClick(tag.id)}
                     >
-                      <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: tag.color }} />
+                      <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, theme) }} />
                       <span className="tag-filter-dropdown__tag-name">{tag.name}</span>
                     </div>
                   ))}

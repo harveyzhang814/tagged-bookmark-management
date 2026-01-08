@@ -1,7 +1,10 @@
 /**
  * 颜色工具函数
  * 用于根据 WCAG 2.1 标准计算颜色对比度和选择文字颜色
+ * 以及 Tag 颜色的主题适配
  */
+
+import type { Theme } from './theme';
 
 /**
  * 将 hex 颜色字符串转换为 RGB 值数组
@@ -22,6 +25,92 @@ function hexToRgb(hex: string): [number, number, number] {
   const b = parseInt(hex.substring(4, 6), 16);
   
   return [r, g, b];
+}
+
+/**
+ * 将 RGB 值转换为 hex 颜色字符串
+ */
+function rgbToHex(r: number, g: number, b: number): string {
+  const toHex = (n: number) => {
+    const hex = Math.round(Math.max(0, Math.min(255, n))).toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
+  };
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * 将 RGB 转换为 HSL
+ * @param r 0-255
+ * @param g 0-255
+ * @param b 0-255
+ * @returns [h, s, l] 其中 h: 0-360, s: 0-100, l: 0-100
+ */
+function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    switch (max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        break;
+      case g:
+        h = ((b - r) / d + 2) / 6;
+        break;
+      case b:
+        h = ((r - g) / d + 4) / 6;
+        break;
+    }
+  }
+
+  return [h * 360, s * 100, l * 100];
+}
+
+/**
+ * 将 HSL 转换为 RGB
+ * @param h 0-360
+ * @param s 0-100
+ * @param l 0-100
+ * @returns [r, g, b] 其中每个值 0-255
+ */
+function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+  h /= 360;
+  s /= 100;
+  l /= 100;
+
+  let r: number, g: number, b: number;
+
+  if (s === 0) {
+    r = g = b = l;
+  } else {
+    const hue2rgb = (p: number, q: number, t: number) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+
+    r = hue2rgb(p, q, h + 1 / 3);
+    g = hue2rgb(p, q, h);
+    b = hue2rgb(p, q, h - 1 / 3);
+  }
+
+  return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 }
 
 /**
@@ -71,8 +160,9 @@ export function getContrastRatio(color1: string, color2: string): number {
 
 /**
  * 根据背景色和主题模式选择文字颜色
+ * @deprecated 现在文本应使用主题中性色 var(--text-main)，此函数保留以保持向后兼容
  * @param backgroundColor 背景色（hex 格式）
- * @param theme 主题模式：'light' 或 'dark'（当前未使用，保留以保持接口兼容性）
+ * @param theme 主题模式：'light' 或 'dark'
  * @returns 文字颜色（hex 格式）
  */
 export function getTextColor(
@@ -98,4 +188,134 @@ export function getTextColor(
   } else {
     return lightText; // #e0e0e0
   }
+}
+
+/**
+ * 对颜色进行柔化处理（用于 Dark 模式）
+ * 降低饱和度 20-30%，限制亮度上限为 70%
+ * @param baseColor hex 颜色字符串
+ * @returns 柔化后的 hex 颜色
+ */
+export function softenColorForDark(baseColor: string): string {
+  const [r, g, b] = hexToRgb(baseColor);
+  let [h, s, l] = rgbToHsl(r, g, b);
+  
+  // 降低饱和度 20-30%（根据原饱和度调整）
+  // 如果原饱和度很高（>80%），降低 30%；否则降低 20%
+  const saturationReduction = s > 80 ? 30 : 25;
+  s = Math.max(0, s - saturationReduction);
+  
+  // 限制亮度上限为 70%
+  l = Math.min(70, l);
+  
+  const [newR, newG, newB] = hslToRgb(h, s, l);
+  return rgbToHex(newR, newG, newB);
+}
+
+/**
+ * 获取 Tag 的 Border 颜色（根据主题适配）
+ * @param baseColor 用户选择的基础颜色
+ * @param theme 主题模式
+ * @returns Border 颜色（hex 格式）
+ */
+export function getTagBorderColor(baseColor: string, theme: Theme): string {
+  const bgColor = theme === 'light' ? '#ffffff' : '#252525'; // 对应 --bg-card
+  let borderColor: string;
+  
+  if (theme === 'light') {
+    borderColor = baseColor;
+  } else {
+    borderColor = softenColorForDark(baseColor);
+  }
+  
+  // 确保 border 与背景的对比度 ≥ 3:1
+  return ensureContrastRatio(borderColor, bgColor, 3.0);
+}
+
+/**
+ * 获取 Tag 的 Tint 背景色（极浅的填充）
+ * @param baseColor 用户选择的基础颜色
+ * @param theme 主题模式
+ * @returns Tint 颜色（rgba 格式）
+ */
+export function getTagTintColor(baseColor: string, theme: Theme): string {
+  // Light 模式：使用原色，10% 透明度
+  // Dark 模式：使用柔化后的颜色，15% 透明度
+  const colorForTint = theme === 'light' ? baseColor : softenColorForDark(baseColor);
+  const opacity = theme === 'light' ? 0.10 : 0.15;
+  
+  // 注意：tint 是半透明的，对比度验证在最终渲染时进行
+  // 这里直接返回 tint 颜色，文本对比度由 CSS 变量 var(--text-main) 保证
+  const [r, g, b] = hexToRgb(colorForTint);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+/**
+ * 获取 Tag 的 Dot 颜色（用于辅助识别）
+ * @param baseColor 用户选择的基础颜色
+ * @param theme 主题模式
+ * @returns Dot 颜色（hex 格式）
+ */
+export function getTagDotColor(baseColor: string, theme: Theme): string {
+  // Dot 颜色与 Border 颜色逻辑一致
+  // Dot 通常显示在较暗的背景上，使用 --bg-panel 作为参考
+  const bgColor = theme === 'light' ? '#ffffff' : '#1e1e1e'; // 对应 --bg-panel
+  const borderColor = getTagBorderColor(baseColor, theme);
+  
+  // 确保 dot 与背景的对比度 ≥ 3:1
+  return ensureContrastRatio(borderColor, bgColor, 3.0);
+}
+
+/**
+ * 确保两个颜色之间的对比度达到最低要求
+ * 如果不达标，逐步调整第一个颜色直到达标
+ * @param color1 需要调整的颜色
+ * @param color2 参考颜色（通常是背景色）
+ * @param minRatio 最低对比度要求（默认 3.0）
+ * @returns 调整后的颜色（如果已达标则返回原色）
+ */
+export function ensureContrastRatio(
+  color1: string,
+  color2: string,
+  minRatio: number = 3.0
+): string {
+  let currentRatio = getContrastRatio(color1, color2);
+  
+  if (currentRatio >= minRatio) {
+    return color1; // 已达标，直接返回
+  }
+  
+  // 需要调整颜色以提高对比度
+  const [r, g, b] = hexToRgb(color1);
+  const [bgR, bgG, bgB] = hexToRgb(color2);
+  
+  // 判断背景是亮还是暗
+  const bgLuminance = getRelativeLuminance(color2);
+  const isDarkBackground = bgLuminance < 0.5;
+  
+  // 调整策略：如果背景是暗的，让颜色更亮；如果背景是亮的，让颜色更暗
+  let adjustedColor = color1;
+  let attempts = 0;
+  const maxAttempts = 20;
+  
+  while (currentRatio < minRatio && attempts < maxAttempts) {
+    const [currR, currG, currB] = hexToRgb(adjustedColor);
+    let [h, s, l] = rgbToHsl(currR, currG, currB);
+    
+    // 根据背景亮度调整
+    if (isDarkBackground) {
+      // 背景暗，让颜色更亮
+      l = Math.min(100, l + 5);
+    } else {
+      // 背景亮，让颜色更暗
+      l = Math.max(0, l - 5);
+    }
+    
+    const [newR, newG, newB] = hslToRgb(h, s, l);
+    adjustedColor = rgbToHex(newR, newG, newB);
+    currentRatio = getContrastRatio(adjustedColor, color2);
+    attempts++;
+  }
+  
+  return adjustedColor;
 }

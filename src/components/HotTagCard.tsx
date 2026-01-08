@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react';
 import type { Tag } from '../lib/types';
+import { getTheme, type Theme } from '../lib/theme';
+import { getTagDotColor } from '../lib/colorUtils';
 import './hotTagCard.css';
 
 interface HotTagCardProps {
@@ -7,10 +10,38 @@ interface HotTagCardProps {
 }
 
 export const HotTagCard = ({ tag, onClick }: HotTagCardProps) => {
+  const [theme, setTheme] = useState<Theme>('light');
+  const [dotColor, setDotColor] = useState<string>(tag.color);
+
+  useEffect(() => {
+    const initTheme = async () => {
+      const currentTheme = await getTheme();
+      setTheme(currentTheme);
+      setDotColor(getTagDotColor(tag.color, currentTheme));
+    };
+    void initTheme();
+
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const currentTheme: Theme = isDark ? 'dark' : 'light';
+      setTheme(currentTheme);
+      setDotColor(getTagDotColor(tag.color, currentTheme));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [tag.color]);
+
   return (
     <div className="hot-tag-card" onClick={onClick}>
       <div className="hot-tag-header">
-        <span className="hot-tag-color-dot" style={{ backgroundColor: tag.color }} />
+        <span className="hot-tag-color-dot" style={{ backgroundColor: dotColor }} />
         <h4 className="hot-tag-title" title={tag.name}>
           {tag.name}
         </h4>

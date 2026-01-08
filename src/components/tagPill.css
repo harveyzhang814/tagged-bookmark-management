@@ -1,5 +1,5 @@
 .tag-pill {
-  border: none;
+  border: 1px solid;
   font-family: var(--font-family);
   font-size: 11px;
   font-weight: 500;
@@ -14,11 +14,39 @@
   height: 20px;
   line-height: 14px;
   box-sizing: border-box;
-  /* 颜色通过内联样式动态设置 */
+  color: var(--text-main);
+  /* borderColor 和 backgroundColor 通过内联样式动态设置 */
 }
 
 .tag-pill button {
   cursor: pointer;
+}
+
+/* Hover 状态：border 加粗，tint 微增 */
+.tag-pill:hover:not(.tag-pill--disabled) {
+  border-width: 1.5px;
+}
+
+.tag-pill button:hover:not(.tag-pill--disabled) {
+  border-width: 1.5px;
+}
+
+/* Active/Selected 状态：使用 ring 效果，避免布局抖动 */
+.tag-pill--active {
+  box-shadow: 0 0 0 2px;
+  /* shadow 颜色通过内联样式动态设置，使用 borderColor */
+}
+
+/* Pressed 状态（点击时） */
+.tag-pill button:active:not(.tag-pill--disabled) {
+  border-width: 2px;
+}
+
+/* Disabled 状态：整体弱化 */
+.tag-pill--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--text-muted);
 }
 
 .tag-pill--small {

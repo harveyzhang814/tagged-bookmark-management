@@ -2,6 +2,8 @@ import { useMemo, useState, useEffect } from 'react';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import type { Tag } from '../lib/types';
+import { getTheme, type Theme } from '../lib/theme';
+import { getTagDotColor } from '../lib/colorUtils';
 import './tagSidebar.css';
 
 interface TagSidebarProps {
@@ -12,6 +14,7 @@ interface TagSidebarProps {
 export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [theme, setTheme] = useState<Theme>('light');
   const ITEMS_PER_PAGE = 15;
 
   // 过滤标签
@@ -47,6 +50,29 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
+
+  // 初始化主题并监听变化
+  useEffect(() => {
+    const initTheme = async () => {
+      const currentTheme = await getTheme();
+      setTheme(currentTheme);
+    };
+    void initTheme();
+
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      setTheme(isDark ? 'dark' : 'light');
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const handleDragStart = (e: React.DragEvent, tagId: string) => {
     e.dataTransfer.setData('tagId', tagId);
@@ -113,7 +139,7 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
                 draggable={true}
                 onDragStart={(e) => handleDragStart(e, tag.id)}
               >
-                <span className="tag-sidebar__color-dot" style={{ backgroundColor: tag.color }} />
+                <span className="tag-sidebar__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, theme) }} />
                 <span className="tag-sidebar__name">{tag.name}</span>
               </div>
             ))}

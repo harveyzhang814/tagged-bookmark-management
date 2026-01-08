@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
 import type { Tag } from '../lib/types';
 import { RankingItem } from './RankingItem';
+import { getTheme, type Theme } from '../lib/theme';
+import { getTagDotColor } from '../lib/colorUtils';
 import './hotTagRankingItem.css';
 
 interface HotTagRankingItemProps {
@@ -9,9 +12,37 @@ interface HotTagRankingItemProps {
 }
 
 export const HotTagRankingItem = ({ tag, rank, onClick }: HotTagRankingItemProps) => {
+  const [theme, setTheme] = useState<Theme>('light');
+  const [dotColor, setDotColor] = useState<string>(tag.color);
+
+  useEffect(() => {
+    const initTheme = async () => {
+      const currentTheme = await getTheme();
+      setTheme(currentTheme);
+      setDotColor(getTagDotColor(tag.color, currentTheme));
+    };
+    void initTheme();
+
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const currentTheme: Theme = isDark ? 'dark' : 'light';
+      setTheme(currentTheme);
+      setDotColor(getTagDotColor(tag.color, currentTheme));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [tag.color]);
+
   return (
     <RankingItem rank={rank} onClick={onClick}>
-      <span className="hot-tag-ranking-color-dot" style={{ backgroundColor: tag.color }} />
+      <span className="hot-tag-ranking-color-dot" style={{ backgroundColor: dotColor }} />
       <h4 className="hot-tag-ranking-title" title={tag.name}>
         {tag.name}
       </h4>

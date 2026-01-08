@@ -2,6 +2,8 @@ import { useRef, useEffect, useState } from 'react';
 import type { BookmarkItem, Tag } from '../lib/types';
 import { RankingItem } from './RankingItem';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
+import { getTheme, type Theme } from '../lib/theme';
+import { getTagBorderColor, getTagTintColor } from '../lib/colorUtils';
 import './hotBookmarkRankingItem.css';
 
 interface HotBookmarkRankingItemProps {
@@ -20,10 +22,43 @@ export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRank
   const measureTagsRef = useRef<HTMLDivElement>(null);
   const statRef = useRef<HTMLDivElement>(null);
   const [visibleTagCount, setVisibleTagCount] = useState(bookmarkTags.length);
+  const [theme, setTheme] = useState<Theme>('light');
 
   const handleClick = async () => {
     await incrementBookmarkClick(bookmark.id);
     window.open(bookmark.url, '_blank');
+  };
+
+  // 初始化主题并监听变化
+  useEffect(() => {
+    const initTheme = async () => {
+      const currentTheme = await getTheme();
+      setTheme(currentTheme);
+    };
+    void initTheme();
+
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      setTheme(isDark ? 'dark' : 'light');
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // 获取 tag 的样式
+  const getTagStyle = (tag: Tag) => {
+    return {
+      borderColor: getTagBorderColor(tag.color, theme),
+      backgroundColor: getTagTintColor(tag.color, theme),
+      color: 'var(--text-main)',
+    };
   };
 
   useEffect(() => {
@@ -123,11 +158,7 @@ export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRank
                 <span
                   key={tag.id}
                   className="hot-bookmark-ranking-tag"
-                  style={{ 
-                    backgroundColor: tag.color + '20',
-                    color: tag.color,
-                    borderColor: tag.color + '40'
-                  }}
+                  style={getTagStyle(tag)}
                 >
                   {tag.name}
                 </span>
@@ -140,11 +171,7 @@ export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRank
                 <span
                   key={tag.id}
                   className="hot-bookmark-ranking-tag"
-                  style={{ 
-                    backgroundColor: tag.color + '20',
-                    color: tag.color,
-                    borderColor: tag.color + '40'
-                  }}
+                  style={getTagStyle(tag)}
                 >
                   {tag.name}
                 </span>
