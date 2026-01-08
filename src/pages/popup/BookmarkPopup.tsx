@@ -123,7 +123,7 @@ export const BookmarkPopup = () => {
   };
 
   const handleOpenOptions = async () => {
-    await openOptionsPage();
+    await openOptionsPage('bookmarks');
     window.close();
   };
 

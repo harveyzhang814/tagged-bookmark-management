@@ -82,10 +82,17 @@
 }
 
 .home-rankings-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 20px;
   margin-top: 0;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.home-rankings-container > * {
+  flex: 0 0 calc(25% - 10px);
+  max-width: calc(25% - 10px);
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
