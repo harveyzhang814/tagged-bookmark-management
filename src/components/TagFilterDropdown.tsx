@@ -219,7 +219,7 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="tag-filter-dropdown__trigger-text">Tag</span>
+        <span className="tag-filter-dropdown__trigger-text">标签</span>
         {selected.length > 0 && (
           <span className="tag-filter-dropdown__count">{selected.length}</span>
         )}

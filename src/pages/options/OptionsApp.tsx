@@ -24,6 +24,14 @@ export const OptionsApp = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
+  // 获取图标 URL
+  const getIconUrl = (size: '16' | '48' | '128' = '48') => {
+    if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
+      return chrome.runtime.getURL(`icons/icon-${size}.png`);
+    }
+    return `icons/icon-${size}.png`;
+  };
+
   // 初始化：从存储或URL参数读取tab
   useEffect(() => {
     const initializeTab = async () => {
@@ -92,6 +100,11 @@ export const OptionsApp = () => {
     <div className="options-shell">
       <header className="options-navigator">
         <div className="options-navigator__brand">
+          <img 
+            src={getIconUrl('48')} 
+            alt="CrossTag Bookmarks" 
+            className="options-navigator__icon"
+          />
           <h1>CrossTag Bookmarks</h1>
         </div>
         

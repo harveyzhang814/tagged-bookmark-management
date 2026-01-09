@@ -27,12 +27,22 @@
 
 .options-navigator__brand {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.options-navigator__icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .options-navigator__brand h1 {
   margin: 0;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -60,7 +70,7 @@
   border: none;
   border-radius: 0;
   transition: all 0.2s ease;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   position: relative;
   white-space: nowrap;
