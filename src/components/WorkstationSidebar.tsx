@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import type { Workstation } from '../lib/types';
@@ -9,9 +9,10 @@ import './tagSidebar.css';
 interface WorkstationSidebarProps {
   workstations: Workstation[];
   onCreateWorkstation?: (name: string) => Promise<void>;
+  onBookmarkDrop?: (bookmarkId: string, workstationId: string) => Promise<void>;
 }
 
-export const WorkstationSidebar = ({ workstations, onCreateWorkstation }: WorkstationSidebarProps) => {
+export const WorkstationSidebar = ({ workstations, onCreateWorkstation, onBookmarkDrop }: WorkstationSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [theme, setTheme] = useState<Theme>('light');
@@ -74,9 +75,63 @@ export const WorkstationSidebar = ({ workstations, onCreateWorkstation }: Workst
     };
   }, []);
 
+  const [draggedOverWorkstationId, setDraggedOverWorkstationId] = useState<string | null>(null);
+  const dragEnterCount = useRef<Map<string, number>>(new Map());
+
   const handleDragStart = (e: React.DragEvent, workstationId: string) => {
     e.dataTransfer.setData('workstationId', workstationId);
     e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleWorkstationDragEnter = (e: React.DragEvent, workstationId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // 检查是否有拖拽数据
+    const hasData = e.dataTransfer.types.length > 0;
+    if (hasData) {
+      // 使用计数器跟踪进入次数，避免移动到子元素时误清除
+      const count = dragEnterCount.current.get(workstationId) || 0;
+      dragEnterCount.current.set(workstationId, count + 1);
+      setDraggedOverWorkstationId(workstationId);
+    }
+  };
+
+  const handleWorkstationDragOver = (e: React.DragEvent, workstationId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // 如果有拖拽数据，设置 dropEffect
+    if (e.dataTransfer.types.length > 0) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+  };
+
+  const handleWorkstationDragLeave = (e: React.DragEvent, workstationId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // 使用计数器，只有当计数器归零时才清除悬停状态
+    const count = dragEnterCount.current.get(workstationId) || 0;
+    if (count > 0) {
+      dragEnterCount.current.set(workstationId, count - 1);
+      if (count - 1 === 0) {
+        setDraggedOverWorkstationId(null);
+        dragEnterCount.current.delete(workstationId);
+      }
+    }
+  };
+
+  const handleWorkstationDrop = async (e: React.DragEvent, workstationId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggedOverWorkstationId(null);
+    dragEnterCount.current.delete(workstationId);
+    
+    const bookmarkId = e.dataTransfer.getData('bookmarkId');
+    const source = e.dataTransfer.getData('source');
+    
+    // 只处理来自书签卡片的拖拽
+    if (bookmarkId && source === 'bookmarkCard' && onBookmarkDrop) {
+      await onBookmarkDrop(bookmarkId, workstationId);
+    }
   };
 
   const handleCreateWorkstation = async () => {
@@ -135,9 +190,13 @@ export const WorkstationSidebar = ({ workstations, onCreateWorkstation }: Workst
             {paginatedWorkstations.map((workstation) => (
               <div
                 key={workstation.id}
-                className="tag-sidebar__item"
+                className={`tag-sidebar__item ${draggedOverWorkstationId === workstation.id ? 'tag-sidebar__item--drag-over' : ''}`}
                 draggable={true}
                 onDragStart={(e) => handleDragStart(e, workstation.id)}
+                onDragEnter={(e) => handleWorkstationDragEnter(e, workstation.id)}
+                onDragOver={(e) => handleWorkstationDragOver(e, workstation.id)}
+                onDragLeave={(e) => handleWorkstationDragLeave(e, workstation.id)}
+                onDrop={(e) => handleWorkstationDrop(e, workstation.id)}
               >
                 <span className="tag-sidebar__color-dot" style={{ backgroundColor: getTagDotColor(workstation.color, theme) }} />
                 <span className="tag-sidebar__name">{workstation.name}</span>

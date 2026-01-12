@@ -437,7 +437,11 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           <TagSidebar tags={tags} onCreateTag={handleCreateTag} />
         )}
         {isWorkstationSidebarOpen && (
-          <WorkstationSidebar workstations={workstations} onCreateWorkstation={handleCreateWorkstation} />
+          <WorkstationSidebar 
+            workstations={workstations} 
+            onCreateWorkstation={handleCreateWorkstation}
+            onBookmarkDrop={handleWorkstationDrop}
+          />
         )}
       </div>
 

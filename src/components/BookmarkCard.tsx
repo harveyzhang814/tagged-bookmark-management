@@ -1,4 +1,4 @@
-import { type MouseEvent, useState } from 'react';
+import { type MouseEvent, useState, useRef } from 'react';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { BookmarkItem, Tag } from '../lib/types';
@@ -17,13 +17,32 @@ interface BookmarkCardProps {
 export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, onWorkstationDrop }: BookmarkCardProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
+  const dragStartTime = useRef<number>(0);
   const bookmarkTags = bookmark.tags
     .map((tagId) => tags.find((t) => t.id === tagId))
     .filter((t): t is Tag => t !== undefined);
 
-  const handleCardClick = async () => {
+  const handleCardClick = async (e: React.MouseEvent) => {
+    // 如果刚刚拖拽过（300ms内），不触发点击
+    const timeSinceDragStart = Date.now() - dragStartTime.current;
+    if (timeSinceDragStart < 300 && dragStartTime.current > 0) {
+      e.preventDefault();
+      dragStartTime.current = 0;
+      return;
+    }
     await incrementBookmarkClick(bookmark.id);
     window.open(bookmark.url, '_blank');
+  };
+
+  const handleDragStart = (e: React.DragEvent) => {
+    dragStartTime.current = Date.now();
+    e.dataTransfer.setData('bookmarkId', bookmark.id);
+    e.dataTransfer.setData('source', 'bookmarkCard');
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragEnd = () => {
+    dragStartTime.current = 0;
   };
 
   const handleEditClick = (e: MouseEvent) => {
@@ -72,6 +91,9 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
   return (
     <div
       className={`bookmark-card ${bookmark.pinned ? 'bookmark-card--pinned' : ''} ${isDragOver ? 'bookmark-card--drag-over' : ''}`}
+      draggable={true}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       onClick={handleCardClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}

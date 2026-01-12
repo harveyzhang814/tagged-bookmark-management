@@ -127,6 +127,13 @@
   transform: scale(0.98);
 }
 
+.tag-sidebar__item--drag-over {
+  background: var(--bg-panel);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  transform: translateX(4px);
+}
+
 .tag-sidebar__create-icon {
   flex-shrink: 0;
   color: var(--accent);
