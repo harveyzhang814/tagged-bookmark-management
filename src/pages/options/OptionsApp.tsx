@@ -3,6 +3,7 @@ import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
 import { HomePage } from './pages/HomePage';
 import { RankingPage } from './pages/RankingPage';
+import { WorkstationsPage } from './pages/WorkstationsPage';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { ImportExportModal } from '../../components/ImportExportModal';
 import { IconButton } from '../../components/IconButton';
@@ -10,11 +11,12 @@ import { initTheme } from '../../lib/theme';
 import { getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
 
-type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking';
+type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations';
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'bookmarks', label: '书签' },
   { key: 'tags', label: '标签' },
+  { key: 'workstations', label: '工作区' },
   { key: 'ranking', label: '榜单' }
 ];
 
@@ -39,7 +41,7 @@ export const OptionsApp = () => {
       const params = new URLSearchParams(window.location.search);
       const urlTab = params.get('tab') as TabKey | null;
       
-      if (urlTab && ['home', 'bookmarks', 'tags', 'ranking'].includes(urlTab)) {
+      if (urlTab && ['home', 'bookmarks', 'tags', 'ranking', 'workstations'].includes(urlTab)) {
         // 如果 URL 参数是 'home'，跳转到默认 tab 'bookmarks'
         const finalTab = urlTab === 'home' ? 'bookmarks' : urlTab;
         setActiveTab(finalTab);
@@ -88,6 +90,8 @@ export const OptionsApp = () => {
         return <HomePage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'tags':
         return <TagsPage key={refreshKey} />;
+      case 'workstations':
+        return <WorkstationsPage key={refreshKey} />;
       case 'ranking':
         return <RankingPage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'bookmarks':

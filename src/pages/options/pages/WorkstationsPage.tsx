@@ -1,0 +1,285 @@
+import { useEffect, useMemo, useState, useRef } from 'react';
+import { PixelButton } from '../../../components/PixelButton';
+import { SearchInput } from '../../../components/SearchInput';
+import { SortDropdown } from '../../../components/SortDropdown';
+import { WorkstationCard } from '../../../components/WorkstationCard';
+import { WorkstationEditModal } from '../../../components/WorkstationEditModal';
+import { Pagination } from '../../../components/Pagination';
+import { WorkstationBookmarkSidebar } from '../../../components/WorkstationBookmarkSidebar';
+import {
+  getAllWorkstations,
+  createWorkstation,
+  updateWorkstation,
+  deleteWorkstation,
+  removeBookmarkFromWorkstation
+} from '../../../lib/workstationService';
+import { getAllTags, getAllBookmarks } from '../../../lib/bookmarkService';
+import type { Workstation, BookmarkItem, Tag } from '../../../lib/types';
+import './workstationsPage.css';
+
+export const WorkstationsPage = () => {
+  const [workstations, setWorkstations] = useState<Workstation[]>([]);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'createdAt' | 'bookmarkCount' | 'clickCount'>('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [editingWorkstation, setEditingWorkstation] = useState<Workstation | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
+  const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const ITEMS_PER_PAGE = 40;
+
+  const refresh = async () => {
+    const [workstationsList, bookmarksList, tagsList] = await Promise.all([
+      getAllWorkstations(),
+      getAllBookmarks(),
+      getAllTags()
+    ]);
+    setWorkstations(workstationsList);
+    setBookmarks(bookmarksList);
+    setTags(tagsList);
+  };
+
+  useEffect(() => {
+    void refresh();
+  }, []);
+
+  const filtered = useMemo(() => {
+    let list = workstations;
+    // 搜索过滤
+    if (search) {
+      list = list.filter((workstation) => workstation.name.toLowerCase().includes(search.toLowerCase()));
+    }
+    // 排序
+    const sortedList = [...list];
+    sortedList.sort((a, b) => {
+      // 首先按 pinned 排序（置顶在前）
+      if (a.pinned !== b.pinned) {
+        return a.pinned ? -1 : 1;
+      }
+      // 然后根据选择的排序字段和排序方向进行排序
+      let diff = 0;
+      if (sortBy === 'createdAt') {
+        diff = sortOrder === 'desc' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt;
+      } else if (sortBy === 'bookmarkCount') {
+        const aCount = a.bookmarks.length;
+        const bCount = b.bookmarks.length;
+        diff = sortOrder === 'desc' ? bCount - aCount : aCount - bCount;
+      } else if (sortBy === 'clickCount') {
+        diff = sortOrder === 'desc' ? b.clickCount - a.clickCount : a.clickCount - b.clickCount;
+      }
+      return diff;
+    });
+    return sortedList;
+  }, [workstations, search, sortBy, sortOrder]);
+
+  // 分页计算
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginatedWorkstations = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, endIndex);
+  }, [filtered, currentPage]);
+
+  // 当搜索条件或排序改变时，重置到第一页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, sortBy, sortOrder]);
+
+  // 当总页数变化时，确保当前页不超过总页数
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0 && currentPage > 1) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
+  const handleCreateWorkstation = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
+    const newWorkstation = await createWorkstation({ 
+      name: data.name, 
+      color: data.color, 
+      description: data.description,
+      pinned: data.pinned
+    });
+    setIsCreateModalOpen(false);
+    await refresh();
+  };
+
+  const handleEdit = (workstation: Workstation) => {
+    setEditingWorkstation(workstation);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingWorkstation(null);
+  };
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalOpen(false);
+  };
+
+  const handleSaveEdit = async (
+    workstationId: string,
+    data: { name: string; color: string; description?: string; pinned: boolean }
+  ) => {
+    await updateWorkstation(workstationId, data);
+    await refresh();
+  };
+
+  const handleDeleteWorkstation = async (workstationId: string) => {
+    await deleteWorkstation(workstationId);
+    await refresh();
+  };
+
+  const handleTogglePin = async (workstationId: string) => {
+    const workstation = workstations.find((w) => w.id === workstationId);
+    if (workstation) {
+      await updateWorkstation(workstationId, { pinned: !workstation.pinned });
+      await refresh();
+    }
+  };
+
+  const handleWorkstationClick = (workstationId: string) => {
+    if (!isBookmarkSidebarOpen || selectedWorkstationId !== workstationId) {
+      setSelectedWorkstationId(workstationId);
+      setIsBookmarkSidebarOpen(true);
+    } else {
+      // 如果已经打开且是同一个工作区，刷新数据
+      void refresh();
+    }
+  };
+
+  const handleCloseSidebar = () => {
+    setIsBookmarkSidebarOpen(false);
+    setSelectedWorkstationId(null);
+  };
+
+  const handleRemoveBookmark = async (bookmarkId: string) => {
+    if (!selectedWorkstationId) return;
+    await removeBookmarkFromWorkstation(selectedWorkstationId, bookmarkId);
+    await refresh();
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    
+    const bookmarkId = e.dataTransfer.getData('bookmarkId');
+    const source = e.dataTransfer.getData('source');
+    
+    // 只处理来自工作区侧边栏的拖拽
+    if (source !== 'workstationBookmarkSidebar' || !bookmarkId || !selectedWorkstationId) return;
+    
+    // 检查是否拖拽到侧边栏外
+    const sidebarElement = sidebarRef.current;
+    if (!sidebarElement) return;
+    
+    // 使用鼠标位置来判断是否在侧边栏内
+    const x = e.clientX;
+    const y = e.clientY;
+    const rect = sidebarElement.getBoundingClientRect();
+    const isInsideSidebar = 
+      x >= rect.left && 
+      x <= rect.right && 
+      y >= rect.top && 
+      y <= rect.bottom;
+    
+    // 如果拖拽到侧边栏外，移除书签关系
+    if (!isInsideSidebar) {
+      await handleRemoveBookmark(bookmarkId);
+    }
+  };
+
+  const selectedWorkstation = workstations.find((w) => w.id === selectedWorkstationId) || null;
+
+  return (
+    <div 
+      className="workstations-page"
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <div className="workstations-toolbar-merged">
+        <div className="workstations-filters">
+          <SearchInput value={search} placeholder="搜索工作区" onChange={setSearch} />
+          <SortDropdown
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortByChange={setSortBy}
+            onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+            options={[
+              { value: 'createdAt', label: '创建日期' },
+              { value: 'bookmarkCount', label: '书签数量' },
+              { value: 'clickCount', label: '打开次数' }
+            ]}
+          />
+        </div>
+        <div className="workstations-actions">
+          <PixelButton onClick={() => setIsCreateModalOpen(true)}>
+            新建工作区
+          </PixelButton>
+        </div>
+      </div>
+
+      <div className="workstations-content-wrapper">
+        <div className="workstations-content">
+          <div className="workstation-grid">
+            {paginatedWorkstations.map((workstation) => (
+              <WorkstationCard
+                key={workstation.id}
+                workstation={workstation}
+                onEdit={handleEdit}
+                onTogglePin={handleTogglePin}
+                onClick={handleWorkstationClick}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </div>
+
+        {isBookmarkSidebarOpen && selectedWorkstation && (
+          <div ref={sidebarRef}>
+            <WorkstationBookmarkSidebar
+              workstationId={selectedWorkstationId}
+              workstation={selectedWorkstation}
+              bookmarks={bookmarks}
+              tags={tags}
+              onClose={handleCloseSidebar}
+              onRemoveBookmark={handleRemoveBookmark}
+            />
+          </div>
+        )}
+      </div>
+
+      {editingWorkstation && (
+        <WorkstationEditModal
+          workstation={editingWorkstation}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveEdit}
+          onDelete={handleDeleteWorkstation}
+        />
+      )}
+
+      {isCreateModalOpen && (
+        <WorkstationEditModal
+          workstation={null}
+          onClose={handleCloseCreateModal}
+          onCreate={handleCreateWorkstation}
+        />
+      )}
+    </div>
+  );
+};

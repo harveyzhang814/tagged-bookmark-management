@@ -1,8 +1,9 @@
-import type { BookmarkItem, StorageShape, Tag } from './types';
+import type { BookmarkItem, StorageShape, Tag, Workstation } from './types';
 
 const STORAGE_KEYS = {
   BOOKMARKS: 'tbm.bookmarks',
   TAGS: 'tbm.tags',
+  WORKSTATIONS: 'tbm.workstations',
   THEME: 'tbm.theme',
   ACTIVE_TAB: 'tbm.activeTab'
 } as const;
@@ -97,8 +98,18 @@ export const getTagsMap = async (): Promise<Record<string, Tag>> =>
 export const saveTagsMap = async (payload: Record<string, Tag>) =>
   writeValue(STORAGE_KEYS.TAGS, payload);
 
+export const getWorkstationsMap = async (): Promise<Record<string, Workstation>> =>
+  readValue<Record<string, Workstation>>(STORAGE_KEYS.WORKSTATIONS, {});
+
+export const saveWorkstationsMap = async (payload: Record<string, Workstation>) =>
+  writeValue(STORAGE_KEYS.WORKSTATIONS, payload);
+
 export const resetStorage = async () => {
-  await Promise.all([removeValue(STORAGE_KEYS.BOOKMARKS), removeValue(STORAGE_KEYS.TAGS)]);
+  await Promise.all([
+    removeValue(STORAGE_KEYS.BOOKMARKS),
+    removeValue(STORAGE_KEYS.TAGS),
+    removeValue(STORAGE_KEYS.WORKSTATIONS)
+  ]);
 };
 
 export const watchStorage = <T>(
@@ -121,8 +132,12 @@ export const watchStorage = <T>(
 };
 
 export const getSnapshot = async (): Promise<StorageShape> => {
-  const [bookmarks, tags] = await Promise.all([getBookmarksMap(), getTagsMap()]);
-  return { bookmarks, tags };
+  const [bookmarks, tags, workstations] = await Promise.all([
+    getBookmarksMap(),
+    getTagsMap(),
+    getWorkstationsMap()
+  ]);
+  return { bookmarks, tags, workstations };
 };
 
 export type Theme = 'light' | 'dark';
@@ -133,7 +148,7 @@ export const getTheme = async (): Promise<Theme> =>
 export const saveTheme = async (theme: Theme) =>
   writeValue(STORAGE_KEYS.THEME, theme);
 
-export type ActiveTab = 'home' | 'bookmarks' | 'tags' | 'ranking';
+export type ActiveTab = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations';
 
 export const getActiveTab = async (): Promise<ActiveTab> =>
   readValue<ActiveTab>(STORAGE_KEYS.ACTIVE_TAB, 'bookmarks');

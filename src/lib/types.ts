@@ -39,9 +39,29 @@ export interface FilterOptions {
   onlyPinned?: boolean;
 }
 
+export interface Workstation {
+  id: string;
+  name: string;
+  description?: string;
+  color: string;
+  bookmarks: string[];
+  pinned: boolean;
+  clickCount: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface WorkstationInput {
+  name: string;
+  description?: string;
+  color: string;
+  pinned?: boolean;
+}
+
 export interface StorageShape {
   bookmarks: Record<string, BookmarkItem>;
   tags: Record<string, Tag>;
+  workstations: Record<string, Workstation>;
 }
 
 export interface HotTag {
@@ -61,6 +81,7 @@ export interface ImportExportMetadata {
 export interface ImportExportData {
   bookmarks: Record<string, Omit<BookmarkItem, 'clickCount'>>;
   tags: Record<string, Omit<Tag, 'clickCount' | 'usageCount'>>;
+  workstations?: Record<string, Omit<Workstation, 'clickCount'>>;
 }
 
 export interface ImportExportFile {

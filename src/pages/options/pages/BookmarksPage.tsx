@@ -10,9 +10,11 @@ import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
 import { Tooltip } from '../../../components/Tooltip';
 import { Pagination } from '../../../components/Pagination';
 import { TagSidebar } from '../../../components/TagSidebar';
+import { WorkstationSidebar } from '../../../components/WorkstationSidebar';
 import { IconButton } from '../../../components/IconButton';
 import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark, createTag } from '../../../lib/bookmarkService';
-import type { BookmarkItem, Tag } from '../../../lib/types';
+import { getAllWorkstations, createWorkstation, addBookmarkToWorkstation } from '../../../lib/workstationService';
+import type { BookmarkItem, Tag, Workstation } from '../../../lib/types';
 import './bookmarksPage.css';
 
 interface BookmarksPageProps {
@@ -22,6 +24,7 @@ interface BookmarksPageProps {
 export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [query, setQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'createdAt' | 'clickCount'>('createdAt');
@@ -39,12 +42,18 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
+  const [isWorkstationSidebarOpen, setIsWorkstationSidebarOpen] = useState(false);
   const ITEMS_PER_PAGE = 18;
 
   const refresh = async () => {
-    const [bookmarksList, tagsList] = await Promise.all([getAllBookmarks(), getAllTags()]);
+    const [bookmarksList, tagsList, workstationsList] = await Promise.all([
+      getAllBookmarks(),
+      getAllTags(),
+      getAllWorkstations()
+    ]);
     setBookmarks(bookmarksList);
     setTags(tagsList);
+    setWorkstations(workstationsList);
   };
 
   useEffect(() => {
@@ -196,6 +205,16 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
     await refresh();
   };
 
+  const handleCreateWorkstation = async (name: string) => {
+    await createWorkstation({ name, color: '', description: undefined, pinned: false });
+    await refresh();
+  };
+
+  const handleWorkstationDrop = async (bookmarkId: string, workstationId: string) => {
+    await addBookmarkToWorkstation(workstationId, bookmarkId);
+    await refresh();
+  };
+
 
   const handleImport = async () => {
     setImportStatus({ isImporting: true, message: null, type: null });
@@ -263,30 +282,90 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
               {importStatus.isImporting ? '同步中...' : '一键同步'}
             </PixelButton>
           </Tooltip>
-          <IconButton
-            variant="secondary"
-            icon={
-              <svg 
-                width="16" 
-                height="16" 
-                viewBox="0 0 16 16" 
-                fill="none" 
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ transform: isTagSidebarOpen ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.2s ease' }}
-              >
-                <path
-                  d="M4 2L10 8L4 14"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
-            aria-label={isTagSidebarOpen ? '隐藏标签栏' : '显示标签栏'}
-            onClick={() => setIsTagSidebarOpen(!isTagSidebarOpen)}
-            className="bookmarks-sidebar-toggle"
-          />
+          <Tooltip content={isTagSidebarOpen ? '隐藏标签栏' : '显示标签栏'}>
+            <IconButton
+              variant={isTagSidebarOpen ? 'primary' : 'secondary'}
+              icon={
+                <svg 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 16 16" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2.5 3C2.5 2.72386 2.72386 2.5 3 2.5H9.5C9.77614 2.5 10 2.72386 10 3V8.5L12.5 11L10 13.5V13C10 12.7239 9.77614 12.5 9.5 12.5H3C2.72386 12.5 2.5 12.7239 2.5 13V3Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={isTagSidebarOpen ? 'currentColor' : 'none'}
+                  />
+                  <path
+                    d="M10 8.5L12.5 11L15 8.5"
+                    stroke={isTagSidebarOpen ? 'var(--bg-card)' : 'currentColor'}
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </svg>
+              }
+              aria-label={isTagSidebarOpen ? '隐藏标签栏' : '显示标签栏'}
+              onClick={() => setIsTagSidebarOpen(!isTagSidebarOpen)}
+              className="bookmarks-sidebar-toggle"
+            />
+          </Tooltip>
+          <Tooltip content={isWorkstationSidebarOpen ? '隐藏工作区栏' : '显示工作区栏'}>
+            <IconButton
+              variant={isWorkstationSidebarOpen ? 'primary' : 'secondary'}
+              icon={
+                <svg 
+                  width="16" 
+                  height="16" 
+                  viewBox="0 0 16 16" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2.5 4C2.5 3.17157 3.17157 2.5 4 2.5H6.5C7.32843 2.5 8 3.17157 8 4V6.5C8 7.32843 7.32843 8 6.5 8H4C3.17157 8 2.5 7.32843 2.5 6.5V4Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                  />
+                  <path
+                    d="M8 4C8 3.17157 8.67157 2.5 9.5 2.5H12C12.8284 2.5 13.5 3.17157 13.5 4V6.5C13.5 7.32843 12.8284 8 12 8H9.5C8.67157 8 8 7.32843 8 6.5V4Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                  />
+                  <path
+                    d="M2.5 9.5C2.5 8.67157 3.17157 8 4 8H6.5C7.32843 8 8 8.67157 8 9.5V12C8 12.8284 7.32843 13.5 6.5 13.5H4C3.17157 13.5 2.5 12.8284 2.5 12V9.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                  />
+                  <path
+                    d="M8 9.5C8 8.67157 8.67157 8 9.5 8H12C12.8284 8 13.5 8.67157 13.5 9.5V12C13.5 12.8284 12.8284 13.5 12 13.5H9.5C8.67157 13.5 8 12.8284 8 12V9.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                  />
+                </svg>
+              }
+              aria-label={isWorkstationSidebarOpen ? '隐藏工作区栏' : '显示工作区栏'}
+              onClick={() => setIsWorkstationSidebarOpen(!isWorkstationSidebarOpen)}
+              className="bookmarks-sidebar-toggle"
+            />
+          </Tooltip>
         </div>
         {importStatus.message && (
           <div className={`import-message import-message--${importStatus.type}`}>
@@ -310,6 +389,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     onEdit={handleEdit}
                     onTogglePin={handleTogglePin}
                     onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
+                    onWorkstationDrop={(workstationId) => handleWorkstationDrop(bookmark.id, workstationId)}
                   />
                 ))}
               </div>
@@ -331,6 +411,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     onEdit={handleEdit}
                     onTogglePin={handleTogglePin}
                     onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
+                    onWorkstationDrop={(workstationId) => handleWorkstationDrop(bookmark.id, workstationId)}
                   />
                 ))}
               </div>
@@ -354,6 +435,9 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
         {isTagSidebarOpen && (
           <TagSidebar tags={tags} onCreateTag={handleCreateTag} />
+        )}
+        {isWorkstationSidebarOpen && (
+          <WorkstationSidebar workstations={workstations} onCreateWorkstation={handleCreateWorkstation} />
         )}
       </div>
 

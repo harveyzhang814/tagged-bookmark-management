@@ -11,9 +11,10 @@ interface BookmarkCardProps {
   onEdit: (bookmark: BookmarkItem) => void;
   onTogglePin: (bookmarkId: string) => void;
   onTagDrop?: (tagId: string) => void;
+  onWorkstationDrop?: (workstationId: string) => void;
 }
 
-export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop }: BookmarkCardProps) => {
+export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, onWorkstationDrop }: BookmarkCardProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
   const bookmarkTags = bookmark.tags
@@ -53,8 +54,12 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop }:
     setIsDragOver(false);
     
     const tagId = e.dataTransfer.getData('tagId');
+    const workstationId = e.dataTransfer.getData('workstationId');
+    
     if (tagId && onTagDrop) {
       onTagDrop(tagId);
+    } else if (workstationId && onWorkstationDrop) {
+      onWorkstationDrop(workstationId);
     }
   };
 
