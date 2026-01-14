@@ -232,8 +232,17 @@
   box-sizing: border-box;
 }
 
+.save-button > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .save-button svg {
   flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .save-button .spinner {

@@ -16,6 +16,7 @@ export const BookmarkPopup = () => {
   const [pinned, setPinned] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [currentTab, setCurrentTab] = useState<chrome.tabs.Tab | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentBookmarkId, setCurrentBookmarkId] = useState<string | null>(null);
@@ -61,6 +62,7 @@ export const BookmarkPopup = () => {
 
     setIsSaving(true);
     setStatus(null);
+    setIsSuccess(false);
 
     try {
       if (isEditMode && currentBookmarkId) {
@@ -71,6 +73,9 @@ export const BookmarkPopup = () => {
           tags: selectedTagIds,
           pinned: pinned
         });
+        // 更新成功后显示勾选图标
+        setIsSuccess(true);
+        setTimeout(() => setIsSuccess(false), 1000);
       } else {
         // 新增模式：创建书签
         await createBookmark({
@@ -85,6 +90,9 @@ export const BookmarkPopup = () => {
           setIsEditMode(true);
           setCurrentBookmarkId(newBookmark.id);
         }
+        // 创建成功后也显示勾选图标
+        setIsSuccess(true);
+        setTimeout(() => setIsSuccess(false), 1500);
       }
     } catch (err) {
       setStatus('error');
@@ -123,7 +131,7 @@ export const BookmarkPopup = () => {
   };
 
   const handleOpenOptions = async () => {
-    await openOptionsPage('bookmarks');
+    await openOptionsPage('home');
     window.close();
   };
 
@@ -251,10 +259,17 @@ export const BookmarkPopup = () => {
                   </svg>
                   <span>保存中...</span>
                 </>
-              ) : (
+              ) : isSuccess ? (
                 <>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M3 8L6 11L13 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span>{isEditMode ? '已更新' : '已保存'}</span>
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 3L8 1L14 3V13L8 15L2 13V3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   <span>{isEditMode ? '更新' : '保存'}</span>
                 </>
