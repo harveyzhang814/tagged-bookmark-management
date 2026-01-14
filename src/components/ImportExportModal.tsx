@@ -338,6 +338,10 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                       <span className="import-export-modal__file-info-value">{fileData.tagsCount}</span>
                     </div>
                     <div className="import-export-modal__file-info-item">
+                      <span className="import-export-modal__file-info-label">工作区数量：</span>
+                      <span className="import-export-modal__file-info-value">{fileData.workstationsCount}</span>
+                    </div>
+                    <div className="import-export-modal__file-info-item">
                       <span className="import-export-modal__file-info-label">包含历史记录：</span>
                       <span className="import-export-modal__file-info-value">
                         {fileData.metadata.hasClickHistory ? '是' : '否'}

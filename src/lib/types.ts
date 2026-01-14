@@ -94,16 +94,19 @@ export interface ImportFileData {
   data: ImportExportData;
   bookmarksCount: number;
   tagsCount: number;
+  workstationsCount: number;
 }
 
 export interface ImportResult {
   imported: {
     bookmarks: number;
     tags: number;
+    workstations: number;
   };
   skipped: {
     bookmarks: number;
     tags: number;
+    workstations: number;
   };
 }
 
