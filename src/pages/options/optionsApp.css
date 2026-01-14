@@ -82,6 +82,12 @@ main {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  width: 100%;
+}
+
+main > .homepage-page {
+  margin: -16px 0;
+  width: 100%;
 }
 
 

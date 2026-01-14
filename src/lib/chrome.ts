@@ -14,6 +14,23 @@ export const openBookmark = async (url: string) => {
   await chrome.tabs.create({ url });
 };
 
+/**
+ * 在新浏览器窗口打开多个标签页
+ */
+export const openBookmarksInNewWindow = async (urls: string[]): Promise<void> => {
+  if (!isChromeRuntime() || !chrome.windows?.create || !chrome.tabs?.create) return;
+  if (urls.length === 0) return;
+
+  // 创建新窗口，第一个URL作为初始标签页
+  const window = await chrome.windows.create({ url: urls[0] });
+  if (!window?.id) return;
+
+  // 在新窗口中创建剩余的标签页
+  for (let i = 1; i < urls.length; i++) {
+    await chrome.tabs.create({ windowId: window.id, url: urls[i] });
+  }
+};
+
 export const sendMessage = async <T extends object, R = void>(message: T): Promise<R | null> => {
   if (!isChromeRuntime() || !chrome.runtime?.sendMessage) return null;
   return new Promise((resolve, reject) => {

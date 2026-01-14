@@ -151,7 +151,7 @@ export const saveTheme = async (theme: Theme) =>
 export type ActiveTab = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations';
 
 export const getActiveTab = async (): Promise<ActiveTab> =>
-  readValue<ActiveTab>(STORAGE_KEYS.ACTIVE_TAB, 'bookmarks');
+  readValue<ActiveTab>(STORAGE_KEYS.ACTIVE_TAB, 'home');
 
 export const saveActiveTab = async (tab: ActiveTab) =>
   writeValue(STORAGE_KEYS.ACTIVE_TAB, tab);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
-import { HomePage } from './pages/HomePage';
+import { HomepagePage } from './pages/HomepagePage';
 import { RankingPage } from './pages/RankingPage';
 import { WorkstationsPage } from './pages/WorkstationsPage';
 import { ThemeToggle } from '../../components/ThemeToggle';
@@ -15,7 +15,7 @@ import './optionsApp.css';
 export type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations';
 
 export const OptionsApp = () => {
-  const [activeTab, setActiveTab] = useState<TabKey>('bookmarks');
+  const [activeTab, setActiveTab] = useState<TabKey>('home');
   const [isInitialized, setIsInitialized] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
@@ -36,20 +36,19 @@ export const OptionsApp = () => {
       const urlTab = params.get('tab') as TabKey | null;
       
       if (urlTab && ['home', 'bookmarks', 'tags', 'ranking', 'workstations'].includes(urlTab)) {
-        // 如果 URL 参数是 'home'，跳转到默认 tab 'bookmarks'
-        const finalTab = urlTab === 'home' ? 'bookmarks' : urlTab;
-        setActiveTab(finalTab);
-        await saveActiveTab(finalTab);
+        setActiveTab(urlTab);
+        await saveActiveTab(urlTab);
         setIsInitialized(true);
       } else {
         // 从存储读取上次保存的tab
         const savedTab = await getActiveTab();
-        // 如果保存的是 'home'，则跳转到默认 tab 'bookmarks'
-        const finalTab = savedTab === 'home' ? 'bookmarks' : savedTab;
+        // 如果没有保存的tab或保存的tab无效，默认显示首页
+        const finalTab = savedTab && ['home', 'bookmarks', 'tags', 'ranking', 'workstations'].includes(savedTab) 
+          ? savedTab 
+          : 'home';
         setActiveTab(finalTab);
-        // 如果保存的是 'home'，更新存储为默认 tab
-        if (savedTab === 'home') {
-          await saveActiveTab('bookmarks');
+        if (!savedTab || !['home', 'bookmarks', 'tags', 'ranking', 'workstations'].includes(savedTab)) {
+          await saveActiveTab('home');
         }
         setIsInitialized(true);
       }
@@ -81,7 +80,7 @@ export const OptionsApp = () => {
     
     switch (activeTab) {
       case 'home':
-        return <HomePage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
+        return <HomepagePage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} />;
       case 'tags':
         return <TagsPage key={refreshKey} />;
       case 'workstations':
