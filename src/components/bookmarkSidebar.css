@@ -136,13 +136,12 @@
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1.5px solid;
-  background: var(--bg-card);
+  border: 1.5px solid var(--border-muted);
+  background: transparent;
   display: flex;
   flex-direction: column;
   gap: 8px;
   user-select: none;
-  /* borderColor 和 backgroundColor 通过内联样式动态设置 */
 }
 
 .bookmark-sidebar__item:hover {

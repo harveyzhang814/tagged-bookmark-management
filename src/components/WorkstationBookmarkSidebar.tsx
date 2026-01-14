@@ -3,8 +3,6 @@ import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import { TagPill } from './TagPill';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
-import { getTheme, type Theme } from '../lib/theme';
-import { getTagBorderColor, getTagTintColor } from '../lib/colorUtils';
 import type { BookmarkItem, Tag, Workstation } from '../lib/types';
 import './bookmarkSidebar.css';
 
@@ -32,7 +30,6 @@ export const WorkstationBookmarkSidebar = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('createdAt');
   const [currentPage, setCurrentPage] = useState(1);
-  const [theme, setTheme] = useState<Theme>('light');
   const dragStartTime = useRef<number>(0);
   const ITEMS_PER_PAGE = 15;
 
@@ -94,29 +91,6 @@ export const WorkstationBookmarkSidebar = ({
     setCurrentPage(1);
   }, [workstationId]);
 
-  // 初始化主题并监听变化
-  useEffect(() => {
-    const initTheme = async () => {
-      const currentTheme = await getTheme();
-      setTheme(currentTheme);
-    };
-    void initTheme();
-
-    const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      setTheme(isDark ? 'dark' : 'light');
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme'],
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
   const handleBookmarkClick = async (bookmark: BookmarkItem) => {
     await incrementBookmarkClick(bookmark.id);
     window.open(bookmark.url, '_blank');
@@ -147,12 +121,6 @@ export const WorkstationBookmarkSidebar = ({
   if (!workstationId || !workstation) {
     return null;
   }
-
-  // 获取工作区的颜色样式
-  const itemStyle = workstation ? {
-    borderColor: getTagBorderColor(workstation.color, theme),
-    backgroundColor: getTagTintColor(workstation.color, theme),
-  } : undefined;
 
   return (
     <div className="bookmark-sidebar">
@@ -216,7 +184,6 @@ export const WorkstationBookmarkSidebar = ({
                 <div
                   key={bookmark.id}
                   className="bookmark-sidebar__item"
-                  style={itemStyle}
                   draggable={true}
                   onDragStart={(e) => handleDragStart(e, bookmark.id)}
                   onDragEnd={handleDragEnd}

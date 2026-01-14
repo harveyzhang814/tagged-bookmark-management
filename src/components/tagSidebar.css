@@ -71,7 +71,7 @@
   transition: all 0.2s ease;
   user-select: none;
   border: 1px solid var(--border-muted);
-  background: var(--bg-card);
+  background: transparent;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -94,7 +94,7 @@
 }
 
 .tag-sidebar__item:hover {
-  background: var(--bg-panel);
+  background: transparent;
   border-color: var(--accent);
   box-shadow: var(--shadow-sm);
   transform: translateX(2px);
@@ -109,13 +109,13 @@
 .tag-sidebar__item--create {
   border-style: dashed;
   border-color: var(--accent);
-  background: var(--bg-panel);
+  background: transparent;
   cursor: pointer;
   opacity: 0.8;
 }
 
 .tag-sidebar__item--create:hover {
-  background: var(--bg-card);
+  background: transparent;
   border-color: var(--accent);
   opacity: 1;
   transform: translateX(2px);
@@ -128,7 +128,7 @@
 }
 
 .tag-sidebar__item--drag-over {
-  background: var(--bg-panel);
+  background: transparent;
   border-color: var(--accent);
   box-shadow: var(--shadow-md);
   transform: translateX(4px);
