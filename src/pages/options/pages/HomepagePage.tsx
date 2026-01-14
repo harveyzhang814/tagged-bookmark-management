@@ -196,6 +196,17 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     onNavigate('tags');
   };
 
+  const handleTagClick = (tagId: string) => {
+    // 跳转到书签列表页，并通过URL参数传递tag筛选条件
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', 'bookmarks');
+    url.searchParams.set('tag', tagId);
+    // 更新URL参数（不刷新页面）
+    window.history.replaceState({}, '', url.toString());
+    // 切换到书签页
+    onNavigate('bookmarks');
+  };
+
   const handleMoreWorkstations = () => {
     onNavigate('workstations');
   };
@@ -241,7 +252,12 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
                   }}
                   style={{ display: isVisible ? 'block' : 'none' }}
                 >
-                  <TagPill label={tag.name} color={tag.color} size="default" />
+                  <TagPill 
+                    label={tag.name} 
+                    color={tag.color} 
+                    size="default" 
+                    onClick={() => handleTagClick(tag.id)}
+                  />
                 </div>
               );
             })}

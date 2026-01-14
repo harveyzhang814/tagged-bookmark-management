@@ -61,6 +61,31 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
     void refresh();
   }, []);
 
+  // 从URL参数读取tag筛选条件（在组件挂载时和URL变化时）
+  useEffect(() => {
+    const checkUrlParams = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tagParam = params.get('tag');
+      if (tagParam) {
+        setSelectedTags([tagParam]);
+        // 清除URL参数，避免刷新时重复应用
+        const url = new URL(window.location.href);
+        url.searchParams.delete('tag');
+        window.history.replaceState({}, '', url.toString());
+      }
+    };
+
+    // 立即检查一次
+    checkUrlParams();
+
+    // 监听popstate事件（浏览器前进/后退）
+    window.addEventListener('popstate', checkUrlParams);
+    
+    return () => {
+      window.removeEventListener('popstate', checkUrlParams);
+    };
+  }, []);
+
 
   const filtered = useMemo(() => {
     let list = bookmarks;

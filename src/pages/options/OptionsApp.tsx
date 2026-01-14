@@ -64,8 +64,13 @@ export const OptionsApp = () => {
     await saveActiveTab(tab);
     // 更新URL（不刷新页面）
     const url = new URL(window.location.href);
+    const hasTagParam = url.searchParams.has('tag');
     url.searchParams.set('tab', tab);
     window.history.replaceState({}, '', url.toString());
+    // 如果切换到bookmarks页面且URL中有tag参数，触发刷新以重新读取参数
+    if (tab === 'bookmarks' && hasTagParam) {
+      setRefreshKey((prev) => prev + 1);
+    }
   }, []);
 
   const handleRefresh = useCallback(() => {
