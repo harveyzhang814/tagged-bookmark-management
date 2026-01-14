@@ -1,0 +1,83 @@
+.navigation-sidebar {
+  width: 48px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 8px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  align-self: stretch;
+}
+
+.navigation-sidebar__button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--border-muted);
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  position: relative;
+}
+
+.navigation-sidebar__button:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.navigation-sidebar__button:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.navigation-sidebar__button.active {
+  background: var(--button-primary-hover-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.navigation-sidebar__button.active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.navigation-sidebar__button svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* 自定义滚动条样式 */
+.navigation-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.navigation-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navigation-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border-muted);
+  border-radius: 2px;
+}
+
+.navigation-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color);
+}

@@ -7,18 +7,12 @@ import { WorkstationsPage } from './pages/WorkstationsPage';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { ImportExportModal } from '../../components/ImportExportModal';
 import { IconButton } from '../../components/IconButton';
+import { NavigationSidebar } from '../../components/NavigationSidebar';
 import { initTheme } from '../../lib/theme';
 import { getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
 
-type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations';
-
-const tabs: { key: TabKey; label: string }[] = [
-  { key: 'bookmarks', label: '书签' },
-  { key: 'tags', label: '标签' },
-  { key: 'workstations', label: '工作区' },
-  { key: 'ranking', label: '榜单' }
-];
+export type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations';
 
 export const OptionsApp = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('bookmarks');
@@ -111,19 +105,6 @@ export const OptionsApp = () => {
           />
           <h1>CrossTag Bookmarks</h1>
         </div>
-        
-        <nav className="options-navigator__tabs">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`options-navigator__tab ${tab.key === activeTab ? 'active' : ''}`}
-              onClick={() => void handleTabChange(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
 
         <div className="options-navigator__actions">
           <IconButton
@@ -160,7 +141,13 @@ export const OptionsApp = () => {
         </div>
       </header>
 
-      <main>{renderContent}</main>
+      <div className="options-content-wrapper">
+        <NavigationSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+        
+        <div className="options-content">
+          <main>{renderContent}</main>
+        </div>
+      </div>
 
       <ImportExportModal
         isOpen={isImportExportModalOpen}
