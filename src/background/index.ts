@@ -4,14 +4,17 @@ const QUICK_ADD_MENU_ID = 'tbm.quickAdd';
 
 chrome.runtime.onInstalled.addListener(async () => {
   await ensureDefaults();
-  // 先尝试移除已存在的菜单项（如果存在），避免重复创建错误
-  chrome.contextMenus.remove(QUICK_ADD_MENU_ID, () => {
-    // 创建上下文菜单项
-    chrome.contextMenus.create({
-      id: QUICK_ADD_MENU_ID,
-      title: '加入 CrossTag Bookmarks',
-      contexts: ['page', 'selection']
-    });
+  // 创建上下文菜单项
+  chrome.contextMenus.create({
+    id: QUICK_ADD_MENU_ID,
+    title: '加入 CrossTag Bookmarks',
+    contexts: ['page', 'selection']
+  }, () => {
+    // 如果菜单项已存在（重复创建），忽略错误
+    if (chrome.runtime.lastError) {
+      // 菜单项已存在，这是正常的，忽略错误
+      return;
+    }
   });
 });
 
