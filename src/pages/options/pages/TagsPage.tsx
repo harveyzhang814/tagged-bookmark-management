@@ -15,6 +15,7 @@ import {
   updateTag,
   updateBookmark
 } from '../../../lib/bookmarkService';
+import { openBookmarksInCurrentWindow } from '../../../lib/chrome';
 import type { Tag, BookmarkItem } from '../../../lib/types';
 import './tagsPage.css';
 
@@ -142,12 +143,29 @@ export const TagsPage = () => {
   };
 
   const handleTagClick = (tagId: string) => {
-    if (!isBookmarkSidebarOpen || selectedTagId !== tagId) {
-      setSelectedTagId(tagId);
-      setIsBookmarkSidebarOpen(true);
-    } else {
-      // 如果已经打开且是同一个标签，刷新数据
-      void refresh();
+    // 单点击打开编辑窗口
+    const tag = tags.find((t) => t.id === tagId);
+    if (tag) {
+      handleEdit(tag);
+    }
+  };
+
+  const handleTagDoubleClick = async (tagId: string) => {
+    // 双击打开标签下的所有书签
+    const tagBookmarks = bookmarks.filter((bookmark) => bookmark.tags.includes(tagId));
+    if (tagBookmarks.length === 0) return;
+
+    // 获取所有书签的URL
+    const urls = tagBookmarks.map((bookmark) => bookmark.url).filter(Boolean);
+    if (urls.length > 0) {
+      await openBookmarksInCurrentWindow(urls);
+      
+      // 更新标签的点击计数
+      const tag = tags.find((t) => t.id === tagId);
+      if (tag) {
+        await updateTag(tagId, { clickCount: tag.clickCount + 1 });
+        await refresh();
+      }
     }
   };
 
@@ -242,9 +260,9 @@ export const TagsPage = () => {
               <TagCard
                 key={tag.id}
                 tag={tag}
-                onEdit={handleEdit}
                 onTogglePin={handleTogglePin}
                 onClick={handleTagClick}
+                onDoubleClick={handleTagDoubleClick}
               />
             ))}
           </div>

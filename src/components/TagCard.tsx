@@ -1,4 +1,4 @@
-import { type MouseEvent } from 'react';
+import { type MouseEvent, useRef } from 'react';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { Tag } from '../lib/types';
@@ -6,16 +6,13 @@ import './tagCard.css';
 
 interface TagCardProps {
   tag: Tag;
-  onEdit: (tag: Tag) => void;
   onTogglePin: (tagId: string) => void;
   onClick?: (tagId: string) => void;
+  onDoubleClick?: (tagId: string) => void;
 }
 
-export const TagCard = ({ tag, onEdit, onTogglePin, onClick }: TagCardProps) => {
-  const handleEditClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    onEdit(tag);
-  };
+export const TagCard = ({ tag, onTogglePin, onClick, onDoubleClick }: TagCardProps) => {
+  const clickTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handlePinClick = (e: MouseEvent) => {
     e.stopPropagation();
@@ -23,8 +20,28 @@ export const TagCard = ({ tag, onEdit, onTogglePin, onClick }: TagCardProps) => 
   };
 
   const handleCardClick = () => {
-    if (onClick) {
-      onClick(tag.id);
+    // 使用延迟来区分单点击和双击
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+    }
+    
+    clickTimer.current = setTimeout(() => {
+      if (onClick) {
+        onClick(tag.id);
+      }
+      clickTimer.current = null;
+    }, 300); // 300ms延迟，如果在这期间检测到双击则取消
+  };
+
+  const handleCardDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // 清除单点击的延迟执行
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+      clickTimer.current = null;
+    }
+    if (onDoubleClick) {
+      onDoubleClick(tag.id);
     }
   };
 
@@ -32,26 +49,11 @@ export const TagCard = ({ tag, onEdit, onTogglePin, onClick }: TagCardProps) => 
     <div 
       className={`tag-card ${tag.pinned ? 'tag-card--pinned' : ''}`}
       onClick={handleCardClick}
+      onDoubleClick={handleCardDoubleClick}
     >
       <div className="tag-card__header">
         <TagPill label={tag.name} color={tag.color} size="large" />
         <div className="tag-card__actions">
-          <IconButton
-            variant="secondary"
-            icon={
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M11.333 2.00004C11.5084 1.82464 11.7163 1.68576 11.9447 1.59203C12.1731 1.4983 12.4173 1.45166 12.6637 1.45504C12.91 1.45842 13.1527 1.51174 13.3777 1.61182C13.6027 1.7119 13.8055 1.85664 13.974 2.03771C14.1425 2.21878 14.2732 2.43249 14.3586 2.66604C14.444 2.89959 14.4822 3.14819 14.471 3.39671C14.4598 3.64523 14.3994 3.88888 14.2933 4.11338C14.1872 4.33788 14.0377 4.53875 13.8533 4.70404L6.18 12.3774L2.66667 13.3334L3.62267 9.82004L11.333 2.00004Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
-            aria-label="编辑标签"
-            onClick={handleEditClick}
-          />
           <IconButton
             variant={tag.pinned ? 'primary' : 'secondary'}
             icon={

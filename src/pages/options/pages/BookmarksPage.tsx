@@ -12,8 +12,9 @@ import { Pagination } from '../../../components/Pagination';
 import { TagSidebar } from '../../../components/TagSidebar';
 import { WorkstationSidebar } from '../../../components/WorkstationSidebar';
 import { IconButton } from '../../../components/IconButton';
-import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark, createTag } from '../../../lib/bookmarkService';
+import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark, createTag, incrementBookmarkClick } from '../../../lib/bookmarkService';
 import { getAllWorkstations, createWorkstation, addBookmarkToWorkstation } from '../../../lib/workstationService';
+import { openBookmark } from '../../../lib/chrome';
 import type { BookmarkItem, Tag, Workstation } from '../../../lib/types';
 import './bookmarksPage.css';
 
@@ -155,6 +156,13 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
   const handleCloseEditModal = () => {
     setEditingBookmark(null);
+  };
+
+  const handleBookmarkDoubleClick = async (bookmark: BookmarkItem) => {
+    // 双击在当前浏览器窗口打开对应网页
+    await incrementBookmarkClick(bookmark.id);
+    await openBookmark(bookmark.url);
+    await refresh();
   };
 
   const handleSaveEdit = async (
@@ -390,6 +398,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     onTogglePin={handleTogglePin}
                     onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
                     onWorkstationDrop={(workstationId) => handleWorkstationDrop(bookmark.id, workstationId)}
+                    onDoubleClick={handleBookmarkDoubleClick}
                   />
                 ))}
               </div>
@@ -412,6 +421,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     onTogglePin={handleTogglePin}
                     onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
                     onWorkstationDrop={(workstationId) => handleWorkstationDrop(bookmark.id, workstationId)}
+                    onDoubleClick={handleBookmarkDoubleClick}
                   />
                 ))}
               </div>

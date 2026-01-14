@@ -2,7 +2,6 @@ import { type MouseEvent, useState, useRef } from 'react';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { BookmarkItem, Tag } from '../lib/types';
-import { incrementBookmarkClick } from '../lib/bookmarkService';
 import './bookmarkCard.css';
 
 interface BookmarkCardProps {
@@ -12,17 +11,19 @@ interface BookmarkCardProps {
   onTogglePin: (bookmarkId: string) => void;
   onTagDrop?: (tagId: string) => void;
   onWorkstationDrop?: (workstationId: string) => void;
+  onDoubleClick?: (bookmark: BookmarkItem) => void;
 }
 
-export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, onWorkstationDrop }: BookmarkCardProps) => {
+export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, onWorkstationDrop, onDoubleClick }: BookmarkCardProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
   const dragStartTime = useRef<number>(0);
+  const clickTimer = useRef<NodeJS.Timeout | null>(null);
   const bookmarkTags = bookmark.tags
     .map((tagId) => tags.find((t) => t.id === tagId))
     .filter((t): t is Tag => t !== undefined);
 
-  const handleCardClick = async (e: React.MouseEvent) => {
+  const handleCardClick = (e: React.MouseEvent) => {
     // 如果刚刚拖拽过（300ms内），不触发点击
     const timeSinceDragStart = Date.now() - dragStartTime.current;
     if (timeSinceDragStart < 300 && dragStartTime.current > 0) {
@@ -30,8 +31,30 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
       dragStartTime.current = 0;
       return;
     }
-    await incrementBookmarkClick(bookmark.id);
-    window.open(bookmark.url, '_blank');
+    
+    // 使用延迟来区分单点击和双击
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+    }
+    
+    clickTimer.current = setTimeout(() => {
+      // 单点击打开编辑窗口
+      onEdit(bookmark);
+      clickTimer.current = null;
+    }, 300); // 300ms延迟，如果在这期间检测到双击则取消
+  };
+
+  const handleCardDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // 清除单点击的延迟执行
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+      clickTimer.current = null;
+    }
+    // 双击打开书签
+    if (onDoubleClick) {
+      onDoubleClick(bookmark);
+    }
   };
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -43,11 +66,6 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
 
   const handleDragEnd = () => {
     dragStartTime.current = 0;
-  };
-
-  const handleEditClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    onEdit(bookmark);
   };
 
   const handlePinClick = (e: MouseEvent) => {
@@ -95,6 +113,7 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={handleCardClick}
+      onDoubleClick={handleCardDoubleClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -163,22 +182,6 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
             <h3 className="bookmark-card__title">{bookmark.title}</h3>
           </div>
           <div className="bookmark-card__actions">
-            <IconButton
-              variant="secondary"
-              icon={
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M11.333 2.00004C11.5084 1.82464 11.7163 1.68576 11.9447 1.59203C12.1731 1.4983 12.4173 1.45166 12.6637 1.45504C12.91 1.45842 13.1527 1.51174 13.3777 1.61182C13.6027 1.7119 13.8055 1.85664 13.974 2.03771C14.1425 2.21878 14.2732 2.43249 14.3586 2.66604C14.444 2.89959 14.4822 3.14819 14.471 3.39671C14.4598 3.64523 14.3994 3.88888 14.2933 4.11338C14.1872 4.33788 14.0377 4.53875 13.8533 4.70404L6.18 12.3774L2.66667 13.3334L3.62267 9.82004L11.333 2.00004Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              }
-              aria-label="编辑书签"
-              onClick={handleEditClick}
-            />
             <IconButton
               variant={bookmark.pinned ? 'primary' : 'secondary'}
               icon={
