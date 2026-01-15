@@ -12,12 +12,13 @@ import { Pagination } from '../../../components/Pagination';
 import { TagSidebar } from '../../../components/TagSidebar';
 import { WorkstationSidebar } from '../../../components/WorkstationSidebar';
 import { IconButton } from '../../../components/IconButton';
-import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark, createTag, incrementBookmarkClick } from '../../../lib/bookmarkService';
+import { deleteBookmark, getAllBookmarks, getAllTags, updateBookmark, createBookmark, createTag, incrementBookmarkClick } from '../../../lib/bookmarkService';
 import { getAllWorkstations, createWorkstation, addBookmarkToWorkstation } from '../../../lib/workstationService';
 import { openUrlWithMode } from '../../../lib/chrome';
 import type { BookmarkItem, Tag, Workstation } from '../../../lib/types';
 import './bookmarksPage.css';
 import { getBrowserDefaultOpenMode } from '../../../lib/storage';
+import { ChromeSyncModal } from '../../../components/ChromeSyncModal';
 
 interface BookmarksPageProps {
   onRefresh?: () => void;
@@ -31,15 +32,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'createdAt' | 'clickCount'>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [importStatus, setImportStatus] = useState<{
-    isImporting: boolean;
-    message: string | null;
-    type: 'success' | 'error' | null;
-  }>({
-    isImporting: false,
-    message: null,
-    type: null
-  });
+  const [isChromeSyncModalOpen, setIsChromeSyncModalOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -251,34 +244,8 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   };
 
 
-  const handleImport = async () => {
-    setImportStatus({ isImporting: true, message: null, type: null });
-    
-    try {
-      const result = await importChromeBookmarks();
-      setImportStatus({
-        isImporting: false,
-        message: `导入完成！成功导入 ${result.imported} 个书签，跳过 ${result.skipped} 个已存在的书签。`,
-        type: 'success'
-      });
-      await refresh();
-      
-      // 3秒后清除提示
-      setTimeout(() => {
-        setImportStatus((prev) => ({ ...prev, message: null, type: null }));
-      }, 3000);
-    } catch (error) {
-      setImportStatus({
-        isImporting: false,
-        message: error instanceof Error ? error.message : '导入失败，请重试',
-        type: 'error'
-      });
-      
-      // 5秒后清除错误提示
-      setTimeout(() => {
-        setImportStatus((prev) => ({ ...prev, message: null, type: null }));
-      }, 5000);
-    }
+  const handleOpenSyncModal = () => {
+    setIsChromeSyncModalOpen(true);
   };
 
 
@@ -311,10 +278,9 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           </PixelButton>
           <Tooltip content="一键导入 Chrome 收藏夹中的所有书签，已存在的书签会自动跳过">
             <PixelButton 
-              onClick={handleImport} 
-              disabled={importStatus.isImporting}
+              onClick={handleOpenSyncModal}
             >
-              {importStatus.isImporting ? '同步中...' : '一键同步'}
+              同步
             </PixelButton>
           </Tooltip>
           <Tooltip content={isTagSidebarOpen ? '隐藏标签栏' : '显示标签栏'}>
@@ -402,11 +368,6 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
             />
           </Tooltip>
         </div>
-        {importStatus.message && (
-          <div className={`import-message import-message--${importStatus.type}`}>
-            {importStatus.message}
-          </div>
-        )}
       </div>
 
       <div className="bookmarks-content-wrapper">
@@ -493,6 +454,17 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateBookmark}
+      />
+
+      <ChromeSyncModal
+        isOpen={isChromeSyncModalOpen}
+        onClose={() => setIsChromeSyncModalOpen(false)}
+        onSyncSuccess={async () => {
+          await refresh();
+          if (onRefresh) {
+            onRefresh();
+          }
+        }}
       />
     </div>
   );
