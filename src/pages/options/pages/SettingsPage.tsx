@@ -6,9 +6,14 @@ import {
   saveBrowserDefaultOpenMode,
   saveBrowserTagWorkstationOpenMode
 } from '../../../lib/storage';
+import { IconButton } from '../../../components/IconButton';
 import './settingsPage.css';
 
-export const SettingsPage = () => {
+interface SettingsPageProps {
+  onClose: () => void;
+}
+
+export const SettingsPage = ({ onClose }: SettingsPageProps) => {
   const [defaultOpenMode, setDefaultOpenMode] = useState<BookmarkOpenMode>('newTab');
   const [tagWorkstationOpenMode, setTagWorkstationOpenMode] = useState<BookmarkOpenMode>('newTab');
 
@@ -41,8 +46,38 @@ export const SettingsPage = () => {
     void saveBrowserTagWorkstationOpenMode(mode);
   }, []);
 
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      onClose();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
   return (
     <div className="settings-page">
+      <div className="settings-toolbar">
+        <IconButton
+          variant="secondary"
+          aria-label="返回"
+          onClick={onClose}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M15 18l-6-6 6-6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          }
+        />
+        <div className="settings-toolbar__title">设置</div>
+      </div>
+
       <section className="pixel-panel settings-module">
         <h3 className="section-title">浏览器</h3>
 

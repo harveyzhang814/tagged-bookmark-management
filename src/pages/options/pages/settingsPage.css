@@ -9,6 +9,19 @@
   align-self: stretch;
 }
 
+.settings-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.settings-toolbar__title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+}
+
 /* 自定义滚动条样式 */
 .settings-page::-webkit-scrollbar {
   width: 8px;

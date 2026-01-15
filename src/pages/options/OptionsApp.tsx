@@ -10,7 +10,7 @@ import { ImportExportModal } from '../../components/ImportExportModal';
 import { IconButton } from '../../components/IconButton';
 import { NavigationSidebar } from '../../components/NavigationSidebar';
 import { initTheme } from '../../lib/theme';
-import { getActiveTab, saveActiveTab } from '../../lib/storage';
+import { type ActiveTab, getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
 
 export type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations' | 'settings';
@@ -19,6 +19,7 @@ const PERSISTED_TABS = ['home', 'bookmarks', 'tags', 'ranking', 'workstations'] 
 
 export const OptionsApp = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('home');
+  const [lastNonSettingsTab, setLastNonSettingsTab] = useState<ActiveTab>('home');
   const [isInitialized, setIsInitialized] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
@@ -40,6 +41,9 @@ export const OptionsApp = () => {
       
       // settings 是隐藏tab：允许通过URL进入，但不写入 activeTab 持久化
       if (urlTab === 'settings') {
+        const savedTab = await getActiveTab();
+        const fallbackTab: ActiveTab = savedTab && PERSISTED_TABS.includes(savedTab) ? savedTab : 'home';
+        setLastNonSettingsTab(fallbackTab);
         setActiveTab('settings');
         setIsInitialized(true);
         return;
@@ -47,6 +51,7 @@ export const OptionsApp = () => {
 
       if (urlTab && PERSISTED_TABS.includes(urlTab)) {
         setActiveTab(urlTab);
+        setLastNonSettingsTab(urlTab);
         await saveActiveTab(urlTab);
         setIsInitialized(true);
       } else {
@@ -57,6 +62,7 @@ export const OptionsApp = () => {
           ? savedTab 
           : 'home';
         setActiveTab(finalTab);
+        setLastNonSettingsTab(finalTab);
         if (!savedTab || !PERSISTED_TABS.includes(savedTab)) {
           await saveActiveTab('home');
         }
@@ -70,6 +76,15 @@ export const OptionsApp = () => {
 
   // 切换tab时保存到存储（settings 不参与持久化）
   const handleTabChange = useCallback(async (tab: TabKey) => {
+    if (tab === 'settings') {
+      // 进入设置页前记录上一个普通 tab（用于返回）
+      if (activeTab !== 'settings' && PERSISTED_TABS.includes(activeTab as ActiveTab)) {
+        setLastNonSettingsTab(activeTab as ActiveTab);
+      }
+    } else {
+      setLastNonSettingsTab(tab);
+    }
+
     setActiveTab(tab);
     if (tab !== 'settings') {
       await saveActiveTab(tab);
@@ -83,7 +98,7 @@ export const OptionsApp = () => {
     if (tab === 'bookmarks' && hasTagParam) {
       setRefreshKey((prev) => prev + 1);
     }
-  }, []);
+  }, [activeTab]);
 
   const handleRefresh = useCallback(() => {
     // 触发刷新：增加refreshKey，子组件会监听这个变化
@@ -105,12 +120,12 @@ export const OptionsApp = () => {
       case 'ranking':
         return <RankingPage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'settings':
-        return <SettingsPage />;
+        return <SettingsPage onClose={() => void handleTabChange(lastNonSettingsTab)} />;
       case 'bookmarks':
       default:
         return <BookmarksPage key={refreshKey} onRefresh={handleRefresh} />;
     }
-  }, [activeTab, isInitialized, handleTabChange, refreshKey, handleRefresh]);
+  }, [activeTab, isInitialized, handleTabChange, refreshKey, handleRefresh, lastNonSettingsTab]);
 
   return (
     <div className="options-shell">
