@@ -1,5 +1,7 @@
 export const isChromeRuntime = () => typeof chrome !== 'undefined';
 
+export type BookmarkOpenMode = 'newTab' | 'newWindow';
+
 export const getActiveTab = async (): Promise<chrome.tabs.Tab | null> => {
   if (!isChromeRuntime() || !chrome.tabs?.query) return null;
   return new Promise((resolve) => {
@@ -12,6 +14,14 @@ export const getActiveTab = async (): Promise<chrome.tabs.Tab | null> => {
 export const openBookmark = async (url: string) => {
   if (!isChromeRuntime() || !chrome.tabs?.create) return;
   await chrome.tabs.create({ url });
+};
+
+/**
+ * 在新独立窗口打开单个 URL
+ */
+export const openBookmarkInNewWindow = async (url: string): Promise<void> => {
+  if (!isChromeRuntime() || !chrome.windows?.create) return;
+  await chrome.windows.create({ url });
 };
 
 /**
@@ -48,6 +58,24 @@ export const openBookmarksInCurrentWindow = async (urls: string[]): Promise<void
   }
 };
 
+export const openUrlWithMode = async (url: string, mode: BookmarkOpenMode): Promise<void> => {
+  if (!url) return;
+  if (mode === 'newWindow') {
+    await openBookmarkInNewWindow(url);
+    return;
+  }
+  await openBookmark(url);
+};
+
+export const openUrlsWithMode = async (urls: string[], mode: BookmarkOpenMode): Promise<void> => {
+  if (!urls?.length) return;
+  if (mode === 'newWindow') {
+    await openBookmarksInNewWindow(urls);
+    return;
+  }
+  await openBookmarksInCurrentWindow(urls);
+};
+
 export const sendMessage = async <T extends object, R = void>(message: T): Promise<R | null> => {
   if (!isChromeRuntime() || !chrome.runtime?.sendMessage) return null;
   return new Promise((resolve, reject) => {
@@ -61,7 +89,7 @@ export const sendMessage = async <T extends object, R = void>(message: T): Promi
   });
 };
 
-export const openOptionsPage = async (tab?: 'home' | 'bookmarks' | 'tags' | 'ranking') => {
+export const openOptionsPage = async (tab?: 'home' | 'bookmarks' | 'tags' | 'ranking' | 'settings') => {
   if (!isChromeRuntime() || !chrome.runtime?.openOptionsPage) {
     // Fallback: 手动打开 options 页面
     const url = chrome.runtime.getURL('src/pages/options/main.html');

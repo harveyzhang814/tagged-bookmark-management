@@ -5,7 +5,9 @@ const STORAGE_KEYS = {
   TAGS: 'tbm.tags',
   WORKSTATIONS: 'tbm.workstations',
   THEME: 'tbm.theme',
-  ACTIVE_TAB: 'tbm.activeTab'
+  ACTIVE_TAB: 'tbm.activeTab',
+  SETTINGS_BROWSER_DEFAULT_OPEN_MODE: 'tbm.settings.browser.defaultOpenMode',
+  SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode'
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
@@ -155,5 +157,19 @@ export const getActiveTab = async (): Promise<ActiveTab> =>
 
 export const saveActiveTab = async (tab: ActiveTab) =>
   writeValue(STORAGE_KEYS.ACTIVE_TAB, tab);
+
+export type BookmarkOpenMode = 'newTab' | 'newWindow';
+
+export const getBrowserDefaultOpenMode = async (): Promise<BookmarkOpenMode> =>
+  readValue<BookmarkOpenMode>(STORAGE_KEYS.SETTINGS_BROWSER_DEFAULT_OPEN_MODE, 'newTab');
+
+export const saveBrowserDefaultOpenMode = async (mode: BookmarkOpenMode) =>
+  writeValue(STORAGE_KEYS.SETTINGS_BROWSER_DEFAULT_OPEN_MODE, mode);
+
+export const getBrowserTagWorkstationOpenMode = async (): Promise<BookmarkOpenMode> =>
+  readValue<BookmarkOpenMode>(STORAGE_KEYS.SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE, 'newTab');
+
+export const saveBrowserTagWorkstationOpenMode = async (mode: BookmarkOpenMode) =>
+  writeValue(STORAGE_KEYS.SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE, mode);
 
 

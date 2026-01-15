@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import type { BookmarkItem, Tag } from '../lib/types';
 import { TagPill } from './TagPill';
-import { openBookmark } from '../lib/chrome';
+import { openUrlWithMode } from '../lib/chrome';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
+import { getBrowserDefaultOpenMode } from '../lib/storage';
 import './pinnedBookmarkCard.css';
 
 interface PinnedBookmarkCardProps {
@@ -24,7 +25,8 @@ export const PinnedBookmarkCard = ({ bookmark, tags }: PinnedBookmarkCardProps) 
 
   const handleClick = async () => {
     await incrementBookmarkClick(bookmark.id);
-    void openBookmark(bookmark.url);
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
   };
 
   const faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(bookmark.url)}`;

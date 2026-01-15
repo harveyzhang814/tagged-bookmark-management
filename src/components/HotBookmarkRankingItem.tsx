@@ -4,6 +4,8 @@ import { RankingItem } from './RankingItem';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
 import { getTheme, type Theme } from '../lib/theme';
 import { getTagBorderColor, getTagTintColor } from '../lib/colorUtils';
+import { openUrlWithMode } from '../lib/chrome';
+import { getBrowserDefaultOpenMode } from '../lib/storage';
 import './hotBookmarkRankingItem.css';
 
 interface HotBookmarkRankingItemProps {
@@ -26,7 +28,8 @@ export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRank
 
   const handleClick = async () => {
     await incrementBookmarkClick(bookmark.id);
-    window.open(bookmark.url, '_blank');
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
   };
 
   // 初始化主题并监听变化

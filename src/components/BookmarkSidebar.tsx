@@ -3,7 +3,9 @@ import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import { TagPill } from './TagPill';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
+import { openUrlWithMode } from '../lib/chrome';
 import type { BookmarkItem, Tag } from '../lib/types';
+import { getBrowserDefaultOpenMode } from '../lib/storage';
 import './bookmarkSidebar.css';
 
 type SortOption = 'createdAt' | 'clickCount';
@@ -83,7 +85,8 @@ export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose, onRemoveTag, 
 
   const handleBookmarkClick = async (bookmark: BookmarkItem) => {
     await incrementBookmarkClick(bookmark.id);
-    window.open(bookmark.url, '_blank');
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
   };
 
   const handleDragStart = (e: React.DragEvent, bookmarkId: string) => {

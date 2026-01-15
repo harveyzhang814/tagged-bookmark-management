@@ -15,7 +15,8 @@ import {
   updateTag,
   updateBookmark
 } from '../../../lib/bookmarkService';
-import { openBookmarksInCurrentWindow } from '../../../lib/chrome';
+import { openUrlsWithMode } from '../../../lib/chrome';
+import { getBrowserTagWorkstationOpenMode } from '../../../lib/storage';
 import type { Tag, BookmarkItem } from '../../../lib/types';
 import './tagsPage.css';
 
@@ -158,7 +159,8 @@ export const TagsPage = () => {
     // 获取所有书签的URL
     const urls = tagBookmarks.map((bookmark) => bookmark.url).filter(Boolean);
     if (urls.length > 0) {
-      await openBookmarksInCurrentWindow(urls);
+      const mode = await getBrowserTagWorkstationOpenMode();
+      await openUrlsWithMode(urls, mode);
       
       // 更新标签的点击计数
       const tag = tags.find((t) => t.id === tagId);

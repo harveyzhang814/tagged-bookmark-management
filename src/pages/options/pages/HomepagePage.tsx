@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode, type KeyboardEvent } from 'react';
 import { getHotTags, getAllBookmarks, getAllTags, incrementBookmarkClick } from '../../../lib/bookmarkService';
 import { getAllWorkstations } from '../../../lib/workstationService';
-import { openBookmark, openBookmarksInNewWindow } from '../../../lib/chrome';
+import { openUrlWithMode, openUrlsWithMode } from '../../../lib/chrome';
+import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode } from '../../../lib/storage';
 import type { Tag, Workstation, BookmarkItem } from '../../../lib/types';
 import { SearchInput } from '../../../components/SearchInput';
 import { TagPill } from '../../../components/TagPill';
@@ -245,7 +246,8 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     }
 
     if (bookmarkUrls.length > 0) {
-      await openBookmarksInNewWindow(bookmarkUrls);
+      const mode = await getBrowserTagWorkstationOpenMode();
+      await openUrlsWithMode(bookmarkUrls, mode);
     }
   };
 
@@ -287,7 +289,8 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     setBookmarks((prev) =>
       prev.map((b) => (b.id === bookmark.id ? { ...b, clickCount: (b.clickCount ?? 0) + 1 } : b))
     );
-    void openBookmark(bookmark.url);
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
   };
 
   const handleTagResultClick = (tagId: string) => {

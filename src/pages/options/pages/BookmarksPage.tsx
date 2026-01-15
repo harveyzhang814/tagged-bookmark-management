@@ -14,9 +14,10 @@ import { WorkstationSidebar } from '../../../components/WorkstationSidebar';
 import { IconButton } from '../../../components/IconButton';
 import { deleteBookmark, getAllBookmarks, getAllTags, importChromeBookmarks, updateBookmark, createBookmark, createTag, incrementBookmarkClick } from '../../../lib/bookmarkService';
 import { getAllWorkstations, createWorkstation, addBookmarkToWorkstation } from '../../../lib/workstationService';
-import { openBookmark } from '../../../lib/chrome';
+import { openUrlWithMode } from '../../../lib/chrome';
 import type { BookmarkItem, Tag, Workstation } from '../../../lib/types';
 import './bookmarksPage.css';
+import { getBrowserDefaultOpenMode } from '../../../lib/storage';
 
 interface BookmarksPageProps {
   onRefresh?: () => void;
@@ -186,7 +187,8 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const handleBookmarkDoubleClick = async (bookmark: BookmarkItem) => {
     // 双击在当前浏览器窗口打开对应网页
     await incrementBookmarkClick(bookmark.id);
-    await openBookmark(bookmark.url);
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
     await refresh();
   };
 
