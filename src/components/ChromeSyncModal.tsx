@@ -206,28 +206,14 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
                 <>
                   <div className="chrome-sync-modal__field">
                     <label className="chrome-sync-modal__label">路径转换模式</label>
-                    <div className="chrome-sync-modal__radio-group">
-                      <label className="chrome-sync-modal__radio">
-                        <input
-                          type="radio"
-                          name="pathMode"
-                          value="hierarchical"
-                          checked={pathMode === 'hierarchical'}
-                          onChange={(e) => setPathMode(e.target.value as 'hierarchical')}
-                        />
-                        <span>层次（整个路径作为一个 tag，例如 project/alpha）</span>
-                      </label>
-                      <label className="chrome-sync-modal__radio">
-                        <input
-                          type="radio"
-                          name="pathMode"
-                          value="independent"
-                          checked={pathMode === 'independent'}
-                          onChange={(e) => setPathMode(e.target.value as 'independent')}
-                        />
-                        <span>独立（每一层一个 tag，例如 project、alpha）</span>
-                      </label>
-                    </div>
+                    <select
+                      className="chrome-sync-modal__select"
+                      value={pathMode}
+                      onChange={(e) => setPathMode(e.target.value as 'hierarchical' | 'independent')}
+                    >
+                      <option value="hierarchical">层次（整个路径作为一个 tag，例如 project/alpha）</option>
+                      <option value="independent">独立（每一层一个 tag，例如 project、alpha）</option>
+                    </select>
                   </div>
 
                   <div className="chrome-sync-modal__field">
@@ -240,6 +226,23 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
                   </div>
                 </>
               )}
+
+              <div className="chrome-sync-modal__info">
+                <div className="chrome-sync-modal__info-title">说明</div>
+                <div className="chrome-sync-modal__info-body">
+                  <ul className="chrome-sync-modal__info-list">
+                    <li>“转化路径为标签”会把 Chrome 书签文件夹路径映射为 tag（不包含“书签栏 / 其他书签”等根节点）。</li>
+                    <li>
+                      路径转换模式：
+                      <ul className="chrome-sync-modal__info-sublist">
+                        <li>层次：整个路径作为一个 tag，例如 <code>project/alpha</code>。</li>
+                        <li>独立：每一层作为一个 tag，例如 <code>project</code>、<code>alpha</code>。</li>
+                      </ul>
+                    </li>
+                    <li>开启“转化已同步数据”会补齐已有书签的路径标签，并保留你手动添加的标签。</li>
+                  </ul>
+                </div>
+              </div>
 
               <div className="chrome-sync-modal__actions">
                 <PixelButton variant="secondary" onClick={onClose} disabled={isSyncing}>
