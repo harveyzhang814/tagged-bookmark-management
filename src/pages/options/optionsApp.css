@@ -90,4 +90,9 @@ main > .homepage-page {
   width: 100%;
 }
 
+/* 搜索模式下禁用负 margin，避免 sticky 顶部栏被 main 的 overflow 裁剪 */
+main > .homepage-page.homepage-page--search-mode {
+  margin: 0;
+}
+
 
