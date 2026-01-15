@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode, type KeyboardEvent } from 'react';
 import { getHotTags, getAllBookmarks, getAllTags, incrementBookmarkClick } from '../../../lib/bookmarkService';
 import { getAllWorkstations } from '../../../lib/workstationService';
 import { openBookmark, openBookmarksInNewWindow } from '../../../lib/chrome';
@@ -274,6 +274,14 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     setIsSearchMode(false);
   };
 
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    handleCancelSearch();
+    // 避免退出后仍保持焦点，触发 onFocus 又进入搜索模式
+    (event.currentTarget as HTMLInputElement).blur();
+  };
+
   const handleBookmarkResultClick = async (bookmark: BookmarkItem) => {
     await incrementBookmarkClick(bookmark.id);
     setBookmarks((prev) =>
@@ -357,6 +365,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
               placeholder="search bookmark, tags"
               onChange={setSearchQuery}
               onFocus={handleEnterSearchMode}
+              onKeyDown={handleSearchKeyDown}
               autoFocus
             />
           </div>
@@ -380,6 +389,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
                 placeholder="search bookmark, tags"
                 onChange={setSearchQuery}
                 onFocus={handleEnterSearchMode}
+                onKeyDown={handleSearchKeyDown}
               />
             </div>
 
