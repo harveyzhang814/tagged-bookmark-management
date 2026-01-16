@@ -146,6 +146,10 @@
   border-top: 1px solid var(--border-muted);
 }
 
+.bookmark-edit-modal__footer:has(.bookmark-edit-modal__footer-actions:only-child) {
+  justify-content: flex-end;
+}
+
 .bookmark-edit-modal__footer-actions {
   display: flex;
   align-items: center;

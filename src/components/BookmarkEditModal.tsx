@@ -6,13 +6,15 @@ import type { BookmarkItem } from '../lib/types';
 import './bookmarkEditModal.css';
 
 interface BookmarkEditModalProps {
-  bookmark: BookmarkItem | null;
+  mode: 'create' | 'edit';
+  bookmark?: BookmarkItem | null;
   onClose: () => void;
-  onSave: (bookmarkId: string, data: { title: string; url: string; tags: string[]; pinned: boolean }) => Promise<void>;
+  onSave?: (bookmarkId: string, data: { title: string; url: string; tags: string[]; pinned: boolean }) => Promise<void>;
+  onCreate?: (data: { title: string; url: string; tags: string[]; pinned: boolean }) => Promise<void>;
   onDelete?: (bookmarkId: string) => Promise<void>;
 }
 
-export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: BookmarkEditModalProps) => {
+export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, onDelete }: BookmarkEditModalProps) => {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -20,6 +22,7 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
   const [isSaving, setIsSaving] = useState(false);
   const titleTextareaRef = useRef<HTMLTextAreaElement>(null);
   const urlTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const isCreateMode = mode === 'create';
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -27,13 +30,20 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
   };
 
   useEffect(() => {
-    if (bookmark) {
+    if (isCreateMode) {
+      // 创建模式：重置表单
+      setTitle('');
+      setUrl('');
+      setTags([]);
+      setPinned(false);
+    } else if (bookmark) {
+      // 编辑模式：加载现有书签信息
       setTitle(bookmark.title);
       setUrl(bookmark.url);
       setTags(bookmark.tags);
       setPinned(bookmark.pinned);
     }
-  }, [bookmark]);
+  }, [bookmark, isCreateMode]);
 
   useEffect(() => {
     if (titleTextareaRef.current) {
@@ -51,14 +61,18 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
   };
 
   const handleSave = async () => {
-    if (!bookmark || !title.trim() || !url.trim()) return;
+    if (!title.trim() || !url.trim()) return;
     
     setIsSaving(true);
     try {
-      await onSave(bookmark.id, { title: title.trim(), url: url.trim(), tags, pinned });
+      if (isCreateMode && onCreate) {
+        await onCreate({ title: title.trim(), url: url.trim(), tags, pinned });
+      } else if (!isCreateMode && bookmark && onSave) {
+        await onSave(bookmark.id, { title: title.trim(), url: url.trim(), tags, pinned });
+      }
       onClose();
     } catch (error) {
-      console.error('Failed to save bookmark:', error);
+      console.error(`Failed to ${isCreateMode ? 'create' : 'save'} bookmark:`, error);
     } finally {
       setIsSaving(false);
     }
@@ -71,7 +85,7 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
   };
 
   const handleDelete = async () => {
-    if (!bookmark || !onDelete) return;
+    if (isCreateMode || !bookmark || !onDelete) return;
     
     const confirmed = window.confirm('确定要删除这个书签吗？此操作无法撤销。');
     if (!confirmed) return;
@@ -84,13 +98,15 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
     }
   };
 
-  if (!bookmark) return null;
+  // 创建模式需要onCreate，编辑模式需要onSave和bookmark
+  if (isCreateMode && !onCreate) return null;
+  if (!isCreateMode && (!bookmark || !onSave)) return null;
 
   return (
     <div className="bookmark-edit-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="bookmark-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="bookmark-edit-modal__header">
-          <h2 className="bookmark-edit-modal__title">编辑书签</h2>
+          <h2 className="bookmark-edit-modal__title">{isCreateMode ? '新建书签' : '编辑书签'}</h2>
           <button
             className="bookmark-edit-modal__close"
             onClick={onClose}
@@ -151,7 +167,7 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
           </div>
         </div>
         <div className="bookmark-edit-modal__footer">
-          {onDelete && (
+          {!isCreateMode && onDelete && (
             <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
               删除
             </PixelButton>
@@ -161,7 +177,7 @@ export const BookmarkEditModal = ({ bookmark, onClose, onSave, onDelete }: Bookm
               取消
             </PixelButton>
             <PixelButton onClick={handleSave} disabled={isSaving || !title.trim() || !url.trim()}>
-              {isSaving ? '保存中...' : '保存'}
+              {isSaving ? (isCreateMode ? '新建中...' : '保存中...') : (isCreateMode ? '新建' : '保存')}
             </PixelButton>
           </div>
         </div>

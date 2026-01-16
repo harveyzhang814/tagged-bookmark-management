@@ -9,7 +9,8 @@ import type { Workstation } from '../lib/types';
 import './workstationEditModal.css';
 
 interface WorkstationEditModalProps {
-  workstation: Workstation | null;
+  mode: 'create' | 'edit';
+  workstation?: Workstation | null;
   onClose: () => void;
   onSave?: (workstationId: string, data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
   onCreate?: (data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
@@ -53,7 +54,7 @@ const getDefaultWorkstationColor = async (): Promise<string> => {
   return selectedColor;
 };
 
-export const WorkstationEditModal = ({ workstation, onClose, onSave, onCreate, onDelete }: WorkstationEditModalProps) => {
+export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCreate, onDelete }: WorkstationEditModalProps) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState(TAG_COLOR_PALETTE_24[0]);
   const [description, setDescription] = useState('');
@@ -61,7 +62,7 @@ export const WorkstationEditModal = ({ workstation, onClose, onSave, onCreate, o
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingDefaultColor, setIsLoadingDefaultColor] = useState(false);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isCreateMode = !workstation;
+  const isCreateMode = mode === 'create';
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -69,12 +70,7 @@ export const WorkstationEditModal = ({ workstation, onClose, onSave, onCreate, o
   };
 
   useEffect(() => {
-    if (workstation) {
-      setName(workstation.name);
-      setColor(workstation.color);
-      setDescription(workstation.description || '');
-      setPinned(workstation.pinned);
-    } else {
+    if (isCreateMode) {
       // 创建模式：重置表单并获取智能分配的默认颜色
       setName('');
       setDescription('');
@@ -87,8 +83,14 @@ export const WorkstationEditModal = ({ workstation, onClose, onSave, onCreate, o
         setColor(TAG_COLOR_PALETTE_24[0]);
         setIsLoadingDefaultColor(false);
       });
+    } else if (workstation) {
+      // 编辑模式：加载现有工作区信息
+      setName(workstation.name);
+      setColor(workstation.color);
+      setDescription(workstation.description || '');
+      setPinned(workstation.pinned);
     }
-  }, [workstation]);
+  }, [workstation, isCreateMode]);
 
   useEffect(() => {
     if (descriptionTextareaRef.current) {
@@ -150,14 +152,15 @@ export const WorkstationEditModal = ({ workstation, onClose, onSave, onCreate, o
     }
   };
 
-  // 如果没有 workstation 且没有 onCreate，则不显示弹窗
-  if (!workstation && !onCreate) return null;
+  // 创建模式需要onCreate，编辑模式需要onSave和workstation
+  if (isCreateMode && !onCreate) return null;
+  if (!isCreateMode && (!workstation || !onSave)) return null;
 
   return (
     <div className="workstation-edit-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="workstation-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="workstation-edit-modal__header">
-          <h2 className="workstation-edit-modal__title">{isCreateMode ? '创建工作区' : '编辑工作区'}</h2>
+          <h2 className="workstation-edit-modal__title">{isCreateMode ? '新建工作区' : '编辑工作区'}</h2>
           <button
             className="workstation-edit-modal__close"
             onClick={onClose}
@@ -233,7 +236,7 @@ export const WorkstationEditModal = ({ workstation, onClose, onSave, onCreate, o
               取消
             </PixelButton>
             <PixelButton onClick={handleSave} disabled={isSaving || !name.trim()}>
-              {isSaving ? (isCreateMode ? '创建中...' : '保存中...') : (isCreateMode ? '创建' : '保存')}
+              {isSaving ? (isCreateMode ? '新建中...' : '保存中...') : (isCreateMode ? '新建' : '保存')}
             </PixelButton>
           </div>
         </div>

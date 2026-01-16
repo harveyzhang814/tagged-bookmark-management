@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode, type KeyboardEvent } from 'react';
-import { getHotTags, getAllBookmarks, getAllTags, incrementBookmarkClick } from '../../../lib/bookmarkService';
-import { getAllWorkstations } from '../../../lib/workstationService';
+import { getHotTags, getAllBookmarks, getAllTags, incrementBookmarkClick, createBookmark, createTag } from '../../../lib/bookmarkService';
+import { getAllWorkstations, createWorkstation } from '../../../lib/workstationService';
 import { openUrlWithMode, openUrlsWithMode } from '../../../lib/chrome';
 import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode } from '../../../lib/storage';
 import type { Tag, Workstation, BookmarkItem } from '../../../lib/types';
@@ -8,6 +8,10 @@ import { SearchInput } from '../../../components/SearchInput';
 import { TagPill } from '../../../components/TagPill';
 import { HomepageWorkstationCard } from '../../../components/HomepageWorkstationCard';
 import { PixelButton } from '../../../components/PixelButton';
+import { FloatingActionButton } from '../../../components/FloatingActionButton';
+import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
+import { TagEditModal } from '../../../components/TagEditModal';
+import { WorkstationEditModal } from '../../../components/WorkstationEditModal';
 import './homepagePage.css';
 
 interface HomepagePageProps {
@@ -75,6 +79,9 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const tagRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [visibleWorkstationCount, setVisibleWorkstationCount] = useState<number>(4);
   const workstationsListRef = useRef<HTMLDivElement>(null);
+  const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isWorkstationModalOpen, setIsWorkstationModalOpen] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -354,6 +361,21 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     await loadData();
   };
 
+  const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
+    await createBookmark(data);
+    await loadData();
+  };
+
+  const handleCreateTag = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
+    await createTag(data);
+    await loadData();
+  };
+
+  const handleCreateWorkstation = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
+    await createWorkstation(data);
+    await loadData();
+  };
+
   if (isLoading) {
     return <div className="homepage-page" aria-busy="true" />;
   }
@@ -534,6 +556,36 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
             </div>
           </div>
         </div>
+      )}
+
+      <FloatingActionButton
+        onBookmarkClick={() => setIsBookmarkModalOpen(true)}
+        onTagClick={() => setIsTagModalOpen(true)}
+        onWorkstationClick={() => setIsWorkstationModalOpen(true)}
+      />
+
+      {isBookmarkModalOpen && (
+        <BookmarkEditModal
+          mode="create"
+          onClose={() => setIsBookmarkModalOpen(false)}
+          onCreate={handleCreateBookmark}
+        />
+      )}
+
+      {isTagModalOpen && (
+        <TagEditModal
+          mode="create"
+          onClose={() => setIsTagModalOpen(false)}
+          onCreate={handleCreateTag}
+        />
+      )}
+
+      {isWorkstationModalOpen && (
+        <WorkstationEditModal
+          mode="create"
+          onClose={() => setIsWorkstationModalOpen(false)}
+          onCreate={handleCreateWorkstation}
+        />
       )}
     </div>
   );

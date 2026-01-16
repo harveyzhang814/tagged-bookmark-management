@@ -1,0 +1,194 @@
+.fab-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.fab-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 2;
+}
+
+.fab-button:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.05);
+}
+
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-button--open {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.fab-button--open:hover {
+  background: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
+.fab-button__icon {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.3s ease;
+}
+
+.fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-end;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.fab-menu--open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.fab-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-muted);
+  border-radius: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  min-width: 120px;
+  justify-content: flex-start;
+}
+
+.fab-option:hover {
+  background: var(--bg-panel);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+  transform: translateX(-4px);
+}
+
+.fab-option:active {
+  transform: translateX(-2px);
+}
+
+.fab-option__icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.fab-option--bookmark .fab-option__icon {
+  color: var(--accent);
+}
+
+.fab-option--tag .fab-option__icon {
+  color: var(--accent-2);
+}
+
+.fab-option--workstation .fab-option__icon {
+  color: var(--accent);
+}
+
+.fab-option__label {
+  color: var(--text-main);
+}
+
+/* 动画延迟，让选项依次出现 */
+.fab-option--bookmark {
+  transition-delay: 0.05s;
+}
+
+.fab-option--tag {
+  transition-delay: 0.1s;
+}
+
+.fab-option--workstation {
+  transition-delay: 0.15s;
+}
+
+.fab-menu--open .fab-option {
+  animation: slideInFromRight 0.3s ease forwards;
+}
+
+.fab-menu--open .fab-option--bookmark {
+  animation-delay: 0.05s;
+}
+
+.fab-menu--open .fab-option--tag {
+  animation-delay: 0.1s;
+}
+
+.fab-menu--open .fab-option--workstation {
+  animation-delay: 0.15s;
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .fab-container {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .fab-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .fab-button__icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .fab-option {
+    padding: 10px 14px;
+    font-size: 13px;
+    min-width: 110px;
+  }
+}
