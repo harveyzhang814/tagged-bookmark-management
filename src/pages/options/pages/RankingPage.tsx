@@ -7,7 +7,7 @@ import { HotTagCard } from '../../../components/HotTagCard';
 import { RankingList } from '../../../components/RankingList';
 import { HotTagRankingItem } from '../../../components/HotTagRankingItem';
 import { HotBookmarkRankingItem } from '../../../components/HotBookmarkRankingItem';
-import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
+import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import { PixelButton } from '../../../components/PixelButton';
 import { SearchInput } from '../../../components/SearchInput';
@@ -320,11 +320,13 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
         )}
       </div>
 
-      <BookmarkCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateBookmark}
-      />
+      {isCreateModalOpen && (
+        <BookmarkEditModal
+          mode="create"
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={handleCreateBookmark}
+        />
+      )}
     </div>
   );
 };

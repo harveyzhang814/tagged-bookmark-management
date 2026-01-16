@@ -266,6 +266,7 @@ export const WorkstationsPage = () => {
 
       {editingWorkstation && (
         <WorkstationEditModal
+          mode="edit"
           workstation={editingWorkstation}
           onClose={handleCloseEditModal}
           onSave={handleSaveEdit}
@@ -275,7 +276,7 @@ export const WorkstationsPage = () => {
 
       {isCreateModalOpen && (
         <WorkstationEditModal
-          workstation={null}
+          mode="create"
           onClose={handleCloseCreateModal}
           onCreate={handleCreateWorkstation}
         />

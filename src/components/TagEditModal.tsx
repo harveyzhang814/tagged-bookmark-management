@@ -9,7 +9,8 @@ import type { Tag } from '../lib/types';
 import './tagEditModal.css';
 
 interface TagEditModalProps {
-  tag: Tag | null;
+  mode: 'create' | 'edit';
+  tag?: Tag | null;
   onClose: () => void;
   onSave?: (tagId: string, data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
   onCreate?: (data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
@@ -53,7 +54,7 @@ const getDefaultTagColor = async (): Promise<string> => {
   return selectedColor;
 };
 
-export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEditModalProps) => {
+export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }: TagEditModalProps) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState(TAG_COLOR_PALETTE_24[0]);
   const [description, setDescription] = useState('');
@@ -61,7 +62,7 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingDefaultColor, setIsLoadingDefaultColor] = useState(false);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const isCreateMode = !tag;
+  const isCreateMode = mode === 'create';
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -69,12 +70,7 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
   };
 
   useEffect(() => {
-    if (tag) {
-      setName(tag.name);
-      setColor(tag.color);
-      setDescription(tag.description || '');
-      setPinned(tag.pinned);
-    } else {
+    if (isCreateMode) {
       // 创建模式：重置表单并获取智能分配的默认颜色
       setName('');
       setDescription('');
@@ -87,8 +83,14 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
         setColor(TAG_COLOR_PALETTE_24[0]);
         setIsLoadingDefaultColor(false);
       });
+    } else if (tag) {
+      // 编辑模式：加载现有标签信息
+      setName(tag.name);
+      setColor(tag.color);
+      setDescription(tag.description || '');
+      setPinned(tag.pinned);
     }
-  }, [tag]);
+  }, [tag, isCreateMode]);
 
   useEffect(() => {
     if (descriptionTextareaRef.current) {
@@ -150,14 +152,15 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
     }
   };
 
-  // 如果没有 tag 且没有 onCreate，则不显示弹窗
-  if (!tag && !onCreate) return null;
+  // 创建模式需要onCreate，编辑模式需要onSave和tag
+  if (isCreateMode && !onCreate) return null;
+  if (!isCreateMode && (!tag || !onSave)) return null;
 
   return (
     <div className="tag-edit-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="tag-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="tag-edit-modal__header">
-          <h2 className="tag-edit-modal__title">{isCreateMode ? '创建标签' : '编辑标签'}</h2>
+          <h2 className="tag-edit-modal__title">{isCreateMode ? '新建标签' : '编辑标签'}</h2>
           <button
             className="tag-edit-modal__close"
             onClick={onClose}
@@ -233,7 +236,7 @@ export const TagEditModal = ({ tag, onClose, onSave, onCreate, onDelete }: TagEd
               取消
             </PixelButton>
             <PixelButton onClick={handleSave} disabled={isSaving || !name.trim()}>
-              {isSaving ? (isCreateMode ? '创建中...' : '保存中...') : (isCreateMode ? '创建' : '保存')}
+              {isSaving ? (isCreateMode ? '新建中...' : '保存中...') : (isCreateMode ? '新建' : '保存')}
             </PixelButton>
           </div>
         </div>

@@ -6,7 +6,6 @@ import { TagFilterDropdown } from '../../../components/TagFilterDropdown';
 import { SortDropdown } from '../../../components/SortDropdown';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
-import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
 import { Tooltip } from '../../../components/Tooltip';
 import { Pagination } from '../../../components/Pagination';
 import { TagSidebar } from '../../../components/TagSidebar';
@@ -443,18 +442,23 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
         )}
       </div>
 
-      <BookmarkEditModal
-        bookmark={editingBookmark}
-        onClose={handleCloseEditModal}
-        onSave={handleSaveEdit}
-        onDelete={handleDeleteBookmark}
-      />
+      {editingBookmark && (
+        <BookmarkEditModal
+          mode="edit"
+          bookmark={editingBookmark}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveEdit}
+          onDelete={handleDeleteBookmark}
+        />
+      )}
 
-      <BookmarkCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateBookmark}
-      />
+      {isCreateModalOpen && (
+        <BookmarkEditModal
+          mode="create"
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={handleCreateBookmark}
+        />
+      )}
 
       <ChromeSyncModal
         isOpen={isChromeSyncModalOpen}

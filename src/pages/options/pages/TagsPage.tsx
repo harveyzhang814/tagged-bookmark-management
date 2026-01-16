@@ -293,6 +293,7 @@ export const TagsPage = () => {
 
       {editingTag && (
         <TagEditModal
+          mode="edit"
           tag={editingTag}
           onClose={handleCloseEditModal}
           onSave={handleSaveEdit}
@@ -302,7 +303,7 @@ export const TagsPage = () => {
 
       {isCreateModalOpen && (
         <TagEditModal
-          tag={null}
+          mode="create"
           onClose={handleCloseCreateModal}
           onCreate={handleCreateTag}
         />
