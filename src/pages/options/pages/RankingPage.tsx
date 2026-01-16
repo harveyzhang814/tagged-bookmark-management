@@ -85,13 +85,16 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
 
   const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
     await createBookmark(data);
-    setIsCreateModalOpen(false);
-    // 重新加载数据
-    await loadData(false);
-    // 触发父组件刷新
-    if (onRefresh) {
-      onRefresh();
-    }
+    // 不立即关闭弹窗，让成功提示先显示，弹窗会在1.5秒后自动关闭
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(async () => {
+      // 重新加载数据
+      await loadData(false);
+      // 触发父组件刷新
+      if (onRefresh) {
+        onRefresh();
+      }
+    }, 1600);
   };
 
   // 搜索过滤函数

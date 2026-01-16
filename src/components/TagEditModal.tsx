@@ -60,6 +60,7 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
   const [description, setDescription] = useState('');
   const [pinned, setPinned] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [isLoadingDefaultColor, setIsLoadingDefaultColor] = useState(false);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const isCreateMode = mode === 'create';
@@ -75,6 +76,7 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
       setName('');
       setDescription('');
       setPinned(false);
+      setShowSuccess(false);
       setIsLoadingDefaultColor(true);
       getDefaultTagColor().then((defaultColor) => {
         setColor(defaultColor);
@@ -89,6 +91,7 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
       setColor(tag.color);
       setDescription(tag.description || '');
       setPinned(tag.pinned);
+      setShowSuccess(false);
     }
   }, [tag, isCreateMode]);
 
@@ -99,6 +102,8 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
   }, [description, tag]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // 成功提示显示时，不允许点击背景关闭
+    if (showSuccess) return;
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -124,15 +129,23 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
           pinned 
         });
       }
-      onClose();
+      // 先停止保存状态
+      setIsSaving(false);
+      // 显示成功提示
+      setShowSuccess(true);
+      // 延迟后关闭弹窗
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (error) {
       console.error('Failed to save tag:', error);
-    } finally {
       setIsSaving(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // 成功提示显示时，不允许按 ESC 关闭
+    if (showSuccess) return;
     if (e.key === 'Escape') {
       onClose();
     }
@@ -179,7 +192,26 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
           </button>
         </div>
         <div className="tag-edit-modal__content">
-          <div className="tag-edit-modal__field">
+          {showSuccess ? (
+            <div className="tag-edit-modal__success">
+              <div className="tag-edit-modal__success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M20 6L9 17l-5-5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <p className="tag-edit-modal__success-text">
+                {isCreateMode ? '新建成功' : '保存成功'}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="tag-edit-modal__field">
             <label className="tag-edit-modal__label">名称</label>
             <input
               className="tag-edit-modal__input"
@@ -224,8 +256,11 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
               <TagPill label={name || '标签名称'} color={color} size="large" />
             </div>
           </div>
+            </>
+          )}
         </div>
-        <div className="tag-edit-modal__footer">
+        {!showSuccess && (
+          <div className="tag-edit-modal__footer">
           {!isCreateMode && onDelete && (
             <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
               删除
@@ -240,6 +275,7 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
             </PixelButton>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

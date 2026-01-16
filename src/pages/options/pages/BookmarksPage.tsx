@@ -199,12 +199,15 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
   const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
     await createBookmark(data);
-    setIsCreateModalOpen(false);
-    await refresh();
-    // 触发父组件刷新
-    if (onRefresh) {
-      onRefresh();
-    }
+    // 不立即关闭弹窗，让成功提示先显示，弹窗会在1.5秒后自动关闭
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(async () => {
+      await refresh();
+      // 触发父组件刷新
+      if (onRefresh) {
+        onRefresh();
+      }
+    }, 1600);
   };
 
   const handleTagDrop = async (bookmarkId: string, tagId: string) => {

@@ -105,8 +105,11 @@ export const WorkstationsPage = () => {
       description: data.description,
       pinned: data.pinned
     });
-    setIsCreateModalOpen(false);
-    await refresh();
+    // 不立即关闭弹窗，让成功提示先显示，弹窗会在1.5秒后自动关闭
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(async () => {
+      await refresh();
+    }, 1600);
   };
 
   const handleEdit = (workstation: Workstation) => {

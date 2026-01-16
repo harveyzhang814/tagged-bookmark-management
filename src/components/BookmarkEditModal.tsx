@@ -20,6 +20,7 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
   const [tags, setTags] = useState<string[]>([]);
   const [pinned, setPinned] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const titleTextareaRef = useRef<HTMLTextAreaElement>(null);
   const urlTextareaRef = useRef<HTMLTextAreaElement>(null);
   const isCreateMode = mode === 'create';
@@ -36,12 +37,14 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
       setUrl('');
       setTags([]);
       setPinned(false);
+      setShowSuccess(false);
     } else if (bookmark) {
       // 编辑模式：加载现有书签信息
       setTitle(bookmark.title);
       setUrl(bookmark.url);
       setTags(bookmark.tags);
       setPinned(bookmark.pinned);
+      setShowSuccess(false);
     }
   }, [bookmark, isCreateMode]);
 
@@ -55,6 +58,8 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
   }, [title, url, bookmark]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // 成功提示显示时，不允许点击背景关闭
+    if (showSuccess) return;
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -70,15 +75,23 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
       } else if (!isCreateMode && bookmark && onSave) {
         await onSave(bookmark.id, { title: title.trim(), url: url.trim(), tags, pinned });
       }
-      onClose();
+      // 先停止保存状态
+      setIsSaving(false);
+      // 显示成功提示
+      setShowSuccess(true);
+      // 延迟后关闭弹窗
+      setTimeout(() => {
+        onClose();
+      }, 1500);
     } catch (error) {
       console.error(`Failed to ${isCreateMode ? 'create' : 'save'} bookmark:`, error);
-    } finally {
       setIsSaving(false);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // 成功提示显示时，不允许按 ESC 关闭
+    if (showSuccess) return;
     if (e.key === 'Escape') {
       onClose();
     }
@@ -125,7 +138,26 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
           </button>
         </div>
         <div className="bookmark-edit-modal__content">
-          <div className="bookmark-edit-modal__field">
+          {showSuccess ? (
+            <div className="bookmark-edit-modal__success">
+              <div className="bookmark-edit-modal__success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M20 6L9 17l-5-5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <p className="bookmark-edit-modal__success-text">
+                {isCreateMode ? '新建成功' : '保存成功'}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="bookmark-edit-modal__field">
             <label className="bookmark-edit-modal__label">标题</label>
             <textarea
               ref={titleTextareaRef}
@@ -165,8 +197,11 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
               label="置顶"
             />
           </div>
+            </>
+          )}
         </div>
-        <div className="bookmark-edit-modal__footer">
+        {!showSuccess && (
+          <div className="bookmark-edit-modal__footer">
           {!isCreateMode && onDelete && (
             <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
               删除
@@ -181,6 +216,7 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
             </PixelButton>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

@@ -157,6 +157,50 @@
   margin-left: auto;
 }
 
+.bookmark-edit-modal__success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  min-height: 200px;
+  gap: 16px;
+}
+
+.bookmark-edit-modal__success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #10b981;
+  animation: bookmarkEditModalSuccessScale 0.3s ease-out;
+}
+
+@keyframes bookmarkEditModalSuccessScale {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+[data-theme='dark'] .bookmark-edit-modal__success-icon {
+  color: #34d399;
+}
+
+.bookmark-edit-modal__success-text {
+  font-size: 16px;
+  color: var(--text-main);
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
 @media (max-width: 640px) {
   .bookmark-edit-modal {
     max-width: 100%;

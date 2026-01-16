@@ -363,17 +363,26 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
 
   const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
     await createBookmark(data);
-    await loadData();
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(() => {
+      void loadData();
+    }, 1600);
   };
 
   const handleCreateTag = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
     await createTag(data);
-    await loadData();
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(() => {
+      void loadData();
+    }, 1600);
   };
 
   const handleCreateWorkstation = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
     await createWorkstation(data);
-    await loadData();
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(() => {
+      void loadData();
+    }, 1600);
   };
 
   if (isLoading) {
