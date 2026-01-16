@@ -145,29 +145,6 @@ export const OptionsApp = () => {
             icon={
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
-                  d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.05.05a2.06 2.06 0 0 1 0 2.91 2.06 2.06 0 0 1-2.91 0l-.05-.05a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.55V21a2.06 2.06 0 0 1-2.06 2.06A2.06 2.06 0 0 1 9.76 21v-.07A1.7 1.7 0 0 0 8.73 19.4a1.7 1.7 0 0 0-1.87.34l-.05.05a2.06 2.06 0 0 1-2.91 0 2.06 2.06 0 0 1 0-2.91l.05-.05A1.7 1.7 0 0 0 4.3 15a1.7 1.7 0 0 0-1.55-1.03H2.7A2.06 2.06 0 0 1 .64 11.9 2.06 2.06 0 0 1 2.7 9.85h.07A1.7 1.7 0 0 0 4.3 8.82a1.7 1.7 0 0 0-.34-1.87l-.05-.05a2.06 2.06 0 0 1 0-2.91 2.06 2.06 0 0 1 2.91 0l.05.05a1.7 1.7 0 0 0 1.87.34h0A1.7 1.7 0 0 0 9.76 2.7V2.63A2.06 2.06 0 0 1 11.82.57 2.06 2.06 0 0 1 13.88 2.63v.07a1.7 1.7 0 0 0 1.03 1.55 1.7 1.7 0 0 0 1.87-.34l.05-.05a2.06 2.06 0 0 1 2.91 0 2.06 2.06 0 0 1 0 2.91l-.05.05a1.7 1.7 0 0 0-.34 1.87v0a1.7 1.7 0 0 0 1.55 1.03h.07A2.06 2.06 0 0 1 23.36 11.9 2.06 2.06 0 0 1 21.3 13.97h-.07A1.7 1.7 0 0 0 19.4 15Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
-            aria-label="设置"
-            onClick={() => void handleTabChange('settings')}
-          />
-          <IconButton
-            variant="secondary"
-            icon={
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
                   d="M8 12h8M8 12l-2-2m2 2l-2 2M16 12l2-2m-2 2l2 2"
                   stroke="currentColor"
                   strokeWidth="2"
@@ -194,6 +171,29 @@ export const OptionsApp = () => {
             onClick={() => setIsImportExportModalOpen(true)}
           />
           <ThemeToggle />
+          <IconButton
+            variant="secondary"
+            icon={
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M10 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M15.2 12.2a1.2 1.2 0 0 0 .25 1.3l.04.04a1.5 1.5 0 0 1 0 2.12 1.5 1.5 0 0 1-2.12 0l-.04-.04a1.2 1.2 0 0 0-1.3-.25 1.2 1.2 0 0 0-.72 1.08v.04a1.5 1.5 0 0 1-1.5 1.5 1.5 1.5 0 0 1-1.5-1.5v-.04a1.2 1.2 0 0 0-.72-1.08 1.2 1.2 0 0 0-1.3.25l-.04.04a1.5 1.5 0 0 1-2.12 0 1.5 1.5 0 0 1 0-2.12l.04-.04a1.2 1.2 0 0 0 .25-1.3 1.2 1.2 0 0 0-1.08-.72h-.04a1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5h.04a1.2 1.2 0 0 0 1.08-.72 1.2 1.2 0 0 0-.25-1.3l-.04-.04a1.5 1.5 0 0 1 0-2.12 1.5 1.5 0 0 1 2.12 0l.04.04a1.2 1.2 0 0 0 1.3.25h0a1.2 1.2 0 0 0 .72-1.08v-.04a1.5 1.5 0 0 1 1.5-1.5 1.5 1.5 0 0 1 1.5 1.5v.04a1.2 1.2 0 0 0 .72 1.08 1.2 1.2 0 0 0 1.3-.25l.04-.04a1.5 1.5 0 0 1 2.12 0 1.5 1.5 0 0 1 0 2.12l-.04.04a1.2 1.2 0 0 0-.25 1.3v0a1.2 1.2 0 0 0 1.08.72h.04a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5h-.04a1.2 1.2 0 0 0-1.08.72Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+            aria-label="设置"
+            onClick={() => void handleTabChange('settings')}
+          />
         </div>
       </header>
 
