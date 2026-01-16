@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
-import { SortDropdown } from '../../../components/SortDropdown';
+import { SortDropdown, type SortField } from '../../../components/SortDropdown';
 import { TagCard } from '../../../components/TagCard';
 import { TagEditModal } from '../../../components/TagEditModal';
 import { Pagination } from '../../../components/Pagination';
@@ -16,7 +16,7 @@ import {
   updateBookmark
 } from '../../../lib/bookmarkService';
 import { openUrlsWithMode } from '../../../lib/chrome';
-import { getBrowserTagWorkstationOpenMode } from '../../../lib/storage';
+import { getBrowserTagWorkstationOpenMode, getTagsMap, saveTagsMap } from '../../../lib/storage';
 import type { Tag, BookmarkItem } from '../../../lib/types';
 import './tagsPage.css';
 
@@ -24,7 +24,7 @@ export const TagsPage = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'usageCount' | 'clickCount'>('createdAt');
+  const [sortBy, setSortBy] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -168,8 +168,14 @@ export const TagsPage = () => {
       // 更新标签的点击计数
       const tag = tags.find((t) => t.id === tagId);
       if (tag) {
-        await updateTag(tagId, { clickCount: tag.clickCount + 1 });
-        await refresh();
+        const tagsMap = await getTagsMap();
+        const targetTag = tagsMap[tagId];
+        if (targetTag) {
+          targetTag.clickCount += 1;
+          targetTag.updatedAt = Date.now();
+          await saveTagsMap(tagsMap);
+          await refresh();
+        }
       }
     }
   };

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import './sortDropdown.css';
 
-type SortField = 'createdAt' | 'clickCount' | 'usageCount';
+export type SortField = 'createdAt' | 'clickCount' | 'usageCount' | 'bookmarkCount';
 
 interface SortOption {
   value: SortField;

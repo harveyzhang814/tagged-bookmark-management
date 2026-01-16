@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { PixelButton } from '../../../components/PixelButton';
 import { SearchInput } from '../../../components/SearchInput';
-import { SortDropdown } from '../../../components/SortDropdown';
+import { SortDropdown, type SortField } from '../../../components/SortDropdown';
 import { WorkstationCard } from '../../../components/WorkstationCard';
 import { WorkstationEditModal } from '../../../components/WorkstationEditModal';
 import { Pagination } from '../../../components/Pagination';
@@ -22,7 +22,7 @@ export const WorkstationsPage = () => {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'bookmarkCount' | 'clickCount'>('createdAt');
+  const [sortBy, setSortBy] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [editingWorkstation, setEditingWorkstation] = useState<Workstation | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
