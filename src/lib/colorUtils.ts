@@ -5,6 +5,7 @@
  */
 
 import type { Theme } from './theme';
+import { getCurrentEffectiveThemeFromDOM, getEffectiveTheme } from './theme';
 
 /**
  * 将 hex 颜色字符串转换为 RGB 值数组
@@ -278,10 +279,15 @@ export function enhanceColorForLight(baseColor: string): string {
  * @returns Border 颜色（hex 格式）
  */
 export function getTagBorderColor(baseColor: string, theme: Theme): string {
-  const bgColor = theme === 'light' ? '#ffffff' : '#252525'; // 对应 --bg-card
+  // 优化：如果主题是 'system'，直接从 DOM 读取（最快的方式）
+  // 如果是 'light' 或 'dark'，直接使用（避免重复检测系统偏好）
+  const effectiveTheme = theme === 'system' 
+    ? getCurrentEffectiveThemeFromDOM() 
+    : theme;
+  const bgColor = effectiveTheme === 'light' ? '#ffffff' : '#252525'; // 对应 --bg-card
   let borderColor: string;
   
-  if (theme === 'light') {
+  if (effectiveTheme === 'light') {
     // Light 模式：增强颜色以提高对比度和区分度
     borderColor = enhanceColorForLight(baseColor);
   } else {
@@ -300,10 +306,15 @@ export function getTagBorderColor(baseColor: string, theme: Theme): string {
  * @returns Tint 颜色（rgba 格式）
  */
 export function getTagTintColor(baseColor: string, theme: Theme): string {
+  // 优化：如果主题是 'system'，直接从 DOM 读取（最快的方式）
+  // 如果是 'light' 或 'dark'，直接使用（避免重复检测系统偏好）
+  const effectiveTheme = theme === 'system' 
+    ? getCurrentEffectiveThemeFromDOM() 
+    : theme;
   let colorForTint: string;
   let opacity: number;
   
-  if (theme === 'light') {
+  if (effectiveTheme === 'light') {
     // Light 模式：使用增强后的颜色，10% 透明度（增强的颜色会让tint更明显）
     colorForTint = enhanceColorForLight(baseColor);
     opacity = 0.10;
@@ -326,9 +337,14 @@ export function getTagTintColor(baseColor: string, theme: Theme): string {
  * @returns Dot 颜色（hex 格式）
  */
 export function getTagDotColor(baseColor: string, theme: Theme): string {
+  // 优化：如果主题是 'system'，直接从 DOM 读取（最快的方式）
+  // 如果是 'light' 或 'dark'，直接使用（避免重复检测系统偏好）
+  const effectiveTheme = theme === 'system' 
+    ? getCurrentEffectiveThemeFromDOM() 
+    : theme;
   // Dot 颜色与 Border 颜色逻辑一致
   // Dot 通常显示在较暗的背景上，使用 --bg-panel 作为参考
-  const bgColor = theme === 'light' ? '#ffffff' : '#1e1e1e'; // 对应 --bg-panel
+  const bgColor = effectiveTheme === 'light' ? '#ffffff' : '#1e1e1e'; // 对应 --bg-panel
   const borderColor = getTagBorderColor(baseColor, theme);
   
   // 确保 dot 与背景的对比度 ≥ 3:1

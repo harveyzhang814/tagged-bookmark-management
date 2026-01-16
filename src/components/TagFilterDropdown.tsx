@@ -1,7 +1,6 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { SearchInput } from './SearchInput';
 import type { Tag } from '../lib/types';
-import { getTheme, type Theme } from '../lib/theme';
 import { getTagDotColor } from '../lib/colorUtils';
 import './tagFilterDropdown.css';
 
@@ -11,12 +10,18 @@ interface TagFilterDropdownProps {
   onToggle: (tagId: string) => void;
 }
 
+// 从 DOM 读取当前实际应用的主题（同步，高效）
+const getThemeFromDOM = (): 'light' | 'dark' => {
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+};
+
 export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(30); // 初始显示30个
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
-  const [theme, setTheme] = useState<Theme>('light');
+  // 优化：直接使用 'light' | 'dark' 类型，因为颜色计算只需要实际应用的主题
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>(() => getThemeFromDOM());
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -168,15 +173,14 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
 
   // 初始化主题并监听变化
   useEffect(() => {
-    const initTheme = async () => {
-      const currentTheme = await getTheme();
-      setTheme(currentTheme);
-    };
-    void initTheme();
+    // 初始化：从 DOM 读取主题（同步，无需异步）
+    const theme = getThemeFromDOM();
+    setEffectiveTheme(theme);
 
+    // 监听主题变化
     const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      setTheme(isDark ? 'dark' : 'light');
+      const theme = getThemeFromDOM();
+      setEffectiveTheme(theme);
     });
 
     observer.observe(document.documentElement, {
@@ -268,7 +272,7 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
                     className="tag-filter-dropdown__selected-item"
                     onClick={(e) => handleRemoveSelected(tag.id, e)}
                   >
-                    <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, theme) }} />
+                    <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, effectiveTheme) }} />
                     <span className="tag-filter-dropdown__tag-name">{tag.name}</span>
                     <svg
                       className="tag-filter-dropdown__remove-icon"
@@ -307,7 +311,7 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
                       className="tag-filter-dropdown__item"
                       onClick={() => handleTagClick(tag.id)}
                     >
-                      <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, theme) }} />
+                      <span className="tag-filter-dropdown__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, effectiveTheme) }} />
                       <span className="tag-filter-dropdown__tag-name">{tag.name}</span>
                     </div>
                   ))}

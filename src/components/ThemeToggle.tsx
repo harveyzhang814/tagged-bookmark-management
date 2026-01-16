@@ -3,7 +3,7 @@ import { getTheme, toggleTheme, type Theme } from '../lib/theme';
 import './themeToggle.css';
 
 export const ThemeToggle = () => {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('system');
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -20,6 +20,16 @@ export const ThemeToggle = () => {
     const newTheme = await toggleTheme();
     setTheme(newTheme);
     setIsLoading(false);
+  };
+
+  const getAriaLabel = (currentTheme: Theme): string => {
+    if (currentTheme === 'light') {
+      return '切换到暗黑模式';
+    } else if (currentTheme === 'dark') {
+      return '切换到跟随系统';
+    } else {
+      return '切换到明亮模式';
+    }
   };
 
   if (isLoading) {
@@ -40,8 +50,8 @@ export const ThemeToggle = () => {
     <button
       className="theme-toggle"
       onClick={handleToggle}
-      aria-label={theme === 'light' ? '切换到暗黑模式' : '切换到明亮模式'}
-      title={theme === 'light' ? '切换到暗黑模式' : '切换到明亮模式'}
+      aria-label={getAriaLabel(theme)}
+      title={getAriaLabel(theme)}
     >
       {theme === 'light' ? (
         <svg className="theme-toggle__icon" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -53,7 +63,7 @@ export const ThemeToggle = () => {
             strokeLinejoin="round"
           />
         </svg>
-      ) : (
+      ) : theme === 'dark' ? (
         <svg className="theme-toggle__icon" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M10 3C6.13401 3 3 6.13401 3 10C3 13.866 6.13401 17 10 17C13.866 17 17 13.866 17 10C17 9.28977 16.889 8.60347 16.682 7.95869M10 1V3M10 17V19M3 10H1M19 10H17M4.34315 4.34315L2.92893 2.92893M17.0711 17.0711L15.6569 15.6569M4.34315 15.6569L2.92893 17.0711M17.0711 2.92893L15.6569 4.34315"
@@ -61,6 +71,23 @@ export const ThemeToggle = () => {
             strokeWidth="1.5"
             strokeLinecap="round"
             strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <svg className="theme-toggle__icon" width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M10 2V4M10 16V18M18 10H16M4 10H2M15.657 4.343L14.243 5.757M5.757 14.243L4.343 15.657M15.657 15.657L14.243 14.243M5.757 5.757L4.343 4.343"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="10" cy="10" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+          <path
+            d="M10 6.5C8.067 6.5 6.5 8.067 6.5 10C6.5 11.933 8.067 13.5 10 13.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
           />
         </svg>
       )}

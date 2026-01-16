@@ -2,7 +2,6 @@ import { useRef, useEffect, useState } from 'react';
 import type { BookmarkItem, Tag } from '../lib/types';
 import { RankingItem } from './RankingItem';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
-import { getTheme, type Theme } from '../lib/theme';
 import { getTagBorderColor, getTagTintColor } from '../lib/colorUtils';
 import { openUrlWithMode } from '../lib/chrome';
 import { getBrowserDefaultOpenMode } from '../lib/storage';
@@ -14,6 +13,11 @@ interface HotBookmarkRankingItemProps {
   rank: number;
 }
 
+// 从 DOM 读取当前实际应用的主题（同步，高效）
+const getThemeFromDOM = (): 'light' | 'dark' => {
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+};
+
 export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRankingItemProps) => {
   const bookmarkTags = bookmark.tags
     .map((tagId) => tags.find((t) => t.id === tagId))
@@ -24,7 +28,8 @@ export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRank
   const measureTagsRef = useRef<HTMLDivElement>(null);
   const statRef = useRef<HTMLDivElement>(null);
   const [visibleTagCount, setVisibleTagCount] = useState(bookmarkTags.length);
-  const [theme, setTheme] = useState<Theme>('light');
+  // 优化：直接使用 'light' | 'dark' 类型，因为颜色计算只需要实际应用的主题
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>(() => getThemeFromDOM());
 
   const handleClick = async () => {
     await incrementBookmarkClick(bookmark.id);
@@ -34,15 +39,14 @@ export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRank
 
   // 初始化主题并监听变化
   useEffect(() => {
-    const initTheme = async () => {
-      const currentTheme = await getTheme();
-      setTheme(currentTheme);
-    };
-    void initTheme();
+    // 初始化：从 DOM 读取主题（同步，无需异步）
+    const theme = getThemeFromDOM();
+    setEffectiveTheme(theme);
 
+    // 监听主题变化
     const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      setTheme(isDark ? 'dark' : 'light');
+      const theme = getThemeFromDOM();
+      setEffectiveTheme(theme);
     });
 
     observer.observe(document.documentElement, {
@@ -58,8 +62,8 @@ export const HotBookmarkRankingItem = ({ bookmark, tags, rank }: HotBookmarkRank
   // 获取 tag 的样式
   const getTagStyle = (tag: Tag) => {
     return {
-      borderColor: getTagBorderColor(tag.color, theme),
-      backgroundColor: getTagTintColor(tag.color, theme),
+      borderColor: getTagBorderColor(tag.color, effectiveTheme),
+      backgroundColor: getTagTintColor(tag.color, effectiveTheme),
       color: 'var(--text-main)',
     };
   };

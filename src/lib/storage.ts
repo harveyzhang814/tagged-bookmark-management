@@ -142,10 +142,10 @@ export const getSnapshot = async (): Promise<StorageShape> => {
   return { bookmarks, tags, workstations };
 };
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'system';
 
 export const getTheme = async (): Promise<Theme> =>
-  readValue<Theme>(STORAGE_KEYS.THEME, 'light');
+  readValue<Theme>(STORAGE_KEYS.THEME, 'system');
 
 export const saveTheme = async (theme: Theme) =>
   writeValue(STORAGE_KEYS.THEME, theme);
