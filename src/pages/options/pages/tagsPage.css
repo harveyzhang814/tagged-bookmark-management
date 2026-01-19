@@ -14,6 +14,7 @@
   padding: 12px 0;
   margin: 0;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .tags-filters {
@@ -73,10 +74,38 @@
   background: var(--border-color);
 }
 
+.tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tags-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+  padding: 8px 0;
+}
+
 .tag-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
+}
+
+.tags-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.tags-empty p {
+  margin: 0;
 }
 
 @media (max-width: 768px) {

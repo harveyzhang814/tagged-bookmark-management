@@ -55,14 +55,10 @@ export const TagsPage = () => {
     if (search) {
       list = list.filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
     }
-    // 排序
+    // 排序（不在这里按 pinned 排序，因为我们会分离它们）
     const sortedList = [...list];
     sortedList.sort((a, b) => {
-      // 首先按 pinned 排序（置顶在前）
-      if (a.pinned !== b.pinned) {
-        return a.pinned ? -1 : 1;
-      }
-      // 然后根据选择的排序字段和排序方向进行排序
+      // 根据选择的排序字段和排序方向进行排序
       let diff = 0;
       if (sortBy === 'createdAt') {
         diff = sortOrder === 'desc' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt;
@@ -76,13 +72,20 @@ export const TagsPage = () => {
     return sortedList;
   }, [tags, search, sortBy, sortOrder]);
 
-  // 分页计算
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  // 分离置顶和普通标签
+  const { pinnedTags, normalTags } = useMemo(() => {
+    const pinned = filtered.filter((tag) => tag.pinned);
+    const normal = filtered.filter((tag) => !tag.pinned);
+    return { pinnedTags: pinned, normalTags: normal };
+  }, [filtered]);
+
+  // 普通标签分页计算
+  const totalPages = Math.ceil(normalTags.length / ITEMS_PER_PAGE);
   const paginatedTags = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filtered.slice(startIndex, endIndex);
-  }, [filtered, currentPage]);
+    return normalTags.slice(startIndex, endIndex);
+  }, [normalTags, currentPage]);
 
   // 当搜索条件或排序改变时，重置到第一页
   useEffect(() => {
@@ -268,24 +271,56 @@ export const TagsPage = () => {
 
       <div className="tags-content-wrapper">
         <div className="tags-content">
-          <div className="tag-grid">
-            {paginatedTags.map((tag) => (
-              <TagCard
-                key={tag.id}
-                tag={tag}
-                onTogglePin={handleTogglePin}
-                onClick={handleTagClick}
-                onDoubleClick={handleTagDoubleClick}
-              />
-            ))}
-          </div>
+          {/* 置顶标签区域 */}
+          {pinnedTags.length > 0 && (
+            <div className="tags-section">
+              <h2 className="tags-section-title">{t('tag.pinnedTags')}</h2>
+              <div className="tag-grid">
+                {pinnedTags.map((tag) => (
+                  <TagCard
+                    key={tag.id}
+                    tag={tag}
+                    onTogglePin={handleTogglePin}
+                    onClick={handleTagClick}
+                    onDoubleClick={handleTagDoubleClick}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+          {/* 普通标签区域 */}
+          {normalTags.length > 0 && (
+            <div className="tags-section">
+              {pinnedTags.length > 0 && (
+                <h2 className="tags-section-title">{t('tag.normalTags')}</h2>
+              )}
+              <div className="tag-grid">
+                {paginatedTags.map((tag) => (
+                  <TagCard
+                    key={tag.id}
+                    tag={tag}
+                    onTogglePin={handleTogglePin}
+                    onClick={handleTagClick}
+                    onDoubleClick={handleTagDoubleClick}
+                  />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </div>
+          )}
+
+          {/* 空状态 */}
+          {pinnedTags.length === 0 && normalTags.length === 0 && (
+            <div className="tags-empty">
+              <p>{t('tag.noTags')}</p>
+            </div>
           )}
         </div>
 

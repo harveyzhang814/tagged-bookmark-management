@@ -104,6 +104,8 @@
     "noMatch": "未找到匹配的标签",
     "noDescription": "无备注",
     "searchPlaceholder": "搜索标签...",
+    "pinnedTags": "置顶标签",
+    "normalTags": "普通标签",
     "allTags": "全部标签",
     "tagList": "标签列表",
     "selected": "已选择",

@@ -104,6 +104,8 @@
     "noMatch": "No matching tags found",
     "noDescription": "No description",
     "searchPlaceholder": "Search tags...",
+    "pinnedTags": "Pinned Tags",
+    "normalTags": "Tags",
     "allTags": "All Tags",
     "tagList": "Tag List",
     "selected": "Selected",

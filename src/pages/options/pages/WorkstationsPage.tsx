@@ -234,24 +234,32 @@ export const WorkstationsPage = () => {
 
       <div className="workstations-content-wrapper">
         <div className="workstations-content">
-          <div className="workstation-grid">
-            {paginatedWorkstations.map((workstation) => (
-              <WorkstationCard
-                key={workstation.id}
-                workstation={workstation}
-                onEdit={handleEdit}
-                onTogglePin={handleTogglePin}
-                onClick={handleWorkstationClick}
-              />
-            ))}
-          </div>
-
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+          {filtered.length > 0 ? (
+            <div className="workstations-section">
+              <h2 className="workstations-section-title">{t('workstation.title')}</h2>
+              <div className="workstation-grid">
+                {paginatedWorkstations.map((workstation) => (
+                  <WorkstationCard
+                    key={workstation.id}
+                    workstation={workstation}
+                    onEdit={handleEdit}
+                    onTogglePin={handleTogglePin}
+                    onClick={handleWorkstationClick}
+                  />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="workstations-empty">
+              <p>{t('workstation.noWorkstations')}</p>
+            </div>
           )}
         </div>
 
