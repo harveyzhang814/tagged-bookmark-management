@@ -56,16 +56,31 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
     void refresh();
   }, []);
 
-  // 从URL参数读取tag筛选条件（在组件挂载时和URL变化时）
+  // 从URL参数读取tag筛选条件和query搜索关键词（在组件挂载时和URL变化时）
   useEffect(() => {
     const checkUrlParams = () => {
       const params = new URLSearchParams(window.location.search);
+      const url = new URL(window.location.href);
+      let hasChanges = false;
+
+      // 读取tag参数
       const tagParam = params.get('tag');
       if (tagParam) {
         setSelectedTags([tagParam]);
-        // 清除URL参数，避免刷新时重复应用
-        const url = new URL(window.location.href);
         url.searchParams.delete('tag');
+        hasChanges = true;
+      }
+
+      // 读取query参数
+      const queryParam = params.get('query');
+      if (queryParam) {
+        setQuery(queryParam);
+        url.searchParams.delete('query');
+        hasChanges = true;
+      }
+
+      // 清除URL参数，避免刷新时重复应用
+      if (hasChanges) {
         window.history.replaceState({}, '', url.toString());
       }
     };
