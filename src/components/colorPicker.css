@@ -245,7 +245,7 @@
   background: var(--bg-card);
   color: var(--text-main);
   font-size: 13px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   transition: all 0.2s ease;
   box-sizing: border-box;
   font-weight: 500;
