@@ -19,11 +19,11 @@ i18n
     },
   });
 
-// 在初始化后从 storage 读取用户语言偏好
+// 在初始化后从 storage 读取用户语言偏好（首次启动时自动检测浏览器语言）
 const initLocale = async () => {
   try {
-    const { getLocale } = await import('../lib/storage');
-    const locale = await getLocale();
+    const { initLocale: initLocaleFromStorage } = await import('../lib/storage');
+    const locale = await initLocaleFromStorage();
     if (locale && i18n.language !== locale) {
       await i18n.changeLanguage(locale);
     }

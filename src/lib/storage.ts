@@ -181,4 +181,31 @@ export const getLocale = async (): Promise<Locale> =>
 export const saveLocale = async (locale: Locale) =>
   writeValue(STORAGE_KEYS.LOCALE, locale);
 
+// 检测是否是首次启动（没有保存过语言偏好）
+export const isFirstLaunch = async (): Promise<boolean> => {
+  try {
+    const locale = await readValue<Locale | null>(STORAGE_KEYS.LOCALE, null);
+    return locale === null;
+  } catch {
+    // 如果读取失败，视为首次启动
+    return true;
+  }
+};
+
+// 初始化语言（首次启动时根据浏览器语言自动设置，否则使用用户保存的偏好）
+export const initLocale = async (): Promise<Locale> => {
+  const isFirst = await isFirstLaunch();
+  
+  if (isFirst) {
+    // 首次启动：根据浏览器语言自动设置
+    const { detectBrowserLocale } = await import('../i18n/locales');
+    const detectedLocale = detectBrowserLocale();
+    await saveLocale(detectedLocale);
+    return detectedLocale;
+  } else {
+    // 非首次启动：使用保存的语言偏好
+    return await getLocale();
+  }
+};
+
 
