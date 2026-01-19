@@ -190,7 +190,8 @@
     "language": {
       "title": "语言",
       "selectLabel": "界面语言",
-      "zh-CN": "中文 (简体)"
+      "zh-CN": "中文 (简体)",
+      "en": "English"
     }
   },
   "importExport": {

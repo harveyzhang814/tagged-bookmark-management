@@ -7,6 +7,11 @@ export const SUPPORTED_LOCALES = {
     name: '中文 (简体)',
     nativeName: '中文 (简体)',
   },
+  'en': {
+    code: 'en',
+    name: 'English',
+    nativeName: 'English',
+  },
 } as const;
 
 // 自动生成 Locale 类型
@@ -36,10 +41,11 @@ const BROWSER_LOCALE_MAP: Record<string, Locale> = {
   'zh-TW': 'zh-CN',      // 繁体中文 → 简体中文
   'zh-HK': 'zh-CN',      // 香港 → 简体中文
   'zh-SG': 'zh-CN',      // 新加坡 → 简体中文
-  // 未来添加英文支持时：
-  // 'en-US': 'en-US',
-  // 'en': 'en-US',
-  // 'en-GB': 'en-US',
+  'en': 'en',            // 精确匹配：英文
+  'en-US': 'en',         // 美式英文 → 通用英文
+  'en-GB': 'en',         // 英式英文 → 通用英文
+  'en-AU': 'en',         // 澳洲英文 → 通用英文
+  'en-CA': 'en',         // 加拿大英文 → 通用英文
 };
 
 // 根据浏览器语言获取对应的应用语言

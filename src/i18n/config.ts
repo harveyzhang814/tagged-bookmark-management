@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import zhCNTranslations from './locales/zh-CN/translation.json';
+import enTranslations from './locales/en/translation.json';
 import { DEFAULT_LOCALE, type Locale } from './locales';
 
 // 初始化 i18n（同步初始化，语言从 storage 异步读取）
@@ -10,6 +11,9 @@ i18n
     resources: {
       [DEFAULT_LOCALE]: {
         translation: zhCNTranslations,
+      },
+      'en': {
+        translation: enTranslations,
       },
     },
     lng: DEFAULT_LOCALE, // 默认语言
