@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import { TagPill } from './TagPill';
@@ -20,6 +21,7 @@ interface BookmarkSidebarProps {
 }
 
 export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose, onRemoveTag, onRefresh }: BookmarkSidebarProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('createdAt');
   const [currentPage, setCurrentPage] = useState(1);
@@ -128,7 +130,7 @@ export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose, onRemoveTag, 
             <button
               className="bookmark-sidebar__close"
               onClick={onClose}
-              aria-label="关闭侧边栏"
+              aria-label={t('bookmark.closeSidebar')}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -148,7 +150,7 @@ export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose, onRemoveTag, 
         <div className="bookmark-sidebar__search">
           <SearchInput
             value={searchQuery}
-            placeholder="搜索书签..."
+            placeholder={t('bookmark.searchPlaceholder')}
             onChange={setSearchQuery}
           />
         </div>
@@ -158,8 +160,8 @@ export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose, onRemoveTag, 
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
           >
-            <option value="createdAt">创建日期</option>
-            <option value="clickCount">点击次数</option>
+            <option value="createdAt">{t('sort.byCreatedAt')}</option>
+            <option value="clickCount">{t('sort.byClickCount')}</option>
           </select>
         </div>
       </div>
@@ -167,7 +169,7 @@ export const BookmarkSidebar = ({ tagId, bookmarks, tags, onClose, onRemoveTag, 
       <div className="bookmark-sidebar__content">
         {paginatedBookmarks.length === 0 ? (
           <div className="bookmark-sidebar__empty">
-            {searchQuery ? '未找到匹配的书签' : '该标签下暂无书签'}
+            {searchQuery ? t('bookmark.noMatch') : t('bookmark.noBookmarksInTag')}
           </div>
         ) : (
           <div className="bookmark-sidebar__list">

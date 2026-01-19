@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import './pagination.css';
 
 interface PaginationProps {
@@ -7,6 +8,7 @@ interface PaginationProps {
 }
 
 export const Pagination = ({ currentPage, totalPages, onPageChange }: PaginationProps) => {
+  const { t } = useTranslation();
   if (totalPages <= 1) {
     return null;
   }
@@ -74,9 +76,9 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
         className="pagination-btn pagination-btn--prev"
         onClick={handlePrevious}
         disabled={currentPage === 1}
-        aria-label="上一页"
+        aria-label={t('pagination.previous')}
       >
-        上一页
+        {t('pagination.previous')}
       </button>
 
       <div className="pagination-pages">
@@ -95,7 +97,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
               key={pageNum}
               className={`pagination-page ${currentPage === pageNum ? 'pagination-page--active' : ''}`}
               onClick={() => handlePageClick(pageNum)}
-              aria-label={`第 ${pageNum} 页`}
+              aria-label={t('pagination.page', { page: pageNum })}
               aria-current={currentPage === pageNum ? 'page' : undefined}
             >
               {pageNum}
@@ -108,9 +110,9 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }: Pagination
         className="pagination-btn pagination-btn--next"
         onClick={handleNext}
         disabled={currentPage === totalPages}
-        aria-label="下一页"
+        aria-label={t('pagination.next')}
       >
-        下一页
+        {t('pagination.next')}
       </button>
     </div>
   );

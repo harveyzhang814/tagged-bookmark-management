@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
 import { ToggleSwitch } from './ToggleSwitch';
 import { importChromeBookmarks } from '../lib/bookmarkService';
@@ -12,6 +13,7 @@ interface ChromeSyncModalProps {
 }
 
 export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncModalProps) => {
+  const { t } = useTranslation();
   const [convertPathToTags, setConvertPathToTags] = useState(false);
   const [pathMode, setPathMode] = useState<'hierarchical' | 'independent'>('hierarchical');
   const [convertExisting, setConvertExisting] = useState(false);
@@ -78,7 +80,7 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
     } catch (err) {
       setIsSyncing(false);
       setIsSyncSuccess(false);
-      setError(err instanceof Error ? err.message : '同步失败，请重试');
+      setError(err instanceof Error ? err.message : t('chromeSync.syncFailed'));
     }
   };
 
@@ -88,11 +90,11 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
     <div className="chrome-sync-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="chrome-sync-modal" onClick={(e) => e.stopPropagation()}>
         <div className="chrome-sync-modal__header">
-          <h2 className="chrome-sync-modal__title">一键同步</h2>
+          <h2 className="chrome-sync-modal__title">{t('chromeSync.title')}</h2>
           <button
             className="chrome-sync-modal__close"
             onClick={onClose}
-            aria-label="关闭"
+            aria-label={t('common.close')}
             type="button"
             disabled={isSyncing}
           >
@@ -141,7 +143,7 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
                       />
                     </svg>
                   </div>
-                  <p className="chrome-sync-modal__status-text">同步中...</p>
+                  <p className="chrome-sync-modal__status-text">{t('chromeSync.syncing')}</p>
                 </>
               )}
               {isSyncSuccess && result && (
@@ -157,30 +159,30 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
                       />
                     </svg>
                   </div>
-                  <p className="chrome-sync-modal__status-text">同步完成</p>
+                  <p className="chrome-sync-modal__status-text">{t('chromeSync.syncComplete')}</p>
 
                   <div className="chrome-sync-modal__result">
                     <div className="chrome-sync-modal__result-item">
-                      <span className="chrome-sync-modal__result-label">新增导入：</span>
+                      <span className="chrome-sync-modal__result-label">{t('chromeSync.imported')}:</span>
                       <span className="chrome-sync-modal__result-value">{result.imported}</span>
                     </div>
                     <div className="chrome-sync-modal__result-item">
-                      <span className="chrome-sync-modal__result-label">已存在跳过：</span>
+                      <span className="chrome-sync-modal__result-label">{t('chromeSync.skipped')}:</span>
                       <span className="chrome-sync-modal__result-value">{result.skipped}</span>
                     </div>
                     <div className="chrome-sync-modal__result-item">
-                      <span className="chrome-sync-modal__result-label">已存在更新：</span>
+                      <span className="chrome-sync-modal__result-label">{t('chromeSync.updated')}:</span>
                       <span className="chrome-sync-modal__result-value">{result.updatedExisting}</span>
                     </div>
                     <div className="chrome-sync-modal__result-item">
-                      <span className="chrome-sync-modal__result-label">扫描总数：</span>
+                      <span className="chrome-sync-modal__result-label">{t('chromeSync.total')}:</span>
                       <span className="chrome-sync-modal__result-value">{result.total}</span>
                     </div>
                   </div>
 
                   <div className="chrome-sync-modal__actions">
                     <PixelButton variant="secondary" onClick={onClose}>
-                      关闭
+                      {t('common.close')}
                     </PixelButton>
                   </div>
                 </>
@@ -197,22 +199,22 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
                       setConvertExisting(false);
                     }
                   }}
-                  label="转化路径为标签"
+                  label={t('chromeSync.convertPathToTag')}
                 />
-                <p className="chrome-sync-modal__hint">将书签所在文件夹路径映射为 tag（不包含书签栏/其他书签等根节点）</p>
+                <p className="chrome-sync-modal__hint">{t('chromeSync.convertPathHint')}</p>
               </div>
 
               {convertPathToTags && (
                 <>
                   <div className="chrome-sync-modal__field">
-                    <label className="chrome-sync-modal__label">路径转换模式</label>
+                    <label className="chrome-sync-modal__label">{t('chromeSync.pathMode')}</label>
                     <select
                       className="chrome-sync-modal__select"
                       value={pathMode}
                       onChange={(e) => setPathMode(e.target.value as 'hierarchical' | 'independent')}
                     >
-                      <option value="hierarchical">层次（整个路径作为一个 tag，例如 project/alpha）</option>
-                      <option value="independent">独立（每一层一个 tag，例如 project、alpha）</option>
+                      <option value="hierarchical">{t('chromeSync.hierarchical')} ({t('chromeSync.hierarchicalDesc')})</option>
+                      <option value="independent">{t('chromeSync.independent')} ({t('chromeSync.independentDesc')})</option>
                     </select>
                   </div>
 
@@ -220,36 +222,36 @@ export const ChromeSyncModal = ({ isOpen, onClose, onSyncSuccess }: ChromeSyncMo
                     <ToggleSwitch
                       checked={convertExisting}
                       onChange={setConvertExisting}
-                      label="转化已同步数据"
+                      label={t('chromeSync.convertExisting')}
                     />
-                    <p className="chrome-sync-modal__hint">开启后会更新已存在书签的“路径标签”，保留用户手动标签</p>
+                    <p className="chrome-sync-modal__hint">{t('chromeSync.convertExistingDesc')}</p>
                   </div>
                 </>
               )}
 
               <div className="chrome-sync-modal__info">
-                <div className="chrome-sync-modal__info-title">说明</div>
+                <div className="chrome-sync-modal__info-title">{t('chromeSync.infoTitle')}</div>
                 <div className="chrome-sync-modal__info-body">
                   <ul className="chrome-sync-modal__info-list">
-                    <li>“转化路径为标签”会把 Chrome 书签文件夹路径映射为 tag（不包含“书签栏 / 其他书签”等根节点）。</li>
+                    <li>{t('chromeSync.info1')}</li>
                     <li>
-                      路径转换模式：
+                      {t('chromeSync.info2')}
                       <ul className="chrome-sync-modal__info-sublist">
-                        <li>层次：整个路径作为一个 tag，例如 <code>project/alpha</code>。</li>
-                        <li>独立：每一层作为一个 tag，例如 <code>project</code>、<code>alpha</code>。</li>
+                        <li>{t('chromeSync.hierarchical')}: {t('chromeSync.hierarchicalDesc')}</li>
+                        <li>{t('chromeSync.independent')}: {t('chromeSync.independentDesc')}</li>
                       </ul>
                     </li>
-                    <li>开启“转化已同步数据”会补齐已有书签的路径标签，并保留你手动添加的标签。</li>
+                    <li>{t('chromeSync.info3')}</li>
                   </ul>
                 </div>
               </div>
 
               <div className="chrome-sync-modal__actions">
                 <PixelButton variant="secondary" onClick={onClose} disabled={isSyncing}>
-                  取消
+                  {t('chromeSync.cancel')}
                 </PixelButton>
                 <PixelButton onClick={handleSync} disabled={isSyncing}>
-                  {isSyncing ? '同步中...' : '开始同步'}
+                  {isSyncing ? t('chromeSync.syncing') : t('chromeSync.syncButton')}
                 </PixelButton>
               </div>
             </>

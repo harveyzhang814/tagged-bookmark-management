@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from '../../../components/PixelButton';
 import { SearchInput } from '../../../components/SearchInput';
 import { SortDropdown, type SortField } from '../../../components/SortDropdown';
@@ -18,6 +19,7 @@ import type { Workstation, BookmarkItem, Tag } from '../../../lib/types';
 import './workstationsPage.css';
 
 export const WorkstationsPage = () => {
+  const { t } = useTranslation();
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -210,22 +212,22 @@ export const WorkstationsPage = () => {
     >
       <div className="workstations-toolbar-merged">
         <div className="workstations-filters">
-          <SearchInput value={search} placeholder="搜索工作区" onChange={setSearch} />
+          <SearchInput value={search} placeholder={t('workstation.searchPlaceholder')} onChange={setSearch} />
           <SortDropdown
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSortByChange={setSortBy}
             onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
             options={[
-              { value: 'createdAt', label: '创建日期' },
-              { value: 'bookmarkCount', label: '书签数量' },
-              { value: 'clickCount', label: '打开次数' }
+              { value: 'createdAt', label: t('sort.byCreatedAt') },
+              { value: 'bookmarkCount', label: t('workstation.bookmarkCount') },
+              { value: 'clickCount', label: t('workstation.clickCount') }
             ]}
           />
         </div>
         <div className="workstations-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建工作区
+            {t('workstation.new')}
           </PixelButton>
         </div>
       </div>

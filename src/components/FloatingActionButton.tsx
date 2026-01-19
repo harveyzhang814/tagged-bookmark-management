@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import './floatingActionButton.css';
 
 interface FloatingActionButtonProps {
@@ -8,6 +9,7 @@ interface FloatingActionButtonProps {
 }
 
 export const FloatingActionButton = ({ onBookmarkClick, onTagClick, onWorkstationClick }: FloatingActionButtonProps) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const fabRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +54,7 @@ export const FloatingActionButton = ({ onBookmarkClick, onTagClick, onWorkstatio
           type="button"
           className="fab-option fab-option--bookmark"
           onClick={handleBookmarkClick}
-          aria-label="新书签"
+          aria-label={t('homepage.newBookmark')}
         >
           <div className="fab-option__icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -65,14 +67,14 @@ export const FloatingActionButton = ({ onBookmarkClick, onTagClick, onWorkstatio
               />
             </svg>
           </div>
-          <span className="fab-option__label">新书签</span>
+          <span className="fab-option__label">{t('homepage.newBookmark')}</span>
         </button>
 
         <button
           type="button"
           className="fab-option fab-option--tag"
           onClick={handleTagClick}
-          aria-label="新标签"
+          aria-label={t('homepage.newTag')}
         >
           <div className="fab-option__icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -86,14 +88,14 @@ export const FloatingActionButton = ({ onBookmarkClick, onTagClick, onWorkstatio
               <line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <span className="fab-option__label">新标签</span>
+          <span className="fab-option__label">{t('homepage.newTag')}</span>
         </button>
 
         <button
           type="button"
           className="fab-option fab-option--workstation"
           onClick={handleWorkstationClick}
-          aria-label="新工作区"
+          aria-label={t('homepage.newWorkstation')}
         >
           <div className="fab-option__icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -106,7 +108,7 @@ export const FloatingActionButton = ({ onBookmarkClick, onTagClick, onWorkstatio
               />
             </svg>
           </div>
-          <span className="fab-option__label">新工作区</span>
+          <span className="fab-option__label">{t('homepage.newWorkstation')}</span>
         </button>
       </div>
 
@@ -114,7 +116,7 @@ export const FloatingActionButton = ({ onBookmarkClick, onTagClick, onWorkstatio
         type="button"
         className={`fab-button ${isOpen ? 'fab-button--open' : ''}`}
         onClick={handleToggle}
-        aria-label={isOpen ? '关闭菜单' : '打开菜单'}
+        aria-label={isOpen ? t('common.close') : t('common.open')}
         aria-expanded={isOpen}
       >
         <svg

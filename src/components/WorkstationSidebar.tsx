@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import type { Workstation } from '../lib/types';
@@ -17,6 +18,7 @@ const getThemeFromDOM = (): 'light' | 'dark' => {
 };
 
 export const WorkstationSidebar = ({ workstations, onCreateWorkstation, onBookmarkDrop }: WorkstationSidebarProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   // 优化：直接使用 'light' | 'dark' 类型，因为颜色计算只需要实际应用的主题
@@ -148,13 +150,13 @@ export const WorkstationSidebar = ({ workstations, onCreateWorkstation, onBookma
   return (
     <div className="tag-sidebar">
       <div className="tag-sidebar__header">
-        <h3 className="tag-sidebar__title">工作区列表</h3>
+        <h3 className="tag-sidebar__title">{t('workstation.workstationList')}</h3>
       </div>
       
       <div className="tag-sidebar__search">
         <SearchInput
           value={searchQuery}
-          placeholder="搜索工作区..."
+          placeholder={t('workstation.searchPlaceholder')}
           onChange={setSearchQuery}
         />
       </div>
@@ -162,7 +164,7 @@ export const WorkstationSidebar = ({ workstations, onCreateWorkstation, onBookma
       <div className="tag-sidebar__content">
         {paginatedWorkstations.length === 0 && !showCreateCard ? (
           <div className="tag-sidebar__empty">
-            {searchQuery ? '未找到匹配的工作区' : '暂无工作区'}
+            {searchQuery ? t('workstation.noMatch') : t('workstation.noWorkstations')}
           </div>
         ) : (
           <div className="tag-sidebar__list">
@@ -188,7 +190,7 @@ export const WorkstationSidebar = ({ workstations, onCreateWorkstation, onBookma
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="tag-sidebar__name">创建工作区: {searchQuery.trim()}</span>
+                <span className="tag-sidebar__name">{t('workstation.createWorkstation')}: {searchQuery.trim()}</span>
               </div>
             )}
             {paginatedWorkstations.map((workstation) => (

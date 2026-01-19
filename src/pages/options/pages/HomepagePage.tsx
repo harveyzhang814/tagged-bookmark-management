@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode, type KeyboardEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getHotTags, getAllBookmarks, getAllTags, incrementBookmarkClick, createBookmark, createTag } from '../../../lib/bookmarkService';
-import { getAllWorkstations, createWorkstation } from '../../../lib/workstationService';
+import { getAllWorkstations, createWorkstation, deleteWorkstation } from '../../../lib/workstationService';
 import { openUrlWithMode, openUrlsWithMode } from '../../../lib/chrome';
 import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode } from '../../../lib/storage';
 import type { Tag, Workstation, BookmarkItem } from '../../../lib/types';
@@ -66,6 +67,7 @@ const renderHighlighted = (text: string, rawQuery: string): ReactNode => {
 };
 
 export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
+  const { t } = useTranslation();
   const [hotTags, setHotTags] = useState<Tag[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
@@ -356,7 +358,6 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   };
 
   const handleDeleteWorkstation = async (workstationId: string) => {
-    const { deleteWorkstation } = await import('../../../lib/workstationService');
     await deleteWorkstation(workstationId);
     await loadData();
   };
@@ -396,7 +397,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
           <div className="homepage-search__input">
             <SearchInput
               value={searchQuery}
-              placeholder="search bookmark, tags"
+              placeholder={t('homepage.searchPlaceholder')}
               onChange={setSearchQuery}
               onFocus={handleEnterSearchMode}
               onKeyDown={handleSearchKeyDown}
@@ -404,15 +405,15 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
             />
           </div>
           <button type="button" className="homepage-search__cancel" onClick={handleCancelSearch}>
-            取消
+            {t('common.cancel')}
           </button>
         </div>
       ) : (
         <>
           <div className="homepage-page__header-section">
             <div className="homepage-page__header">
-              <h1 className="homepage-page__title">Crosstag Bookmarks</h1>
-              <p className="homepage-page__slogan">Your best bookmark manager with cross tags</p>
+              <h1 className="homepage-page__title">{t('app.title')}</h1>
+              <p className="homepage-page__slogan">{t('homepage.slogan')}</p>
             </div>
           </div>
 
@@ -420,7 +421,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
             <div className="homepage-page__search">
               <SearchInput
                 value={searchQuery}
-                placeholder="search bookmark, tags"
+                placeholder={t('homepage.searchPlaceholder')}
                 onChange={setSearchQuery}
                 onFocus={handleEnterSearchMode}
                 onKeyDown={handleSearchKeyDown}
@@ -428,7 +429,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
             </div>
 
             <div className="homepage-page__tags-section">
-              <div className="homepage-page__tags-label">choose tags:</div>
+              <div className="homepage-page__tags-label">{t('homepage.chooseTags')}</div>
               <div className="homepage-page__tags-list" ref={tagsListRef}>
                 {hotTags.map((tag, index) => {
                   const isVisible = index < visibleTagCount;
@@ -455,7 +456,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
                     className="homepage-page__tags-more-button"
                     onClick={handleMoreTags}
                   >
-                    more+
+                    {t('homepage.viewAll')}
                   </button>
                 )}
               </div>
@@ -471,7 +472,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
                     className="homepage-page__workstations-more"
                     onClick={handleMoreWorkstations}
                   >
-                    更多
+                    {t('homepage.viewAll')}
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -497,10 +498,10 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
       {isSearchMode && (
         <div className="homepage-search__results">
           <div className="homepage-search__section">
-            <div className="homepage-search__section-title">书签</div>
+            <div className="homepage-search__section-title">{t('bookmark.title')}</div>
             <div className="homepage-search__list">
               {bookmarkResults.length === 0 ? (
-                <div className="homepage-search__empty">暂无书签结果</div>
+                <div className="homepage-search__empty">{t('homepage.noResults')}</div>
               ) : (
                 bookmarkResults.map(({ bookmark }) => {
                   const tags = (bookmark.tags ?? []).map((id) => tagById.get(id)).filter((t): t is Tag => Boolean(t));
@@ -538,10 +539,10 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
           </div>
 
           <div className="homepage-search__section">
-            <div className="homepage-search__section-title">标签</div>
+            <div className="homepage-search__section-title">{t('tag.title')}</div>
             <div className="homepage-search__list">
               {tagResults.length === 0 ? (
-                <div className="homepage-search__empty">暂无标签结果</div>
+                <div className="homepage-search__empty">{t('homepage.noResults')}</div>
               ) : (
                 tagResults.map(({ tag }) => (
                   <button
@@ -556,7 +557,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
                         {renderHighlighted(tag.name, searchQuery)}
                       </div>
                       <div className="homepage-search__tag-desc" title={tag.description ?? ''}>
-                        {tag.description ? renderHighlighted(tag.description, searchQuery) : <span className="homepage-search__tag-desc-empty">无备注</span>}
+                        {tag.description ? renderHighlighted(tag.description, searchQuery) : <span className="homepage-search__tag-desc-empty">{t('tag.noDescription')}</span>}
                       </div>
                     </div>
                   </button>

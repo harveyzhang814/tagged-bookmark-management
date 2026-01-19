@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SearchInput } from './SearchInput';
 import type { Tag } from '../lib/types';
 import { getTagDotColor } from '../lib/colorUtils';
@@ -16,6 +17,7 @@ const getThemeFromDOM = (): 'light' | 'dark' => {
 };
 
 export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdownProps) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(30); // 初始显示30个
@@ -223,7 +225,7 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="tag-filter-dropdown__trigger-text">标签</span>
+        <span className="tag-filter-dropdown__trigger-text">{t('tag.title')}</span>
         {selected.length > 0 && (
           <span className="tag-filter-dropdown__count">{selected.length}</span>
         )}
@@ -257,14 +259,14 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
           <div className="tag-filter-dropdown__search">
             <SearchInput
               value={searchQuery}
-              placeholder="搜索标签..."
+              placeholder={t('tag.searchPlaceholder')}
               onChange={setSearchQuery}
             />
           </div>
 
           {selectedTags.length > 0 && (
             <div className="tag-filter-dropdown__selected">
-              <div className="tag-filter-dropdown__selected-header">已选择</div>
+              <div className="tag-filter-dropdown__selected-header">{t('tag.selected')}</div>
               <div className="tag-filter-dropdown__selected-list">
                 {selectedTags.map(tag => (
                   <div
@@ -297,11 +299,11 @@ export const TagFilterDropdown = ({ tags, selected, onToggle }: TagFilterDropdow
           )}
 
           <div className="tag-filter-dropdown__available">
-            <div className="tag-filter-dropdown__available-header">可选标签</div>
+              <div className="tag-filter-dropdown__available-header">{t('tag.available')}</div>
             <div className="tag-filter-dropdown__available-list">
               {visibleTags.length === 0 ? (
                 <div className="tag-filter-dropdown__empty">
-                  {searchQuery ? '未找到匹配的标签' : '暂无标签'}
+                  {searchQuery ? t('tag.noMatch') : t('tag.noTags')}
                 </div>
               ) : (
                 <>

@@ -1,4 +1,5 @@
 import { type MouseEvent, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { BookmarkItem, Tag } from '../lib/types';
@@ -15,6 +16,7 @@ interface BookmarkCardProps {
 }
 
 export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, onWorkstationDrop, onDoubleClick }: BookmarkCardProps) => {
+  const { t } = useTranslation();
   const [isDragOver, setIsDragOver] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
   const dragStartTime = useRef<number>(0);
@@ -196,7 +198,7 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
                   />
                 </svg>
               }
-              aria-label={bookmark.pinned ? '取消置顶' : '置顶'}
+              aria-label={bookmark.pinned ? t('bookmark.unpin') : t('bookmark.pin')}
               onClick={handlePinClick}
             />
           </div>

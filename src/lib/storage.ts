@@ -1,4 +1,6 @@
 import type { BookmarkItem, StorageShape, Tag, Workstation } from './types';
+import type { Locale } from '../i18n/locales';
+import { DEFAULT_LOCALE } from '../i18n/locales';
 
 const STORAGE_KEYS = {
   BOOKMARKS: 'tbm.bookmarks',
@@ -6,6 +8,7 @@ const STORAGE_KEYS = {
   WORKSTATIONS: 'tbm.workstations',
   THEME: 'tbm.theme',
   ACTIVE_TAB: 'tbm.activeTab',
+  LOCALE: 'tbm.locale',
   SETTINGS_BROWSER_DEFAULT_OPEN_MODE: 'tbm.settings.browser.defaultOpenMode',
   SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode'
 } as const;
@@ -171,5 +174,11 @@ export const getBrowserTagWorkstationOpenMode = async (): Promise<BookmarkOpenMo
 
 export const saveBrowserTagWorkstationOpenMode = async (mode: BookmarkOpenMode) =>
   writeValue(STORAGE_KEYS.SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE, mode);
+
+export const getLocale = async (): Promise<Locale> =>
+  readValue<Locale>(STORAGE_KEYS.LOCALE, DEFAULT_LOCALE);
+
+export const saveLocale = async (locale: Locale) =>
+  writeValue(STORAGE_KEYS.LOCALE, locale);
 
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
 import { TagPill } from './TagPill';
 import { ToggleSwitch } from './ToggleSwitch';
@@ -55,6 +56,7 @@ const getDefaultWorkstationColor = async (): Promise<string> => {
 };
 
 export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCreate, onDelete }: WorkstationEditModalProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [color, setColor] = useState(TAG_COLOR_PALETTE_24[0]);
   const [description, setDescription] = useState('');
@@ -154,7 +156,7 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
   const handleDelete = async () => {
     if (!workstation || !onDelete) return;
     
-    const confirmed = window.confirm('确定要删除这个工作区吗？此操作无法撤销。');
+    const confirmed = window.confirm(t('workstation.deleteConfirm'));
     if (!confirmed) return;
     
     try {
@@ -173,11 +175,11 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
     <div className="workstation-edit-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="workstation-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="workstation-edit-modal__header">
-          <h2 className="workstation-edit-modal__title">{isCreateMode ? '新建工作区' : '编辑工作区'}</h2>
+          <h2 className="workstation-edit-modal__title">{isCreateMode ? t('workstation.new') : t('workstation.edit')}</h2>
           <button
             className="workstation-edit-modal__close"
             onClick={onClose}
-            aria-label="关闭"
+            aria-label={t('common.close')}
             type="button"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -206,23 +208,23 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
                 </svg>
               </div>
               <p className="workstation-edit-modal__success-text">
-                {isCreateMode ? '新建成功' : '保存成功'}
+                {isCreateMode ? t('workstation.createSuccess') : t('workstation.saveSuccess')}
               </p>
             </div>
           ) : (
             <>
               <div className="workstation-edit-modal__field">
-            <label className="workstation-edit-modal__label">名称</label>
+            <label className="workstation-edit-modal__label">{t('workstation.nameLabel')}</label>
             <input
               className="workstation-edit-modal__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="工作区名称"
+              placeholder={t('workstation.namePlaceholder')}
               autoFocus
             />
           </div>
           <div className="workstation-edit-modal__field">
-            <label className="workstation-edit-modal__label">描述</label>
+            <label className="workstation-edit-modal__label">{t('workstation.descriptionLabel')}</label>
             <textarea
               ref={descriptionTextareaRef}
               className="workstation-edit-modal__input workstation-edit-modal__textarea"
@@ -231,12 +233,12 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
                 setDescription(e.target.value);
                 adjustTextareaHeight(e.target);
               }}
-              placeholder="工作区描述（可选）"
+              placeholder={t('workstation.descriptionPlaceholder')}
               rows={1}
             />
           </div>
           <div className="workstation-edit-modal__field">
-            <label className="workstation-edit-modal__label">颜色</label>
+            <label className="workstation-edit-modal__label">{t('workstation.colorLabel')}</label>
             <ColorPicker
               value={color}
               onChange={setColor}
@@ -247,13 +249,13 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
             <ToggleSwitch
               checked={pinned}
               onChange={setPinned}
-              label="置顶"
+              label={t('workstation.pinnedLabel')}
             />
           </div>
           <div className="workstation-edit-modal__preview">
             <div className="workstation-edit-modal__preview-label">预览效果</div>
             <div className="workstation-edit-modal__preview-content">
-              <TagPill label={name || '工作区名称'} color={color} size="large" />
+              <TagPill label={name || t('workstation.namePlaceholder')} color={color} size="large" />
             </div>
           </div>
             </>
@@ -263,15 +265,15 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
           <div className="workstation-edit-modal__footer">
           {!isCreateMode && onDelete && (
             <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
-              删除
+              {t('common.delete')}
             </PixelButton>
           )}
           <div className="workstation-edit-modal__footer-actions">
             <PixelButton variant="secondary" onClick={onClose} disabled={isSaving}>
-              取消
+              {t('common.cancel')}
             </PixelButton>
             <PixelButton onClick={handleSave} disabled={isSaving || !name.trim()}>
-              {isSaving ? (isCreateMode ? '新建中...' : '保存中...') : (isCreateMode ? '新建' : '保存')}
+              {isSaving ? (isCreateMode ? t('workstation.createInProgress') : t('workstation.saveInProgress')) : (isCreateMode ? t('workstation.createButton') : t('workstation.saveButton'))}
             </PixelButton>
           </div>
         </div>

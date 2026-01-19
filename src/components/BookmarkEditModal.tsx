@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
 import { TagInput } from './TagInput';
 import { ToggleSwitch } from './ToggleSwitch';
@@ -15,6 +16,7 @@ interface BookmarkEditModalProps {
 }
 
 export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, onDelete }: BookmarkEditModalProps) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [tags, setTags] = useState<string[]>([]);
@@ -100,7 +102,7 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
   const handleDelete = async () => {
     if (isCreateMode || !bookmark || !onDelete) return;
     
-    const confirmed = window.confirm('确定要删除这个书签吗？此操作无法撤销。');
+    const confirmed = window.confirm(t('bookmark.deleteConfirm'));
     if (!confirmed) return;
     
     try {
@@ -119,11 +121,11 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
     <div className="bookmark-edit-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="bookmark-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="bookmark-edit-modal__header">
-          <h2 className="bookmark-edit-modal__title">{isCreateMode ? '新建书签' : '编辑书签'}</h2>
+          <h2 className="bookmark-edit-modal__title">{isCreateMode ? t('bookmark.new') : t('bookmark.edit')}</h2>
           <button
             className="bookmark-edit-modal__close"
             onClick={onClose}
-            aria-label="关闭"
+            aria-label={t('common.close')}
             type="button"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -152,13 +154,13 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
                 </svg>
               </div>
               <p className="bookmark-edit-modal__success-text">
-                {isCreateMode ? '新建成功' : '保存成功'}
+                {isCreateMode ? t('bookmark.createSuccess') : t('bookmark.saveSuccess')}
               </p>
             </div>
           ) : (
             <>
               <div className="bookmark-edit-modal__field">
-            <label className="bookmark-edit-modal__label">标题</label>
+            <label className="bookmark-edit-modal__label">{t('bookmark.titleLabel')}</label>
             <textarea
               ref={titleTextareaRef}
               className="bookmark-edit-modal__input bookmark-edit-modal__textarea"
@@ -167,13 +169,13 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
                 setTitle(e.target.value);
                 adjustTextareaHeight(e.target);
               }}
-              placeholder="书签标题"
+              placeholder={t('bookmark.titlePlaceholder')}
               autoFocus
               rows={1}
             />
           </div>
           <div className="bookmark-edit-modal__field">
-            <label className="bookmark-edit-modal__label">URL</label>
+            <label className="bookmark-edit-modal__label">{t('bookmark.urlLabel')}</label>
             <textarea
               ref={urlTextareaRef}
               className="bookmark-edit-modal__input bookmark-edit-modal__textarea"
@@ -182,19 +184,19 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
                 setUrl(e.target.value);
                 adjustTextareaHeight(e.target);
               }}
-              placeholder="https://example.com"
+              placeholder={t('bookmark.urlPlaceholder')}
               rows={1}
             />
           </div>
           <div className="bookmark-edit-modal__field">
-            <label className="bookmark-edit-modal__label">标签</label>
+            <label className="bookmark-edit-modal__label">{t('bookmark.tagsLabel')}</label>
             <TagInput value={tags} onChange={setTags} />
           </div>
           <div className="bookmark-edit-modal__field">
             <ToggleSwitch
               checked={pinned}
               onChange={setPinned}
-              label="置顶"
+              label={t('bookmark.pinnedLabel')}
             />
           </div>
             </>
@@ -204,15 +206,15 @@ export const BookmarkEditModal = ({ mode, bookmark, onClose, onSave, onCreate, o
           <div className="bookmark-edit-modal__footer">
           {!isCreateMode && onDelete && (
             <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
-              删除
+              {t('common.delete')}
             </PixelButton>
           )}
           <div className="bookmark-edit-modal__footer-actions">
             <PixelButton variant="secondary" onClick={onClose} disabled={isSaving}>
-              取消
+              {t('common.cancel')}
             </PixelButton>
             <PixelButton onClick={handleSave} disabled={isSaving || !title.trim() || !url.trim()}>
-              {isSaving ? (isCreateMode ? '新建中...' : '保存中...') : (isCreateMode ? '新建' : '保存')}
+              {isSaving ? (isCreateMode ? t('bookmark.createInProgress') : t('bookmark.saveInProgress')) : (isCreateMode ? t('bookmark.createButton') : t('bookmark.saveButton'))}
             </PixelButton>
           </div>
         </div>

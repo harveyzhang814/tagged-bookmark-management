@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
@@ -21,6 +22,7 @@ import type { Tag, BookmarkItem } from '../../../lib/types';
 import './tagsPage.css';
 
 export const TagsPage = () => {
+  const { t } = useTranslation();
   const [tags, setTags] = useState<Tag[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [search, setSearch] = useState('');
@@ -244,22 +246,22 @@ export const TagsPage = () => {
     >
       <div className="tags-toolbar-merged">
         <div className="tags-filters">
-          <SearchInput value={search} placeholder="搜索标签" onChange={setSearch} />
+          <SearchInput value={search} placeholder={t('tag.searchPlaceholder')} onChange={setSearch} />
           <SortDropdown
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSortByChange={setSortBy}
             onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
             options={[
-              { value: 'createdAt', label: '创建日期' },
-              { value: 'usageCount', label: '书签数量' },
-              { value: 'clickCount', label: '点击数量' }
+              { value: 'createdAt', label: t('sort.byCreatedAt') },
+              { value: 'usageCount', label: t('tag.usageCount') },
+              { value: 'clickCount', label: t('sort.byClickCount') }
             ]}
           />
         </div>
         <div className="tags-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建标签
+            {t('tag.new')}
           </PixelButton>
         </div>
       </div>

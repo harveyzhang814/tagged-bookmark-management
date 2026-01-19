@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
@@ -24,6 +25,7 @@ interface BookmarksPageProps {
 }
 
 export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
+  const { t } = useTranslation();
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
@@ -256,7 +258,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
       <div className="bookmarks-toolbar-merged">
         <div className="bookmarks-toolbar-left">
           <div className="bookmarks-filters">
-            <SearchInput value={query} placeholder="搜索标题或URL" onChange={setQuery} />
+            <SearchInput value={query} placeholder={t('bookmark.searchPlaceholder')} onChange={setQuery} />
             <TagFilterDropdown tags={tags} selected={selectedTags} onToggle={handleTagToggle} />
             <SortDropdown
               sortBy={sortBy}
@@ -268,24 +270,24 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
               }}
               onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
               options={[
-                { value: 'createdAt', label: '创建日期' },
-                { value: 'clickCount', label: '点击数量' }
+                { value: 'createdAt', label: t('sort.byCreatedAt') },
+                { value: 'clickCount', label: t('sort.byClickCount') }
               ]}
             />
           </div>
         </div>
         <div className="bookmarks-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建书签
+            {t('bookmark.new')}
           </PixelButton>
-          <Tooltip content="一键导入 Chrome 收藏夹中的所有书签，已存在的书签会自动跳过">
+          <Tooltip content={t('chromeSync.description')}>
             <PixelButton 
               onClick={handleOpenSyncModal}
             >
-              同步
+              {t('chromeSync.syncButton')}
             </PixelButton>
           </Tooltip>
-          <Tooltip content={isTagSidebarOpen ? '隐藏标签栏' : '显示标签栏'}>
+          <Tooltip content={isTagSidebarOpen ? t('tag.hideSidebar') : t('tag.showSidebar')}>
             <IconButton
               variant={isTagSidebarOpen ? 'primary' : 'secondary'}
               icon={
@@ -314,12 +316,12 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                   />
                 </svg>
               }
-              aria-label={isTagSidebarOpen ? '隐藏标签栏' : '显示标签栏'}
+              aria-label={isTagSidebarOpen ? t('tag.hideSidebar') : t('tag.showSidebar')}
               onClick={() => setIsTagSidebarOpen(!isTagSidebarOpen)}
               className="bookmarks-sidebar-toggle"
             />
           </Tooltip>
-          <Tooltip content={isWorkstationSidebarOpen ? '隐藏工作区栏' : '显示工作区栏'}>
+          <Tooltip content={isWorkstationSidebarOpen ? t('workstation.hideSidebar') : t('workstation.showSidebar')}>
             <IconButton
               variant={isWorkstationSidebarOpen ? 'primary' : 'secondary'}
               icon={
@@ -364,7 +366,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                   />
                 </svg>
               }
-              aria-label={isWorkstationSidebarOpen ? '隐藏工作区栏' : '显示工作区栏'}
+              aria-label={isWorkstationSidebarOpen ? t('workstation.hideSidebar') : t('workstation.showSidebar')}
               onClick={() => setIsWorkstationSidebarOpen(!isWorkstationSidebarOpen)}
               className="bookmarks-sidebar-toggle"
             />
@@ -377,7 +379,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           {/* 置顶书签区域 */}
           {pinnedBookmarks.length > 0 && (
             <div className="bookmarks-section">
-              <h2 className="bookmarks-section-title">置顶书签</h2>
+              <h2 className="bookmarks-section-title">{t('bookmark.pinnedBookmarks')}</h2>
               <div className="bookmark-list">
                 {pinnedBookmarks.map((bookmark) => (
                   <BookmarkCard
@@ -399,7 +401,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           {normalBookmarks.length > 0 && (
             <div className="bookmarks-section">
               {pinnedBookmarks.length > 0 && (
-                <h2 className="bookmarks-section-title">普通书签</h2>
+                <h2 className="bookmarks-section-title">{t('bookmark.normalBookmarks')}</h2>
               )}
               <div className="bookmark-list">
                 {paginatedBookmarks.map((bookmark) => (
@@ -428,7 +430,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           {/* 空状态 */}
           {pinnedBookmarks.length === 0 && normalBookmarks.length === 0 && (
             <div className="bookmarks-empty">
-              <p>暂无书签</p>
+              <p>{t('bookmark.noBookmarks')}</p>
             </div>
           )}
         </div>
