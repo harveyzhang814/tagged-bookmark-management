@@ -220,14 +220,14 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
 
     const container = tagsListRef.current;
     const containerWidth = container.offsetWidth;
-    const labelWidth = 80; // "choose tags:" 标签的宽度
-    const moreButtonWidth = 60; // more+ 按钮的宽度
+    const labelWidth = 80; // "choose tags" 标签的宽度
+    const moreButtonWidth = 60; // more按钮的宽度
     const gap = 12; // tag之间的间距
-    let availableWidth = containerWidth - labelWidth - gap;
+    // 始终为more按钮预留空间（只要有标签，more按钮就会显示）
+    let availableWidth = containerWidth - labelWidth - gap - moreButtonWidth - gap;
     let totalWidth = 0;
     let count = 0;
 
-    // 先尝试不显示more按钮
     for (let i = 0; i < hotTags.length; i++) {
       const tagElement = tagRefs.current[i];
       if (!tagElement) continue;
@@ -240,28 +240,6 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
         count++;
       } else {
         break;
-      }
-    }
-
-    // 如果有隐藏的tag，需要为more按钮预留空间
-    if (count < hotTags.length) {
-      availableWidth -= moreButtonWidth + gap;
-      totalWidth = 0;
-      count = 0;
-
-      for (let i = 0; i < hotTags.length; i++) {
-        const tagElement = tagRefs.current[i];
-        if (!tagElement) continue;
-
-        const tagWidth = tagElement.offsetWidth || 0;
-        const neededWidth = totalWidth + tagWidth + (count > 0 ? gap : 0);
-
-        if (neededWidth <= availableWidth) {
-          totalWidth = neededWidth;
-          count++;
-        } else {
-          break;
-        }
       }
     }
 
@@ -588,7 +566,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
                     </div>
                   );
                 })}
-                {visibleTagCount < hotTags.length && (
+                {hotTags.length > 0 && (
                   <button
                     type="button"
                     className="homepage-page__tags-more-button"
