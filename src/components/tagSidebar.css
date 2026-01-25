@@ -42,7 +42,7 @@
 
 /* 自定义滚动条样式 */
 .tag-sidebar__content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-w);
 }
 
 .tag-sidebar__content::-webkit-scrollbar-track {

@@ -15,13 +15,9 @@
 }
 
 .theme-toggle:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--button-hover-bg);
   border-color: var(--accent);
   color: var(--accent);
-}
-
-[data-theme='dark'] .theme-toggle:hover {
-  background: rgba(255, 255, 255, 0.08);
 }
 
 .theme-toggle:active {
@@ -56,4 +52,3 @@
     transform: rotate(360deg);
   }
 }
-

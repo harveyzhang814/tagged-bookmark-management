@@ -98,17 +98,11 @@
 
 .chrome-sync-modal__error {
   padding: 12px;
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: var(--danger-surface);
+  border: 1px solid var(--danger-border);
   border-radius: 6px;
-  color: #dc2626;
+  color: var(--danger-strong);
   font-size: 13px;
-}
-
-[data-theme='dark'] .chrome-sync-modal__error {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
 }
 
 .chrome-sync-modal__field {
@@ -139,7 +133,7 @@
 .chrome-sync-modal__select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
+  box-shadow: var(--focus-ring);
 }
 
 .chrome-sync-modal__radio-group {
@@ -216,7 +210,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #10b981;
+  color: var(--success-strong);
   animation: chromeSyncSuccessScale 0.3s ease-out;
 }
 
@@ -234,9 +228,6 @@
   }
 }
 
-[data-theme='dark'] .chrome-sync-modal__success-icon {
-  color: #34d399;
-}
 
 .chrome-sync-modal__status-text {
   font-size: 14px;
@@ -328,5 +319,3 @@
     padding: 0;
   }
 }
-
-

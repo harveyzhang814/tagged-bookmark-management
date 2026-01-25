@@ -158,7 +158,6 @@ npx tsc -p tsconfig.json --noEmit
 
 ## Repo-Specific Rules (Cursor/Copilot)
 
-- No Cursor rules found (`.cursor/rules/` or `.cursorrules` are absent).
+- **Design guide** (`.cursor/rules/design-guide.mdc`): 设计与开发组件须遵循 `docs/design/DESIGN_GUIDE.md`；新增标准须与用户确认后写入该文件。`alwaysApply: true`。
+- **Commit & docs workflow** (`.cursor/rules/commit-docs-workflow.mdc`): 提交 / PR / 总结更新时：按代码与 chat 总结功能变更；功能变更同步到 `docs/product/PRD.md`；新功能模块在 `docs/feature/` 独立成文，老模块保持更新；遗留问题与风险记入 `docs/risks/`（含涉及代码、位置、触发条件）；自动生成 `feat|fix|docs|chore|...` 前缀的 commit 文案。`alwaysApply: true`。
 - No Copilot instructions found (`.github/copilot-instructions.md` is absent).
-
-If you add such rules later, update this file to reference them.

@@ -58,7 +58,7 @@
 
 /* 自定义滚动条样式 */
 .workstations-content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-w);
 }
 
 .workstations-content::-webkit-scrollbar-track {

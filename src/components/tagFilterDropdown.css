@@ -39,11 +39,7 @@
 .tag-filter-dropdown__trigger:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
-}
-
-[data-theme='dark'] .tag-filter-dropdown__trigger:focus {
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .tag-filter-dropdown__trigger-text {
@@ -160,7 +156,7 @@
 /* 自定义滚动条样式 */
 .tag-filter-dropdown__available-list::-webkit-scrollbar,
 .tag-filter-dropdown__selected::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-w-sm);
 }
 
 .tag-filter-dropdown__available-list::-webkit-scrollbar-track,

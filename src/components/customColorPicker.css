@@ -97,12 +97,8 @@
 .custom-color-picker__hex-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
+  box-shadow: var(--focus-ring);
   background: var(--bg-panel);
-}
-
-[data-theme='dark'] .custom-color-picker__hex-input:focus {
-  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
 }
 
 .custom-color-picker__hex-input:disabled {

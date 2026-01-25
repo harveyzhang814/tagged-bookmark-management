@@ -1,6 +1,5 @@
 import type { BookmarkItem, StorageShape, Tag, Workstation } from './types';
-import type { Locale } from '../i18n/locales';
-import { DEFAULT_LOCALE } from '../i18n/locales';
+import { DEFAULT_LOCALE, detectBrowserLocale, type Locale } from '../i18n/locales';
 
 const STORAGE_KEYS = {
   BOOKMARKS: 'tbm.bookmarks',
@@ -198,7 +197,6 @@ export const initLocale = async (): Promise<Locale> => {
   
   if (isFirst) {
     // 首次启动：根据浏览器语言自动设置
-    const { detectBrowserLocale } = await import('../i18n/locales');
     const detectedLocale = detectBrowserLocale();
     await saveLocale(detectedLocale);
     return detectedLocale;

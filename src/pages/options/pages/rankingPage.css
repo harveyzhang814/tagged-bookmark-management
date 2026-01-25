@@ -57,7 +57,7 @@
 
 /* 自定义滚动条样式 */
 .ranking-content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-w);
 }
 
 .ranking-content::-webkit-scrollbar-track {

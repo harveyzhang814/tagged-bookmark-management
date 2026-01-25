@@ -1,0 +1,20 @@
+---
+description: 设计与组件开发须遵循 DESIGN_GUIDE；新增标准须经确认后写入该文件
+globs: "**/*.{tsx,css}"
+alwaysApply: true
+---
+
+# 设计规范与 DESIGN_GUIDE
+
+## 设计与开发组件时
+
+- **必须**遵循 `docs/design/DESIGN_GUIDE.md` 的设计标准，包括：
+  - 全局 Tokens（颜色、形状、阴影、焦点环、控件尺寸、滚动条）
+  - 页面布局（Options / Popup）
+  - 组件规范（Button、Input、Card、Modal 等）
+  - 排版与密度、暗色模式、CSS 命名与交付检查清单
+
+## 新增设计标准
+
+- 当用户提出新的设计/视觉标准时：**先与用户确认**，确认后再写入 `docs/design/DESIGN_GUIDE.md`。
+- 不要未经确认就修改 DESIGN_GUIDE。

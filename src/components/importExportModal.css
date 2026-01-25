@@ -128,17 +128,11 @@
 
 .import-export-modal__error {
   padding: 12px;
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: var(--danger-surface);
+  border: 1px solid var(--danger-border);
   border-radius: 6px;
-  color: #dc2626;
+  color: var(--danger-strong);
   font-size: 13px;
-}
-
-[data-theme='dark'] .import-export-modal__error {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #ef4444;
 }
 
 .import-export-modal__dropzone {
@@ -158,7 +152,7 @@
 
 .import-export-modal__dropzone.drag-over {
   border-color: var(--accent);
-  background: rgba(91, 155, 213, 0.1);
+  background: var(--button-primary-hover-bg);
 }
 
 .import-export-modal__dropzone svg {
@@ -320,7 +314,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #10b981;
+  color: var(--success-strong);
   animation: success-scale 0.3s ease-out;
 }
 
@@ -338,9 +332,6 @@
   }
 }
 
-[data-theme='dark'] .import-export-modal__success-icon {
-  color: #34d399;
-}
 
 .import-export-modal__status-text {
   font-size: 14px;
