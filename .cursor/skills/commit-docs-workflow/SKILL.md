@@ -1,32 +1,36 @@
 ---
-description: 提交/PR 时总结功能变更，同步 PRD、feature、risks 文档，并生成规范 commit 文案
-alwaysApply: true
+name: commit-docs-workflow
+description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或要求总结本次更新时，自动总结功能变更、同步更新 PRD/feature/risks 文档，并生成符合 Conventional Commits 规范的 commit 消息。使用场景包括 git commit、PR 评论、代码变更总结。
 ---
 
-# 提交与文档同步规范
+# 提交与文档同步工作流
 
-**触发时机**：用户准备提交 git、撰写/回复 GitHub PR comment、或要求「总结本次更新」时。
+## 触发时机
 
-## 1. 总结本次更新
+当用户准备提交 git、撰写/回复 GitHub PR comment、或要求「总结本次更新」时，自动执行此工作流。
+
+## 工作流步骤
+
+### 1. 总结本次更新
 
 根据**当前代码 diff** 与 **chat 上下文**，简要归纳：
 - 功能变更（新增/修改/删除的能力、入口、交互）
 - 非功能变更（重构、依赖、配置、文案等）
 
-## 2. 同步产品文档（功能变更）
+### 2. 同步产品文档（功能变更）
 
 - **PRD**：任何与功能有关的变更，更新到 `docs/product/PRD.md`。
   - 新增入口/页面/能力 → 在对应章节补充或新增小节。
   - 删除或降级功能 → 同步调整「功能分级」「非目标」等描述。
 - 保持与当前实现一致；不臆造未实现功能。
 
-## 3. 技术方案文档（feature）
+### 3. 技术方案文档（feature）
 
 - **新功能模块**：在 `docs/feature/` 下新增独立技术方案，如 `docs/feature/<模块名>.md`。
   - 参考 `docs/feature/i18n.md` 的结构：概述、功能特性、架构/目录、关键实现、扩展方式等。
 - **已有模块**：若本次改动涉及现有 feature（如 i18n、某页面），**同步更新**对应 `docs/feature/*.md`，避免文档滞后。
 
-## 4. 遗留问题与风险（risks）
+### 4. 遗留问题与风险（risks）
 
 - 将**遗留问题、已知风险、技术债**记录到 `docs/risks/`，单篇如 `docs/risks/<简短描述>.md`。
 - 参考 `docs/risks/path-tag-rename.md` 的格式，必须包含：
@@ -34,7 +38,7 @@ alwaysApply: true
   - **触发条件**：在何种操作、配置、数据状态下会暴露。
   - **影响与表现**、**规避建议**（可选）。
 
-## 5. 自动生成 Commit 文案
+### 5. 自动生成 Commit 文案
 
 按 **GitHub / Conventional Commits** 风格生成 commit message：
 
@@ -42,9 +46,18 @@ alwaysApply: true
 - **前缀**（小写）：`feat` 功能、`fix` 修复、`docs` 文档、`chore` 构建/工具/杂项、`refactor` 重构、`style` 格式、`test` 测试、`perf` 性能。
 - **内容**：简洁说明本次改动，可选括注模块（如 `feat(workstation): 支持一键打开全部书签`）。
 
-**示例**：
+生成后提供给用户，供复制到 `git commit -m "..."` 或 PR 描述。
+
+## Commit 消息示例
+
 - `feat(home): 首页增加热门标签与工作区卡片`
 - `fix(import): 路径转标签时已存在书签的 pathTagIds 未更新`
 - `docs: 同步 PRD 与 i18n 技术方案`
 
-生成后提供给用户，供复制到 `git commit -m "..."` 或 PR 描述。
+## 文档路径参考
+
+- PRD：`docs/product/PRD.md`
+- Feature 文档：`docs/feature/<模块名>.md`
+- 风险文档：`docs/risks/<简短描述>.md`
+- Feature 参考示例：`docs/feature/i18n.md`
+- 风险参考示例：`docs/risks/path-tag-rename.md`
