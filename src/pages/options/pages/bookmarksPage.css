@@ -59,6 +59,7 @@
   min-height: 0;
   overflow-y: auto;
   align-self: stretch;
+  padding-bottom: 72px; /* reserve space for floating actions (e.g. back-to-top) */
 }
 
 /* 自定义滚动条样式 */
@@ -122,6 +123,46 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
+}
+
+/* Virtualized rows (react-virtuoso) */
+.bookmarks-virtual-container {
+  width: 100%;
+  min-width: 0;
+}
+
+.bookmarks-virtual-divider {
+  margin-top: 8px;
+}
+
+.bookmark-row {
+  --bookmark-cols: 1;
+  --bookmark-card-max-w: 320px;
+  --bookmark-card-justify-self: center;
+  display: grid;
+  grid-template-columns: repeat(var(--bookmark-cols), minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.bookmark-row .bookmark-card {
+  width: 100%;
+  max-width: var(--bookmark-card-max-w);
+  justify-self: var(--bookmark-card-justify-self);
+}
+
+.bookmarks-scroll-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 200;
+}
+
+@media (max-width: 768px) {
+  .bookmarks-scroll-to-top {
+    right: 16px;
+    bottom: 16px;
+  }
 }
 
 @media (min-width: 1024px) {

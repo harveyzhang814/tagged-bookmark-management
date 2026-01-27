@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PixelButton } from '../../../components/PixelButton';
-import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
 import { TagFilterDropdown } from '../../../components/TagFilterDropdown';
 import { SortDropdown } from '../../../components/SortDropdown';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { Tooltip } from '../../../components/Tooltip';
-import { Pagination } from '../../../components/Pagination';
 import { TagSidebar } from '../../../components/TagSidebar';
 import { WorkstationSidebar } from '../../../components/WorkstationSidebar';
 import { IconButton } from '../../../components/IconButton';
@@ -16,6 +14,7 @@ import { deleteBookmark, getAllBookmarks, getAllTags, updateBookmark, createBook
 import { getAllWorkstations, createWorkstation, addBookmarkToWorkstation } from '../../../lib/workstationService';
 import { openUrlWithMode } from '../../../lib/chrome';
 import type { BookmarkItem, Tag, Workstation } from '../../../lib/types';
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import './bookmarksPage.css';
 import { getBrowserDefaultOpenMode } from '../../../lib/storage';
 import { ChromeSyncModal } from '../../../components/ChromeSyncModal';
@@ -36,10 +35,23 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [isChromeSyncModalOpen, setIsChromeSyncModalOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
   const [isWorkstationSidebarOpen, setIsWorkstationSidebarOpen] = useState(false);
-  const ITEMS_PER_PAGE = 18;
+
+  // Virtual grid (row virtualization)
+  const GRID_GAP_PX = 12;
+  const CARD_MIN_WIDTH_PX = 260;
+  const CARD_TARGET_MAX_WIDTH_PX = 320;
+  const CARD_DISABLE_MAX_WIDTH_AT_PX = 1600;
+  const MAX_COLUMNS = 5;
+  const bookmarksContentRef = useRef<HTMLDivElement>(null);
+  const gridMeasureRef = useRef<HTMLDivElement>(null);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
+  const [scrollParent, setScrollParent] = useState<HTMLElement | null>(null);
+  const [columnCount, setColumnCount] = useState<number>(3);
+  const [cardMaxWidth, setCardMaxWidth] = useState<string>(`${CARD_TARGET_MAX_WIDTH_PX}px`);
+  const [cardJustifySelf, setCardJustifySelf] = useState<'center' | 'stretch'>('center');
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   const refresh = async () => {
     const [bookmarksList, tagsList, workstationsList] = await Promise.all([
@@ -54,6 +66,80 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
   useEffect(() => {
     void refresh();
+  }, []);
+
+  useEffect(() => {
+    setScrollParent(bookmarksContentRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!scrollParent) return;
+
+    const onScroll = () => {
+      setShowScrollToTop(scrollParent.scrollTop > 400);
+    };
+
+    onScroll();
+    scrollParent.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      scrollParent.removeEventListener('scroll', onScroll);
+    };
+  }, [scrollParent]);
+
+  useEffect(() => {
+    if (!gridMeasureRef.current) return;
+
+    const el = gridMeasureRef.current;
+    const updateColumns = () => {
+      const width = el.clientWidth;
+      if (!width) return;
+
+      // Column ranges by container width:
+      // - <720: 1
+      // - 720..959: 2
+      // - 960..1279: 3-4
+      // - >=1280: 4-5
+      const range =
+        width >= 1280 ? { min: 4, max: 5 } :
+        width >= 960 ? { min: 3, max: 4 } :
+        width >= 720 ? { min: 2, max: 2 } :
+        { min: 1, max: 1 };
+
+      const perCardWidth = (cols: number) => (width - GRID_GAP_PX * (cols - 1)) / cols;
+
+      // Choose the largest cols within range that still respects minimum width.
+      let cols = range.min;
+      for (let c = range.max; c >= range.min; c--) {
+        if (perCardWidth(c) >= CARD_MIN_WIDTH_PX) {
+          cols = c;
+          break;
+        }
+      }
+
+      const disableMaxWidth = width >= CARD_DISABLE_MAX_WIDTH_AT_PX;
+      if (!disableMaxWidth) {
+        // If cards are too wide, prefer more columns (within range) to keep line-length readable.
+        while (
+          cols < range.max &&
+          perCardWidth(cols) > CARD_TARGET_MAX_WIDTH_PX &&
+          perCardWidth(cols + 1) >= CARD_MIN_WIDTH_PX
+        ) {
+          cols += 1;
+        }
+      }
+
+      const computedMax = disableMaxWidth
+        ? 'none'
+        : `${Math.floor(Math.min(CARD_TARGET_MAX_WIDTH_PX, perCardWidth(cols)))}px`;
+      setColumnCount(cols);
+      setCardMaxWidth(computedMax);
+      setCardJustifySelf(disableMaxWidth ? 'stretch' : 'center');
+    };
+
+    updateColumns();
+    const ro = new ResizeObserver(() => updateColumns());
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   // 从URL参数读取tag筛选条件和query搜索关键词（在组件挂载时和URL变化时）
@@ -131,27 +217,40 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
     return { pinnedBookmarks: pinned, normalBookmarks: normal };
   }, [filtered]);
 
-  // 普通书签分页计算
-  const totalPages = Math.ceil(normalBookmarks.length / ITEMS_PER_PAGE);
-  const paginatedBookmarks = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return normalBookmarks.slice(startIndex, endIndex);
-  }, [normalBookmarks, currentPage]);
+  type VirtualItem =
+    | { kind: 'divider'; title: string }
+    | { kind: 'row'; bookmarks: BookmarkItem[] };
 
-  // 当筛选条件或排序改变时，重置到第一页
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query, selectedTags, sortBy, sortOrder]);
+  const virtualItems: VirtualItem[] = useMemo(() => {
+    const chunk = (list: BookmarkItem[], size: number) => {
+      const rows: BookmarkItem[][] = [];
+      for (let i = 0; i < list.length; i += size) {
+        rows.push(list.slice(i, i + size));
+      }
+      return rows;
+    };
 
-  // 当总页数变化时，确保当前页不超过总页数
-  useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    } else if (totalPages === 0 && currentPage > 1) {
-      setCurrentPage(1);
+    const items: VirtualItem[] = [];
+
+    if (pinnedBookmarks.length > 0) {
+      items.push({ kind: 'divider', title: t('bookmark.pinnedBookmarks') });
+      for (const row of chunk(pinnedBookmarks, columnCount)) {
+        items.push({ kind: 'row', bookmarks: row });
+      }
     }
-  }, [totalPages, currentPage]);
+
+    if (normalBookmarks.length > 0) {
+      // 与旧 UI 一致：只有存在 pinned 时才显示“normal”标题
+      if (pinnedBookmarks.length > 0) {
+        items.push({ kind: 'divider', title: t('bookmark.normalBookmarks') });
+      }
+      for (const row of chunk(normalBookmarks, columnCount)) {
+        items.push({ kind: 'row', bookmarks: row });
+      }
+    }
+
+    return items;
+  }, [pinnedBookmarks, normalBookmarks, columnCount, t]);
 
   const handleTagToggle = (tagId: string) => {
     setSelectedTags((prev) =>
@@ -265,6 +364,12 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
   const handleOpenSyncModal = () => {
     setIsChromeSyncModalOpen(true);
+  };
+
+  const handleScrollToTop = () => {
+    // Prefer Virtuoso API; fall back to raw scroll.
+    virtuosoRef.current?.scrollToIndex({ index: 0, align: 'start', behavior: 'smooth' });
+    scrollParent?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
 
@@ -390,65 +495,72 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
       </div>
 
       <div className="bookmarks-content-wrapper">
-        <div className="bookmarks-content">
-          {/* 置顶书签区域 */}
-          {pinnedBookmarks.length > 0 && (
-            <div className="bookmarks-section">
-              <h2 className="bookmarks-section-title">{t('bookmark.pinnedBookmarks')}</h2>
-              <div className="bookmark-list">
-                {pinnedBookmarks.map((bookmark) => (
-                  <BookmarkCard
-                    key={bookmark.id}
-                    bookmark={bookmark}
-                    tags={tags}
-                    onEdit={handleEdit}
-                    onTogglePin={handleTogglePin}
-                    onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
-                    onWorkstationDrop={(workstationId) => handleWorkstationDrop(bookmark.id, workstationId)}
-                    onDoubleClick={handleBookmarkDoubleClick}
-                  />
-                ))}
+        <div className="bookmarks-content" ref={bookmarksContentRef}>
+          <div className="bookmarks-virtual-container" ref={gridMeasureRef}>
+            {pinnedBookmarks.length === 0 && normalBookmarks.length === 0 ? (
+              <div className="bookmarks-empty">
+                <p>{t('bookmark.noBookmarks')}</p>
               </div>
-            </div>
-          )}
+            ) : (
+              <Virtuoso
+                ref={virtuosoRef}
+                customScrollParent={scrollParent ?? undefined}
+                data={virtualItems}
+                itemContent={(_, item) => {
+                  if (item.kind === 'divider') {
+                    return <h2 className="bookmarks-section-title bookmarks-virtual-divider">{item.title}</h2>;
+                  }
 
-          {/* 普通书签区域 */}
-          {normalBookmarks.length > 0 && (
-            <div className="bookmarks-section">
-              {pinnedBookmarks.length > 0 && (
-                <h2 className="bookmarks-section-title">{t('bookmark.normalBookmarks')}</h2>
-              )}
-              <div className="bookmark-list">
-                {paginatedBookmarks.map((bookmark) => (
-                  <BookmarkCard
-                    key={bookmark.id}
-                    bookmark={bookmark}
-                    tags={tags}
-                    onEdit={handleEdit}
-                    onTogglePin={handleTogglePin}
-                    onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
-                    onWorkstationDrop={(workstationId) => handleWorkstationDrop(bookmark.id, workstationId)}
-                    onDoubleClick={handleBookmarkDoubleClick}
-                  />
-                ))}
-              </div>
-              {totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              )}
-            </div>
-          )}
-
-          {/* 空状态 */}
-          {pinnedBookmarks.length === 0 && normalBookmarks.length === 0 && (
-            <div className="bookmarks-empty">
-              <p>{t('bookmark.noBookmarks')}</p>
-            </div>
-          )}
+                  return (
+                    <div
+                      className="bookmark-row"
+                      style={
+                        {
+                          ['--bookmark-cols' as unknown as string]: String(columnCount),
+                          ['--bookmark-card-max-w' as unknown as string]: cardMaxWidth,
+                          ['--bookmark-card-justify-self' as unknown as string]: cardJustifySelf,
+                        } as CSSProperties
+                      }
+                    >
+                      {item.bookmarks.map((bookmark) => (
+                        <BookmarkCard
+                          key={bookmark.id}
+                          bookmark={bookmark}
+                          tags={tags}
+                          onEdit={handleEdit}
+                          onTogglePin={handleTogglePin}
+                          onTagDrop={(tagId) => handleTagDrop(bookmark.id, tagId)}
+                          onWorkstationDrop={(workstationId) => handleWorkstationDrop(bookmark.id, workstationId)}
+                          onDoubleClick={handleBookmarkDoubleClick}
+                        />
+                      ))}
+                    </div>
+                  );
+                }}
+              />
+            )}
+          </div>
         </div>
+
+        {showScrollToTop && (
+          <IconButton
+            variant="secondary"
+            className="bookmarks-scroll-to-top"
+            aria-label={t('common.backToTop', 'Back to top')}
+            onClick={handleScrollToTop}
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 5l-7 7m7-7l7 7M12 5v14"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+          />
+        )}
 
         {isTagSidebarOpen && (
           <TagSidebar tags={tags} onCreateTag={handleCreateTag} />
