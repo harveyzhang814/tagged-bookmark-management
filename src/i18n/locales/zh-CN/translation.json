@@ -182,6 +182,11 @@
   "settings": {
     "title": "设置",
     "back": "返回",
+    "about": {
+      "title": "关于",
+      "version": "版本号",
+      "updateTime": "安装/更新时间"
+    },
     "browser": {
       "title": "浏览器",
       "defaultOpenMode": "书签默认打开方式",

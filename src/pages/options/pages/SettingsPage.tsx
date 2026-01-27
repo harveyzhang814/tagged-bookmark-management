@@ -4,6 +4,7 @@ import {
   type BookmarkOpenMode,
   getBrowserDefaultOpenMode,
   getBrowserTagWorkstationOpenMode,
+  getInstallUpdateTime,
   saveBrowserDefaultOpenMode,
   saveBrowserTagWorkstationOpenMode,
   getLocale,
@@ -23,6 +24,8 @@ export const SettingsPage = ({ onClose }: SettingsPageProps) => {
   const [defaultOpenMode, setDefaultOpenMode] = useState<BookmarkOpenMode>('newTab');
   const [tagWorkstationOpenMode, setTagWorkstationOpenMode] = useState<BookmarkOpenMode>('newTab');
   const [currentLocale, setCurrentLocale] = useState<Locale>('zh-CN');
+  const [version, setVersion] = useState<string>('');
+  const [installUpdateTimeMs, setInstallUpdateTimeMs] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,6 +43,28 @@ export const SettingsPage = ({ onClose }: SettingsPageProps) => {
     };
 
     void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadAbout = async () => {
+      // Version: prefer Chrome runtime manifest if available
+      const v =
+        typeof chrome !== 'undefined' && chrome.runtime?.getManifest
+          ? chrome.runtime.getManifest().version
+          : '';
+
+      const timeMs = await getInstallUpdateTime();
+      if (cancelled) return;
+      setVersion(v ?? '');
+      setInstallUpdateTimeMs(timeMs);
+    };
+
+    void loadAbout();
     return () => {
       cancelled = true;
     };
@@ -151,6 +176,32 @@ export const SettingsPage = ({ onClose }: SettingsPageProps) => {
               <option value="newTab">{t('settings.browser.newTab')}</option>
               <option value="newWindow">{t('settings.browser.newWindow')}</option>
             </select>
+          </div>
+        </div>
+      </section>
+
+      <section className="pixel-panel settings-module">
+        <h3 className="section-title">{t('settings.about.title')}</h3>
+
+        <div className="settings-row">
+          <div className="settings-row__label">{t('settings.about.version')}</div>
+          <div className="settings-row__control">
+            <div className="settings-row__value">{version || '—'}</div>
+          </div>
+        </div>
+
+        <div className="settings-row">
+          <div className="settings-row__label">{t('settings.about.updateTime')}</div>
+          <div className="settings-row__control">
+            <div className="settings-row__value">
+              {installUpdateTimeMs
+                ? new Date(installUpdateTimeMs).toLocaleDateString(currentLocale, {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                  })
+                : '—'}
+            </div>
           </div>
         </div>
       </section>

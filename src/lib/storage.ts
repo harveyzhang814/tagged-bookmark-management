@@ -9,7 +9,8 @@ const STORAGE_KEYS = {
   ACTIVE_TAB: 'tbm.activeTab',
   LOCALE: 'tbm.locale',
   SETTINGS_BROWSER_DEFAULT_OPEN_MODE: 'tbm.settings.browser.defaultOpenMode',
-  SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode'
+  SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode',
+  INSTALL_UPDATE_TIME: 'tbm.installUpdateTime'
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
@@ -179,6 +180,12 @@ export const getLocale = async (): Promise<Locale> =>
 
 export const saveLocale = async (locale: Locale) =>
   writeValue(STORAGE_KEYS.LOCALE, locale);
+
+export const getInstallUpdateTime = async (): Promise<number | null> =>
+  readValue<number | null>(STORAGE_KEYS.INSTALL_UPDATE_TIME, null);
+
+export const saveInstallUpdateTime = async (timestampMs: number) =>
+  writeValue(STORAGE_KEYS.INSTALL_UPDATE_TIME, timestampMs);
 
 // 检测是否是首次启动（没有保存过语言偏好）
 export const isFirstLaunch = async (): Promise<boolean> => {

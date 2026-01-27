@@ -34,6 +34,13 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - Workstation（`src/lib/types.ts#L46`）
   - `name/color/description/pinned/bookmarks[]/clickCount`
 
+此外还包含少量“偏好/元信息”类 key（示例）：
+
+- `tbm.locale`：界面语言
+- `tbm.theme`：主题模式
+- `tbm.settings.browser.*`：打开方式偏好
+- `tbm.installUpdateTime`：扩展安装/更新时间（用于设置页展示）
+
 ## 4. 入口与页面信息架构
 
 ### 4.1 Extension Action Popup（快速收藏）
@@ -51,6 +58,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - Service Worker：`src/background/index.ts`
 - 功能点：
   - 安装时注册右键菜单“加入 CrossTag Bookmarks”
+  - 安装/更新时写入 `tbm.installUpdateTime`（用于设置页“关于”展示安装/更新时间）
   - 点击后创建书签；若有选中文本，将其写入 `note`（当前 UI 未提供 note 的展示/编辑入口）
 
 ### 4.3 Options 管理页（完整功能）
@@ -159,6 +167,9 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - 浏览器打开方式
   - 单个书签：新标签页 / 新窗口
   - 标签/工作区批量打开：新标签页 / 新窗口
+- 关于信息
+  - 版本号：读取 `chrome.runtime.getManifest().version`
+  - 安装/更新时间：读取 `tbm.installUpdateTime`（在 `chrome.runtime.onInstalled` 时写入；显示到“日”维度）
 
 ## 6. 功能分级（主要 / 一般）
 

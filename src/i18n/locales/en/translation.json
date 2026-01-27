@@ -182,6 +182,11 @@
   "settings": {
     "title": "Settings",
     "back": "Back",
+    "about": {
+      "title": "About",
+      "version": "Version",
+      "updateTime": "Installed / Updated"
+    },
     "browser": {
       "title": "Browser",
       "defaultOpenMode": "Default Bookmark Open Mode",
