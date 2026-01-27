@@ -1,4 +1,5 @@
 import type { BookmarkItem, StorageShape, Tag, Workstation } from './types';
+import { DEFAULT_LOCALE, detectBrowserLocale, type Locale } from '../i18n/locales';
 
 const STORAGE_KEYS = {
   BOOKMARKS: 'tbm.bookmarks',
@@ -6,8 +7,10 @@ const STORAGE_KEYS = {
   WORKSTATIONS: 'tbm.workstations',
   THEME: 'tbm.theme',
   ACTIVE_TAB: 'tbm.activeTab',
+  LOCALE: 'tbm.locale',
   SETTINGS_BROWSER_DEFAULT_OPEN_MODE: 'tbm.settings.browser.defaultOpenMode',
-  SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode'
+  SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode',
+  INSTALL_UPDATE_TIME: 'tbm.installUpdateTime'
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
@@ -171,5 +174,43 @@ export const getBrowserTagWorkstationOpenMode = async (): Promise<BookmarkOpenMo
 
 export const saveBrowserTagWorkstationOpenMode = async (mode: BookmarkOpenMode) =>
   writeValue(STORAGE_KEYS.SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE, mode);
+
+export const getLocale = async (): Promise<Locale> =>
+  readValue<Locale>(STORAGE_KEYS.LOCALE, DEFAULT_LOCALE);
+
+export const saveLocale = async (locale: Locale) =>
+  writeValue(STORAGE_KEYS.LOCALE, locale);
+
+export const getInstallUpdateTime = async (): Promise<number | null> =>
+  readValue<number | null>(STORAGE_KEYS.INSTALL_UPDATE_TIME, null);
+
+export const saveInstallUpdateTime = async (timestampMs: number) =>
+  writeValue(STORAGE_KEYS.INSTALL_UPDATE_TIME, timestampMs);
+
+// 检测是否是首次启动（没有保存过语言偏好）
+export const isFirstLaunch = async (): Promise<boolean> => {
+  try {
+    const locale = await readValue<Locale | null>(STORAGE_KEYS.LOCALE, null);
+    return locale === null;
+  } catch {
+    // 如果读取失败，视为首次启动
+    return true;
+  }
+};
+
+// 初始化语言（首次启动时根据浏览器语言自动设置，否则使用用户保存的偏好）
+export const initLocale = async (): Promise<Locale> => {
+  const isFirst = await isFirstLaunch();
+  
+  if (isFirst) {
+    // 首次启动：根据浏览器语言自动设置
+    const detectedLocale = detectBrowserLocale();
+    await saveLocale(detectedLocale);
+    return detectedLocale;
+  } else {
+    // 非首次启动：使用保存的语言偏好
+    return await getLocale();
+  }
+};
 
 

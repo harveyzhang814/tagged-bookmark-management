@@ -14,6 +14,7 @@
   padding: 12px 0;
   margin: 0;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .tags-filters {
@@ -53,11 +54,12 @@
   min-height: 0;
   overflow-y: auto;
   align-self: stretch;
+  padding-bottom: 72px; /* reserve space for floating actions (e.g. back-to-top) */
 }
 
 /* 自定义滚动条样式 */
 .tags-content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-w);
 }
 
 .tags-content::-webkit-scrollbar-track {
@@ -73,10 +75,72 @@
   background: var(--border-color);
 }
 
+.tags-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tags-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+  padding: 8px 0;
+}
+
 .tag-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
+}
+
+/* Virtualized rows (react-virtuoso) */
+.tags-virtual-container {
+  width: 100%;
+  min-width: 0;
+}
+
+.tags-virtual-divider {
+  margin-top: 8px;
+}
+
+.tag-row {
+  --tag-cols: 1;
+  --tag-card-w: 200px;
+  display: grid;
+  grid-template-columns: repeat(var(--tag-cols), var(--tag-card-w));
+  gap: 12px;
+  justify-content: start;
+  margin-bottom: 12px;
+}
+
+.tags-scroll-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 200;
+}
+
+@media (max-width: 768px) {
+  .tags-scroll-to-top {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+
+.tags-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.tags-empty p {
+  margin: 0;
 }
 
 @media (max-width: 768px) {
@@ -84,5 +148,4 @@
     position: relative;
   }
 }
-
 

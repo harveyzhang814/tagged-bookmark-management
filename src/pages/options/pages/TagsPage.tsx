@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef, type CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from '../../../components/PixelButton';
 import { PixelCard } from '../../../components/PixelCard';
 import { SearchInput } from '../../../components/SearchInput';
 import { SortDropdown, type SortField } from '../../../components/SortDropdown';
 import { TagCard } from '../../../components/TagCard';
 import { TagEditModal } from '../../../components/TagEditModal';
-import { Pagination } from '../../../components/Pagination';
+import { IconButton } from '../../../components/IconButton';
 import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import {
   createTag,
@@ -18,9 +19,11 @@ import {
 import { openUrlsWithMode } from '../../../lib/chrome';
 import { getBrowserTagWorkstationOpenMode, getTagsMap, saveTagsMap } from '../../../lib/storage';
 import type { Tag, BookmarkItem } from '../../../lib/types';
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import './tagsPage.css';
 
 export const TagsPage = () => {
+  const { t } = useTranslation();
   const [tags, setTags] = useState<Tag[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [search, setSearch] = useState('');
@@ -28,11 +31,19 @@ export const TagsPage = () => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const ITEMS_PER_PAGE = 40;
+
+  // Virtual grid (row virtualization) — column count derived solely from fixed card width
+  const GRID_GAP_PX = 12;
+  const TAG_CARD_WIDTH_PX = 200;
+  const tagsContentRef = useRef<HTMLDivElement>(null);
+  const gridMeasureRef = useRef<HTMLDivElement>(null);
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
+  const [scrollParent, setScrollParent] = useState<HTMLElement | null>(null);
+  const [columnCount, setColumnCount] = useState<number>(1);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   const refresh = async () => {
     const [tagsList, bookmarksList] = await Promise.all([
@@ -47,20 +58,51 @@ export const TagsPage = () => {
     void refresh();
   }, []);
 
+  useEffect(() => {
+    setScrollParent(tagsContentRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!scrollParent) return;
+
+    const onScroll = () => {
+      setShowScrollToTop(scrollParent.scrollTop > 400);
+    };
+
+    onScroll();
+    scrollParent.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      scrollParent.removeEventListener('scroll', onScroll);
+    };
+  }, [scrollParent]);
+
+  useEffect(() => {
+    if (!gridMeasureRef.current) return;
+
+    const el = gridMeasureRef.current;
+    const updateColumns = () => {
+      const width = el.clientWidth;
+      if (!width) return;
+      const cols = Math.max(1, Math.floor((width + GRID_GAP_PX) / (TAG_CARD_WIDTH_PX + GRID_GAP_PX)));
+      setColumnCount(cols);
+    };
+
+    updateColumns();
+    const ro = new ResizeObserver(() => updateColumns());
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const filtered = useMemo(() => {
     let list = tags;
     // 搜索过滤
     if (search) {
       list = list.filter((tag) => tag.name.toLowerCase().includes(search.toLowerCase()));
     }
-    // 排序
+    // 排序（不在这里按 pinned 排序，因为我们会分离它们）
     const sortedList = [...list];
     sortedList.sort((a, b) => {
-      // 首先按 pinned 排序（置顶在前）
-      if (a.pinned !== b.pinned) {
-        return a.pinned ? -1 : 1;
-      }
-      // 然后根据选择的排序字段和排序方向进行排序
+      // 根据选择的排序字段和排序方向进行排序
       let diff = 0;
       if (sortBy === 'createdAt') {
         diff = sortOrder === 'desc' ? b.createdAt - a.createdAt : a.createdAt - b.createdAt;
@@ -74,27 +116,46 @@ export const TagsPage = () => {
     return sortedList;
   }, [tags, search, sortBy, sortOrder]);
 
-  // 分页计算
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginatedTags = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filtered.slice(startIndex, endIndex);
-  }, [filtered, currentPage]);
+  // 分离置顶和普通标签
+  const { pinnedTags, normalTags } = useMemo(() => {
+    const pinned = filtered.filter((tag) => tag.pinned);
+    const normal = filtered.filter((tag) => !tag.pinned);
+    return { pinnedTags: pinned, normalTags: normal };
+  }, [filtered]);
 
-  // 当搜索条件或排序改变时，重置到第一页
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, sortBy, sortOrder]);
+  type VirtualItem =
+    | { kind: 'divider'; title: string }
+    | { kind: 'row'; tags: Tag[] };
 
-  // 当总页数变化时，确保当前页不超过总页数
-  useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    } else if (totalPages === 0 && currentPage > 1) {
-      setCurrentPage(1);
+  const virtualItems: VirtualItem[] = useMemo(() => {
+    const chunk = (list: Tag[], size: number) => {
+      const rows: Tag[][] = [];
+      for (let i = 0; i < list.length; i += size) {
+        rows.push(list.slice(i, i + size));
+      }
+      return rows;
+    };
+
+    const items: VirtualItem[] = [];
+
+    if (pinnedTags.length > 0) {
+      items.push({ kind: 'divider', title: t('tag.pinnedTags') });
+      for (const row of chunk(pinnedTags, columnCount)) {
+        items.push({ kind: 'row', tags: row });
+      }
     }
-  }, [totalPages, currentPage]);
+
+    if (normalTags.length > 0) {
+      if (pinnedTags.length > 0) {
+        items.push({ kind: 'divider', title: t('tag.normalTags') });
+      }
+      for (const row of chunk(normalTags, columnCount)) {
+        items.push({ kind: 'row', tags: row });
+      }
+    }
+
+    return items;
+  }, [pinnedTags, normalTags, columnCount, t]);
 
   const handleCreateTag = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
     const newTag = await createTag({ 
@@ -236,6 +297,11 @@ export const TagsPage = () => {
     }
   };
 
+  const handleScrollToTop = () => {
+    virtuosoRef.current?.scrollToIndex({ index: 0, align: 'start', behavior: 'smooth' });
+    scrollParent?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div 
       className="tags-page"
@@ -244,48 +310,89 @@ export const TagsPage = () => {
     >
       <div className="tags-toolbar-merged">
         <div className="tags-filters">
-          <SearchInput value={search} placeholder="搜索标签" onChange={setSearch} />
+          <SearchInput value={search} placeholder={t('tag.searchPlaceholder')} onChange={setSearch} />
           <SortDropdown
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSortByChange={setSortBy}
             onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
             options={[
-              { value: 'createdAt', label: '创建日期' },
-              { value: 'usageCount', label: '书签数量' },
-              { value: 'clickCount', label: '点击数量' }
+              { value: 'createdAt', label: t('sort.byCreatedAt') },
+              { value: 'usageCount', label: t('tag.usageCount') },
+              { value: 'clickCount', label: t('sort.byClickCount') }
             ]}
           />
         </div>
         <div className="tags-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建标签
+            {t('tag.new')}
           </PixelButton>
         </div>
       </div>
 
       <div className="tags-content-wrapper">
-        <div className="tags-content">
-          <div className="tag-grid">
-            {paginatedTags.map((tag) => (
-              <TagCard
-                key={tag.id}
-                tag={tag}
-                onTogglePin={handleTogglePin}
-                onClick={handleTagClick}
-                onDoubleClick={handleTagDoubleClick}
-              />
-            ))}
-          </div>
+        <div className="tags-content" ref={tagsContentRef}>
+          <div className="tags-virtual-container" ref={gridMeasureRef}>
+            {pinnedTags.length === 0 && normalTags.length === 0 ? (
+              <div className="tags-empty">
+                <p>{t('tag.noTags')}</p>
+              </div>
+            ) : (
+              <Virtuoso
+                ref={virtuosoRef}
+                customScrollParent={scrollParent ?? undefined}
+                data={virtualItems}
+                itemContent={(_, item) => {
+                  if (item.kind === 'divider') {
+                    return <h2 className="tags-section-title tags-virtual-divider">{item.title}</h2>;
+                  }
 
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          )}
+                  return (
+                    <div
+                      className="tag-row"
+                      style={
+                        {
+                          ['--tag-cols' as unknown as string]: String(columnCount),
+                          ['--tag-card-w' as unknown as string]: `${TAG_CARD_WIDTH_PX}px`,
+                        } as CSSProperties
+                      }
+                    >
+                      {item.tags.map((tag) => (
+                        <TagCard
+                          key={tag.id}
+                          tag={tag}
+                          onTogglePin={handleTogglePin}
+                          onClick={handleTagClick}
+                          onDoubleClick={handleTagDoubleClick}
+                        />
+                      ))}
+                    </div>
+                  );
+                }}
+              />
+            )}
+          </div>
         </div>
+
+        {showScrollToTop && (
+          <IconButton
+            variant="secondary"
+            className="tags-scroll-to-top"
+            aria-label={t('common.backToTop', 'Back to top')}
+            onClick={handleScrollToTop}
+            icon={
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 5l-7 7m7-7l7 7M12 5v14"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+          />
+        )}
 
         {isBookmarkSidebarOpen && (
           <div ref={sidebarRef}>

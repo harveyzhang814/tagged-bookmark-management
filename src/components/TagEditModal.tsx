@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
 import { TagPill } from './TagPill';
 import { ToggleSwitch } from './ToggleSwitch';
@@ -55,6 +56,7 @@ const getDefaultTagColor = async (): Promise<string> => {
 };
 
 export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }: TagEditModalProps) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [color, setColor] = useState(TAG_COLOR_PALETTE_24[0]);
   const [description, setDescription] = useState('');
@@ -154,7 +156,7 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
   const handleDelete = async () => {
     if (!tag || !onDelete) return;
     
-    const confirmed = window.confirm('确定要删除这个标签吗？此操作将从所有书签中移除该标签，且无法撤销。');
+    const confirmed = window.confirm(t('tag.deleteConfirm'));
     if (!confirmed) return;
     
     try {
@@ -173,11 +175,11 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
     <div className="tag-edit-modal__backdrop" onClick={handleBackdropClick} onKeyDown={handleKeyDown}>
       <div className="tag-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="tag-edit-modal__header">
-          <h2 className="tag-edit-modal__title">{isCreateMode ? '新建标签' : '编辑标签'}</h2>
+          <h2 className="tag-edit-modal__title">{isCreateMode ? t('tag.new') : t('tag.edit')}</h2>
           <button
             className="tag-edit-modal__close"
             onClick={onClose}
-            aria-label="关闭"
+            aria-label={t('common.close')}
             type="button"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -206,23 +208,23 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
                 </svg>
               </div>
               <p className="tag-edit-modal__success-text">
-                {isCreateMode ? '新建成功' : '保存成功'}
+                {isCreateMode ? t('tag.createSuccess') : t('tag.saveSuccess')}
               </p>
             </div>
           ) : (
             <>
               <div className="tag-edit-modal__field">
-            <label className="tag-edit-modal__label">名称</label>
+            <label className="tag-edit-modal__label">{t('tag.nameLabel')}</label>
             <input
               className="tag-edit-modal__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="标签名称"
+              placeholder={t('tag.namePlaceholder')}
               autoFocus
             />
           </div>
           <div className="tag-edit-modal__field">
-            <label className="tag-edit-modal__label">描述</label>
+            <label className="tag-edit-modal__label">{t('tag.descriptionLabel')}</label>
             <textarea
               ref={descriptionTextareaRef}
               className="tag-edit-modal__input tag-edit-modal__textarea"
@@ -231,12 +233,12 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
                 setDescription(e.target.value);
                 adjustTextareaHeight(e.target);
               }}
-              placeholder="标签描述（可选）"
+              placeholder={t('tag.descriptionPlaceholder')}
               rows={1}
             />
           </div>
           <div className="tag-edit-modal__field">
-            <label className="tag-edit-modal__label">颜色</label>
+            <label className="tag-edit-modal__label">{t('tag.colorLabel')}</label>
             <ColorPicker
               value={color}
               onChange={setColor}
@@ -247,13 +249,13 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
             <ToggleSwitch
               checked={pinned}
               onChange={setPinned}
-              label="置顶"
+              label={t('tag.pinnedLabel')}
             />
           </div>
           <div className="tag-edit-modal__preview">
             <div className="tag-edit-modal__preview-label">预览效果</div>
             <div className="tag-edit-modal__preview-content">
-              <TagPill label={name || '标签名称'} color={color} size="large" />
+              <TagPill label={name || t('tag.namePlaceholder')} color={color} size="large" />
             </div>
           </div>
             </>
@@ -263,15 +265,15 @@ export const TagEditModal = ({ mode, tag, onClose, onSave, onCreate, onDelete }:
           <div className="tag-edit-modal__footer">
           {!isCreateMode && onDelete && (
             <PixelButton variant="danger" onClick={handleDelete} disabled={isSaving}>
-              删除
+              {t('common.delete')}
             </PixelButton>
           )}
           <div className="tag-edit-modal__footer-actions">
             <PixelButton variant="secondary" onClick={onClose} disabled={isSaving}>
-              取消
+              {t('common.cancel')}
             </PixelButton>
             <PixelButton onClick={handleSave} disabled={isSaving || !name.trim()}>
-              {isSaving ? (isCreateMode ? '新建中...' : '保存中...') : (isCreateMode ? '新建' : '保存')}
+              {isSaving ? (isCreateMode ? t('tag.createInProgress') : t('tag.saveInProgress')) : (isCreateMode ? t('tag.createButton') : t('tag.saveButton'))}
             </PixelButton>
           </div>
         </div>

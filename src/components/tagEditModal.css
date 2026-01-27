@@ -119,11 +119,7 @@
 .tag-edit-modal__input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
-}
-
-[data-theme='dark'] .tag-edit-modal__input:focus {
-  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 
@@ -191,7 +187,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #10b981;
+  color: var(--success-strong);
   animation: tagEditModalSuccessScale 0.3s ease-out;
 }
 
@@ -209,9 +205,6 @@
   }
 }
 
-[data-theme='dark'] .tag-edit-modal__success-icon {
-  color: #34d399;
-}
 
 .tag-edit-modal__success-text {
   font-size: 16px;

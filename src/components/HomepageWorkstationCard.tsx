@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import type { Workstation, BookmarkItem } from '../lib/types';
 import { IconButton } from './IconButton';
 import './homepageWorkstationCard.css';
@@ -17,6 +18,7 @@ export const HomepageWorkstationCard = ({
   onOpenAll,
   onDelete,
 }: HomepageWorkstationCardProps) => {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -131,7 +133,7 @@ export const HomepageWorkstationCard = ({
                 <circle cx="8" cy="13" r="1.5" fill="currentColor" />
               </svg>
             }
-            aria-label="更多"
+            aria-label={t('common.more')}
             onClick={handleToggleMenu}
           />
         </div>
@@ -160,7 +162,7 @@ export const HomepageWorkstationCard = ({
                     strokeLinejoin="round"
                   />
                 </svg>
-                删除
+                {t('common.delete')}
               </button>
             </div>,
             document.body
@@ -175,7 +177,7 @@ export const HomepageWorkstationCard = ({
             </div>
           ))
         ) : (
-          <div className="homepage-workstation-card__empty">暂无书签</div>
+          <div className="homepage-workstation-card__empty">{t('workstation.noBookmarksInWorkstation')}</div>
         )}
       </div>
     </div>

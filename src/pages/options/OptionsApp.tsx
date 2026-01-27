@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
 import { HomepagePage } from './pages/HomepagePage';
@@ -18,6 +19,7 @@ export type TabKey = 'home' | 'bookmarks' | 'tags' | 'ranking' | 'workstations' 
 const PERSISTED_TABS = ['home', 'bookmarks', 'tags', 'ranking', 'workstations'] as const;
 
 export const OptionsApp = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('home');
   const [lastNonSettingsTab, setLastNonSettingsTab] = useState<ActiveTab>('home');
   const [isInitialized, setIsInitialized] = useState(false);
@@ -136,7 +138,7 @@ export const OptionsApp = () => {
             alt="CrossTag Bookmarks" 
             className="options-navigator__icon"
           />
-          <h1>CrossTag Bookmarks</h1>
+          <h1>{t('app.title')}</h1>
         </div>
 
         <div className="options-navigator__actions">
@@ -167,7 +169,7 @@ export const OptionsApp = () => {
                 />
               </svg>
             }
-            aria-label="导入导出"
+            aria-label={t('tooltip.importExport')}
             onClick={() => setIsImportExportModalOpen(true)}
           />
           <ThemeToggle />
@@ -191,7 +193,7 @@ export const OptionsApp = () => {
                 />
               </svg>
             }
-            aria-label="设置"
+            aria-label={t('tooltip.settings')}
             onClick={() => void handleTabChange('settings')}
           />
         </div>

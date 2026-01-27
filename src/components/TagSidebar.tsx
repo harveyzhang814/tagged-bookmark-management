@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import type { Tag } from '../lib/types';
@@ -16,6 +17,7 @@ const getThemeFromDOM = (): 'light' | 'dark' => {
 };
 
 export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   // 优化：直接使用 'light' | 'dark' 类型，因为颜色计算只需要实际应用的主题
@@ -93,13 +95,13 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
   return (
     <div className="tag-sidebar">
       <div className="tag-sidebar__header">
-        <h3 className="tag-sidebar__title">标签列表</h3>
+        <h3 className="tag-sidebar__title">{t('tag.tagList')}</h3>
       </div>
       
       <div className="tag-sidebar__search">
         <SearchInput
           value={searchQuery}
-          placeholder="搜索标签..."
+          placeholder={t('tag.searchPlaceholder')}
           onChange={setSearchQuery}
         />
       </div>
@@ -107,7 +109,7 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
       <div className="tag-sidebar__content">
         {paginatedTags.length === 0 && !showCreateCard ? (
           <div className="tag-sidebar__empty">
-            {searchQuery ? '未找到匹配的标签' : '暂无标签'}
+            {searchQuery ? t('tag.noMatch') : t('tag.noTags')}
           </div>
         ) : (
           <div className="tag-sidebar__list">
@@ -133,7 +135,7 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="tag-sidebar__name">创建标签: {searchQuery.trim()}</span>
+                <span className="tag-sidebar__name">{t('tag.createTag')}: {searchQuery.trim()}</span>
               </div>
             )}
             {paginatedTags.map((tag) => (

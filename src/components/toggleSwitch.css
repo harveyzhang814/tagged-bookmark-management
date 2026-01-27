@@ -29,7 +29,7 @@
   display: inline-block;
   width: 44px;
   height: 24px;
-  background: #e0e0e0;
+  background: var(--toggle-track-bg);
   border: none;
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -43,10 +43,10 @@
   height: 20px;
   left: 2px;
   top: 2px;
-  background: #ffffff;
+  background: var(--toggle-thumb-bg);
   border-radius: 50%;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--toggle-thumb-shadow);
 }
 
 .toggle-switch__input:checked + .toggle-switch__slider {
@@ -55,11 +55,11 @@
 
 .toggle-switch__input:checked + .toggle-switch__slider::before {
   transform: translateX(20px);
-  background: #ffffff;
+  background: var(--toggle-thumb-bg);
 }
 
 .toggle-switch__input:focus + .toggle-switch__slider {
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .toggle-switch--disabled .toggle-switch__slider {
@@ -67,6 +67,5 @@
 }
 
 .toggle-switch--disabled .toggle-switch__input:checked + .toggle-switch__slider {
-  background: #b0b0b0;
+  background: var(--toggle-track-disabled-bg);
 }
-

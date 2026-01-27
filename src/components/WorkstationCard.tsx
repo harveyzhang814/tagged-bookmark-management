@@ -1,4 +1,5 @@
 import { type MouseEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { Workstation } from '../lib/types';
@@ -12,6 +13,7 @@ interface WorkstationCardProps {
 }
 
 export const WorkstationCard = ({ workstation, onEdit, onTogglePin, onClick }: WorkstationCardProps) => {
+  const { t } = useTranslation();
   const handleEditClick = (e: MouseEvent) => {
     e.stopPropagation();
     onEdit(workstation);
@@ -49,7 +51,7 @@ export const WorkstationCard = ({ workstation, onEdit, onTogglePin, onClick }: W
                 />
               </svg>
             }
-            aria-label="编辑工作区"
+            aria-label={t('workstation.edit')}
             onClick={handleEditClick}
           />
           <IconButton
@@ -66,7 +68,7 @@ export const WorkstationCard = ({ workstation, onEdit, onTogglePin, onClick }: W
                 />
               </svg>
             }
-            aria-label={workstation.pinned ? '取消置顶' : '置顶'}
+            aria-label={workstation.pinned ? t('workstation.unpin') : t('workstation.pin')}
             onClick={handlePinClick}
           />
         </div>

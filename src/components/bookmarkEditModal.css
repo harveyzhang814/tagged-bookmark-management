@@ -119,11 +119,7 @@
 .bookmark-edit-modal__input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
-}
-
-[data-theme='dark'] .bookmark-edit-modal__input:focus {
-  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .bookmark-edit-modal__textarea {
@@ -171,7 +167,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #10b981;
+  color: var(--success-strong);
   animation: bookmarkEditModalSuccessScale 0.3s ease-out;
 }
 
@@ -189,9 +185,6 @@
   }
 }
 
-[data-theme='dark'] .bookmark-edit-modal__success-icon {
-  color: #34d399;
-}
 
 .bookmark-edit-modal__success-text {
   font-size: 16px;
@@ -212,4 +205,3 @@
     padding: 0;
   }
 }
-

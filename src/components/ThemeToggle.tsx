@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTheme, toggleTheme, type Theme } from '../lib/theme';
 import './themeToggle.css';
 
 export const ThemeToggle = () => {
+  const { t } = useTranslation();
   const [theme, setTheme] = useState<Theme>('system');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,17 +26,17 @@ export const ThemeToggle = () => {
 
   const getAriaLabel = (currentTheme: Theme): string => {
     if (currentTheme === 'light') {
-      return '切换到暗黑模式';
+      return t('theme.switchToDark');
     } else if (currentTheme === 'dark') {
-      return '切换到跟随系统';
+      return t('theme.switchToSystem');
     } else {
-      return '切换到明亮模式';
+      return t('theme.switchToLight');
     }
   };
 
   if (isLoading) {
     return (
-      <button className="theme-toggle" disabled aria-label="切换主题">
+      <button className="theme-toggle" disabled aria-label={t('theme.toggle')}>
         <div className="theme-toggle__icon theme-toggle__icon--loading">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="25" strokeDashoffset="6">

@@ -1,0 +1,71 @@
+---
+description: 设计与组件开发须遵循 DESIGN_GUIDE；新增标准须经确认后写入该文件
+globs: "**/*.{tsx,css}"
+alwaysApply: true
+---
+
+# 设计规范与 DESIGN_GUIDE
+
+## 设计与开发组件时
+
+- **必须**遵循 `docs/design/DESIGN_GUIDE.md` 的设计标准，包括：
+  - 全局 Tokens（颜色、形状、阴影、焦点环、控件尺寸、滚动条）
+  - 页面布局（Options / Popup）
+  - 组件规范（Button、Input、Card、Modal 等）
+  - 排版与密度、暗色模式、CSS 命名与交付检查清单
+
+## 新增设计标准
+
+- 当用户提出新的设计/视觉标准时：**先与用户确认**，确认后再写入 `docs/design/DESIGN_GUIDE.md`。
+- 不要未经确认就修改 DESIGN_GUIDE。
+
+## 列表设计标准
+
+### 适用范围
+
+- Options 管理页内的“卡片列表/书签列表/标签列表”等大数据量场景（上百～上千条）。
+
+### 渲染策略（性能优先）
+
+- 默认使用“虚拟化列表/虚拟化网格”，避免一次性渲染全部 item。
+- 推荐实现形态：**按行虚拟化**（row virtualization）。
+  - 先根据容器宽度计算列数 `columnCount`
+  - 将数据按 `columnCount` 分组为 `rows`
+  - 虚拟化组件渲染 `rows`，行内用 CSS grid 排列卡片
+- 分组标题/分隔行（如 pinned/normal）优先作为“虚拟项”插入，保持可滚动一致性。
+
+### 滚动容器（布局稳定）
+
+- 滚动应发生在页面“内容区域容器”（例如 `.bookmarks-content` / `.tags-content`），而非整个页面，避免 sticky 顶栏/侧栏抖动。
+- 虚拟化组件应接管该滚动容器（custom scroll parent），保持滚动条与行为一致。
+
+### 回到顶部（可用性）
+
+- 主滚动区 `scrollTop` 超过阈值时显示悬浮“回到顶部”按钮。
+- 点击后优先调用虚拟化组件 API（如 `scrollToIndex({ index: 0, behavior: 'smooth' })`），并提供对滚动容器 `scrollTo({top:0})` 的兜底。
+- 悬浮按钮需预留底部空间，避免遮挡内容与分页/操作区（如 `padding-bottom`）。
+
+### 响应式布局：列数与卡片宽度（信息密度与可读性平衡）
+
+#### 默认方案（推荐）：断点范围 + 卡片宽度约束
+
+- 列数基于容器宽度动态变化：
+  - `<720px`: 1 列
+  - `720–959px`: 2 列
+  - `960–1279px`: 3–4 列（自动选择）
+  - `≥1280px`: 4–5 列（自动选择）
+- 通过最小卡片宽度（min）与目标最大可读宽度（target max）控制列数选择，避免卡片过宽导致行长过长。
+- **超大尺寸**下不限制卡片最大宽度（`max-width: none`，卡片 `justify-self: stretch`），避免因“居中 + max-width”造成视觉间距变大。
+
+#### 可选方案（opt-in）：固定统一卡片宽度推导列数
+
+- 用途：标签等信息密度较低、期望“列数完全由卡片宽度决定”的网格。
+- 规则：给定 `cardWidth` 与 `gap`，根据容器宽度计算：
+  - `cols = max(1, floor((containerWidth + gap) / (cardWidth + gap)))`
+- 行内 grid 使用固定列宽：`grid-template-columns: repeat(var(--cols), var(--cardWidth))`，并用 `justify-content: start` 让剩余空间集中在右侧。
+- 说明：该方案不是默认；只有在输入/需求中**明确告知需要“固定卡片宽度推导列数”**时才采用。
+
+### 卡片高度规则化（虚拟化友好）
+
+- 优先让卡片高度稳定（标题/URL/标签 clamp、meta 区贴底等），减少滚动时跳动与测量误差。
+- 若产品决定“移除缩略图”，需同步移除缩略图区与占位样式，避免出现大面积空白。

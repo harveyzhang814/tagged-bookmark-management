@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
 import { ToggleSwitch } from './ToggleSwitch';
 import {
@@ -18,6 +19,7 @@ interface ImportExportModalProps {
 }
 
 export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportExportModalProps) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'import' | 'export'>('import');
   const [fileData, setFileData] = useState<ImportFileData | null>(null);
   const [importMode, setImportMode] = useState<'overwrite' | 'incremental'>('incremental');
@@ -60,7 +62,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
       const parsed = await parseImportFile(file);
       setFileData(parsed);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '文件解析失败');
+      setError(err instanceof Error ? err.message : t('importExport.parseError'));
       setFileData(null);
     }
   };
@@ -93,7 +95,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
     if (file && file.type === 'application/json') {
       void handleFileSelect(file);
     } else {
-      setError('请选择JSON格式的文件');
+      setError(t('importExport.fileFormat'));
     }
   };
 
@@ -129,7 +131,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
     } catch (err) {
       setIsImporting(false);
       setIsImportSuccess(false);
-      setError(err instanceof Error ? err.message : '导入失败');
+      setError(err instanceof Error ? err.message : t('importExport.importFailed'));
     }
   };
 
@@ -143,7 +145,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
       downloadFile(jsonString, filename);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '导出失败');
+      setError(err instanceof Error ? err.message : t('importExport.exportFailed'));
     } finally {
       setIsExporting(false);
     }
@@ -171,11 +173,11 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
     >
       <div className="import-export-modal" onClick={(e) => e.stopPropagation()}>
         <div className="import-export-modal__header">
-          <h2 className="import-export-modal__title">数据迁移</h2>
+          <h2 className="import-export-modal__title">{t('importExport.title')}</h2>
           <button
             className="import-export-modal__close"
             onClick={onClose}
-            aria-label="关闭"
+            aria-label={t('common.close')}
             type="button"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -205,7 +207,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                 strokeLinejoin="round"
               />
             </svg>
-            <span>导入</span>
+            <span>{t('importExport.importTab')}</span>
           </button>
           <button
             type="button"
@@ -221,7 +223,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                 strokeLinejoin="round"
               />
             </svg>
-            <span>导出</span>
+            <span>{t('importExport.exportTab')}</span>
           </button>
         </div>
 
@@ -264,7 +266,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                           />
                         </svg>
                       </div>
-                      <p className="import-export-modal__status-text">导入中...</p>
+                      <p className="import-export-modal__status-text">{t('importExport.importing')}</p>
                     </>
                   )}
                   {isImportSuccess && (
@@ -280,7 +282,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                           />
                         </svg>
                       </div>
-                      <p className="import-export-modal__status-text">导入完成</p>
+                      <p className="import-export-modal__status-text">{t('importExport.importSuccess')}</p>
                     </>
                   )}
                 </div>
@@ -307,13 +309,13 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                       <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
                     <p className="import-export-modal__dropzone-text">
-                      拖拽文件到此处，或
+                      {t('importExport.dragDropHint')}
                       <button
                         type="button"
                         className="import-export-modal__dropzone-button"
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        点击选择文件
+                        {t('importExport.selectFile')}
                       </button>
                     </p>
                     <input
@@ -328,29 +330,29 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
               ) : (
                 <>
                   <div className="import-export-modal__file-info">
-                    <h3 className="import-export-modal__file-info-title">文件信息</h3>
+                    <h3 className="import-export-modal__file-info-title">{t('importExport.fileInfo')}</h3>
                     <div className="import-export-modal__file-info-item">
-                      <span className="import-export-modal__file-info-label">书签数量：</span>
+                      <span className="import-export-modal__file-info-label">{t('importExport.bookmarksCount')}:</span>
                       <span className="import-export-modal__file-info-value">{fileData.bookmarksCount}</span>
                     </div>
                     <div className="import-export-modal__file-info-item">
-                      <span className="import-export-modal__file-info-label">标签数量：</span>
+                      <span className="import-export-modal__file-info-label">{t('importExport.tagsCount')}:</span>
                       <span className="import-export-modal__file-info-value">{fileData.tagsCount}</span>
                     </div>
                     <div className="import-export-modal__file-info-item">
-                      <span className="import-export-modal__file-info-label">工作区数量：</span>
+                      <span className="import-export-modal__file-info-label">{t('importExport.workstationsCount')}:</span>
                       <span className="import-export-modal__file-info-value">{fileData.workstationsCount}</span>
                     </div>
                     <div className="import-export-modal__file-info-item">
-                      <span className="import-export-modal__file-info-label">包含历史记录：</span>
+                      <span className="import-export-modal__file-info-label">{t('importExport.hasHistory')}:</span>
                       <span className="import-export-modal__file-info-value">
-                        {fileData.metadata.hasClickHistory ? '是' : '否'}
+                        {fileData.metadata.hasClickHistory ? t('common.yes') : t('common.no')}
                       </span>
                     </div>
                   </div>
 
                   <div className="import-export-modal__field">
-                    <label className="import-export-modal__label">导入模式</label>
+                    <label className="import-export-modal__label">{t('importExport.importMode')}</label>
                     <div className="import-export-modal__radio-group">
                       <label className="import-export-modal__radio">
                         <input
@@ -360,7 +362,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                           checked={importMode === 'incremental'}
                           onChange={(e) => setImportMode(e.target.value as 'incremental')}
                         />
-                        <span>增量（仅新增不存在的数据）</span>
+                        <span>{t('importExport.incremental')} ({t('importExport.incrementalDesc')})</span>
                       </label>
                       <label className="import-export-modal__radio">
                         <input
@@ -370,7 +372,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                           checked={importMode === 'overwrite'}
                           onChange={(e) => setImportMode(e.target.value as 'overwrite')}
                         />
-                        <span>覆盖（替换所有现有数据）</span>
+                        <span>{t('importExport.overwrite')} ({t('importExport.overwriteDesc')})</span>
                       </label>
                     </div>
                   </div>
@@ -380,7 +382,7 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                       <ToggleSwitch
                         checked={includeHistory}
                         onChange={setIncludeHistory}
-                        label="导入历史点击记录"
+                        label={t('importExport.includeHistory')}
                       />
                     </div>
                   )}
@@ -397,10 +399,10 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                       }}
                       disabled={isImporting}
                     >
-                      重新选择
+                      {t('importExport.reselect')}
                     </PixelButton>
                     <PixelButton onClick={handleImport} disabled={isImporting}>
-                      {isImporting ? '导入中...' : '导入'}
+                      {isImporting ? t('importExport.importing') : t('importExport.importButton')}
                     </PixelButton>
                   </div>
                 </>
@@ -414,19 +416,19 @@ export const ImportExportModal = ({ isOpen, onClose, onImportSuccess }: ImportEx
                 <ToggleSwitch
                   checked={includeHistory}
                   onChange={setIncludeHistory}
-                  label="导出历史点击记录"
+                  label={t('importExport.includeHistory')}
                 />
                 <p className="import-export-modal__hint">
-                  导出后将包含所有书签的点击历史数据
+                  {t('importExport.exportHint')}
                 </p>
               </div>
 
               <div className="import-export-modal__actions">
                 <PixelButton variant="secondary" onClick={onClose} disabled={isExporting}>
-                  取消
+                  {t('common.cancel')}
                 </PixelButton>
                 <PixelButton onClick={handleExport} disabled={isExporting}>
-                  {isExporting ? '导出中...' : '导出'}
+                  {isExporting ? t('importExport.exporting') : t('importExport.exportButton')}
                 </PixelButton>
               </div>
             </div>

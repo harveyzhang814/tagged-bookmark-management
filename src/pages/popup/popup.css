@@ -165,12 +165,8 @@
 .form-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(91, 155, 213, 0.1);
+  box-shadow: var(--focus-ring-lg);
   background: var(--bg-panel);
-}
-
-[data-theme='dark'] .form-input:focus {
-  box-shadow: 0 0 0 4px rgba(100, 181, 246, 0.2);
 }
 
 .form-input::placeholder {
@@ -195,15 +191,15 @@
 }
 
 .popup-status--success {
-  background: rgba(129, 199, 132, 0.1);
-  border: 1px solid rgba(129, 199, 132, 0.2);
-  color: #4caf50;
+  background: var(--success-surface);
+  border: 1px solid var(--success-border);
+  color: var(--success-strong);
 }
 
 .popup-status--error {
-  background: rgba(229, 115, 115, 0.1);
-  border: 1px solid rgba(229, 115, 115, 0.2);
-  color: var(--danger);
+  background: var(--danger-surface);
+  border: 1px solid var(--danger-border);
+  color: var(--danger-strong);
 }
 
 @keyframes slideIn {
@@ -274,7 +270,7 @@
 
 /* Scrollbar */
 .popup-content::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-w-sm);
 }
 
 .popup-content::-webkit-scrollbar-track {
