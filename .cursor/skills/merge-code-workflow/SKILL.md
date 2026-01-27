@@ -66,13 +66,13 @@ description: 将目标分支合并（merge）到当前分支（输入：目标�
 ### 4) 生成 Conventional Commits 风格的 merge commit message
 
 - **标题（必须）**：使用 Conventional Commits 常见前缀体系
-  - 推荐：`chore(merge): merge <target> into <current>`
+  - 推荐：`chore(merge): 将 <target> 合并到 <current>`
 - **正文（建议）**：3–8 条 bullets，按用户感知优先排序，并附关键 refs
 
 模板：
 
 ```text
-chore(merge): merge <target> into <current>
+chore(merge): 将 <target> 合并到 <current>
 
 Summary:
 - <重要功能/修复/非功能变更 1> (refs: <sha1>, <sha2>)

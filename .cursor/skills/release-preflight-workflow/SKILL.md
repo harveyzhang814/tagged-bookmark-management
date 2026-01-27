@@ -176,7 +176,7 @@ description: 在发布/上架新版本时执行发布前检查清单：同步更
 若用户要求创建 PR（默认不创建）：
 
 - 使用 `gh pr create`
-- 标题建议：`chore(release): vX.Y.Z`
+- 标题建议：`chore(release): 发布 vX.Y.Z`
 - PR Body 模板：
   - Summary：版本号更新 + 主要改动点（来自 diff/文档）
   - Test plan：build/test/typecheck/release 打包结果 + 冒烟回归项
