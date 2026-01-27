@@ -1,6 +1,6 @@
 ---
 name: commit-docs-workflow
-description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或要求总结本次更新时，自动总结功能变更、同步更新 PRD/feature/risks 文档，并生成符合 Conventional Commits 规范的 commit 消息。使用场景包括 git commit、PR 评论、代码变更总结。
+description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或要求总结本次更新时，自动总结功能变更、同步更新 PRD/feature/risks 文档，生成符合 Conventional Commits 规范的 commit message，并自动执行 git 提交（git add + git commit）。默认不推送到 GitHub（不执行 git push），除非用户明确要求。
 ---
 
 # 提交与文档同步工作流
@@ -38,7 +38,7 @@ description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或�
   - **触发条件**：在何种操作、配置、数据状态下会暴露。
   - **影响与表现**、**规避建议**（可选）。
 
-### 5. 自动生成 Commit 文案
+### 5. 自动生成 Commit 文案并提交到 git（不推送 GitHub）
 
 按 **GitHub / Conventional Commits** 风格生成 commit message：
 
@@ -47,6 +47,12 @@ description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或�
 - **内容**：简洁说明本次改动，可选括注模块（如 `feat(workstation): 支持一键打开全部书签`）。
 
 生成后提供给用户，供复制到 `git commit -m "..."` 或 PR 描述。
+
+生成 commit message 后，自动执行本地提交：
+- 将相关变更加入暂存区（`git add ...`）
+- 使用生成的 message 执行 `git commit`
+
+默认**不提交 GitHub**：不执行 `git push`。只有当用户明确要求“推送/提交到 GitHub”时，才执行 `git push`。
 
 ## Commit 消息示例
 
