@@ -1,6 +1,6 @@
 ---
 name: commit-docs-workflow
-description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或要求总结本次更新时，自动总结功能变更、同步更新 PRD/feature/risks 文档，生成符合 Conventional Commits 规范的 commit message，并自动执行 git 提交（git add + git commit）。默认不推送到 GitHub（不执行 git push），除非用户明确要求。
+description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或要求总结本次更新时，以当前代码 diff 与代码注释为主归纳变更，并用 chat 上下文做交叉验证（chat 信息可能不全），同步更新 PRD/feature/risks 文档，生成 Conventional Commits 风格的 commit message，并自动执行 git add + git commit（默认不 push）。适用于 commit/提交/总结更新/同步 PRD/补文档 等场景。
 ---
 
 # 提交与文档同步工作流
@@ -9,11 +9,25 @@ description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或�
 
 当用户准备提交 git、撰写/回复 GitHub PR comment、或要求「总结本次更新」时，自动执行此工作流。
 
+## 目标与输出
+
+- **目标**：让代码与 docs 保持一致，并产出可审阅的 Conventional Commits 提交。
+- **产出**：
+  - 1) 变更摘要（功能/非功能）
+  - 2) docs 同步结果（PRD/feature/risks）
+  - 3) Conventional Commits commit message
+  - 4) 自动执行 `git add` + `git commit`（默认不 push）
+
 ## 工作流步骤
 
-### 1. 总结本次更新
+### 0) 前置检查（必须）
 
-根据**当前代码 diff** 与 **chat 上下文**，简要归纳：
+- 确认可提交内容存在：`git status --porcelain`
+  - 若没有任何变更：停止流程，提示“无变更可提交”。
+
+### 1) 总结本次更新（以 diff + 注释为主，chat 做验证）
+
+根据**当前代码 diff** 与**代码注释**（含注释/文档注释/变更说明）归纳为主；**chat 上下文仅用于交叉验证与补全假设**（因为 chat 信息可能不全），简要归纳：
 - 功能变更（新增/修改/删除的能力、入口、交互）
 - 非功能变更（重构、依赖、配置、文案等）
 
@@ -38,7 +52,7 @@ description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或�
   - **触发条件**：在何种操作、配置、数据状态下会暴露。
   - **影响与表现**、**规避建议**（可选）。
 
-### 5. 自动生成 Commit 文案并提交到 git（不推送 GitHub）
+### 5) 生成 Conventional Commits 文案并提交（默认不 push）
 
 按 **GitHub / Conventional Commits** 风格生成 commit message：
 
@@ -48,9 +62,14 @@ description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或�
 
 生成后提供给用户，供复制到 `git commit -m "..."` 或 PR 描述。
 
-生成 commit message 后，自动执行本地提交：
-- 将相关变更加入暂存区（`git add ...`）
-- 使用生成的 message 执行 `git commit`
+生成 commit message 后，自动执行本地提交（HEREDOC 传参，保证格式稳定）：
+
+- 将相关变更加入暂存区：`git add ...`
+- 使用生成的 message 执行提交：
+  - `git commit -m "$(cat <<'EOF'\n<commit message>\nEOF\n)"`
+- 提交后校验：
+  - `git status`
+  - `git log -1 --oneline`
 
 默认**不提交 GitHub**：不执行 `git push`。只有当用户明确要求“推送/提交到 GitHub”时，才执行 `git push`。
 
@@ -59,6 +78,22 @@ description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或�
 - `feat(home): 首页增加热门标签与工作区卡片`
 - `fix(import): 路径转标签时已存在书签的 pathTagIds 未更新`
 - `docs: 同步 PRD 与 i18n 技术方案`
+
+## 输出要求（在 chat 中交付）
+
+- 必须给出：
+  - 变更摘要（功能/非功能）
+  - 被更新/新增的 docs 文件路径清单（至少到文件级）
+  - 最终 commit message（完整可复制）
+  - 最终 commit sha（`git log -1`）
+  - `git status` 结果（确认工作区干净或解释原因）
+
+## 执行边界（必须遵守）
+
+- **默认会执行 `git add` + `git commit`**；若无变更则停止。
+- **默认不 push**：除非用户明确要求 push；且不允许 force push。
+- **不跳过 hooks / 不改写历史**：不使用 `--no-verify`、不做破坏性历史改写（除非用户明确要求并确认风险）。
+- **文档同步必须基于真实实现**：不臆造未实现功能；只在有功能变更时更新 PRD/feature；风险需写清触发条件与影响。
 
 ## 文档路径参考
 

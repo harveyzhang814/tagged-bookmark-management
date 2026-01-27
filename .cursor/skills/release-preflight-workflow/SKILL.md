@@ -1,6 +1,6 @@
 ---
 name: release-preflight-workflow
-description: 在发布/上架新版本时执行发布前检查清单：同步更新扩展与包版本号、跑 build/test/typecheck、生成 release zip、校验产物与权限/隐私合规，并同步更新商店描述与 README/PRD 等文档。若检查过程中产生修改且用户要求“提交并推送到 GitHub”，则调用 commit-docs-workflow 完成本地提交，并执行 git push（必要时创建发布分支），可选使用 gh 创建 PR。
+description: 在发布/上架新版本时执行发布前检查清单：同步更新扩展与包版本号、跑 build/test/typecheck、生成 release zip、校验产物与权限/隐私合规，并同步更新商店描述与 README/PRD 等文档。若检查过程中产生修改且用户要求“提交并推送到 GitHub”，则在全部修改完成后统一执行一次 git commit（不自动 pull），并执行 git push（必要时创建发布分支），可选使用 gh 创建 PR。
 ---
 
 # Release Preflight Workflow（发版前检查与版本号更新）
@@ -27,7 +27,7 @@ description: 在发布/上架新版本时执行发布前检查清单：同步更
 - 发布渠道：仅本地打包 / 上传 Chrome Web Store
 - 是否需要创建 PR（可选；**默认不创建 PR**）
 
-> 默认行为：**完成检查后如有修改则提交并推送到 GitHub**，但**不创建 PR**（除非用户明确要求）。
+> 默认行为：完成检查后如有修改则**统一执行一次 git commit 并推送到 GitHub**，且**不自动执行 pull/rebase**；但**不创建 PR**（除非用户明确要求）。
 
 ### 0.1 推荐命令模板（可直接执行）
 
@@ -127,13 +127,28 @@ description: 在发布/上架新版本时执行发布前检查清单：同步更
 
 默认会执行提交与推送；仅当用户明确要求“不提交/不推送”时跳过本节。
 
-#### 6.2 提交流程（复用既有技能）
+提交策略约束：
 
-- 调用项目技能：`commit-docs-workflow`
+- **全程只允许 1 次 git commit**：将“版本号更新 + 自动化检查修复 + 文档/商店文案 + changelog”等在检查过程中产生的修改，**汇总到一次提交**中完成。
+- **不自动执行 pull/rebase**：若 push 因非快进被拒绝，停止并等待用户明确指示采用 pull/rebase/merge 的策略。
+
+#### 6.2 生成/更新 Changelog（通过 /changelog-summary，提交前必须做）
+
+本工作流不直接编写 changelog 内容，改为在提交前**调用 `/changelog-summary`** 来更新 `docs/release/CHANGELOG.md`（Keep a Changelog）。
+
+调用约定：
+
+- 若本次目标版本号 `X.Y.Z` 已确定：让 `/changelog-summary` 把核心变更写入 `## [X.Y.Z] - YYYY-MM-DD` 段落（并保留/清空 `## [Unreleased]` 模板，按该工作流规则）。
+- 若未明确版本号：让 `/changelog-summary` 将核心变更追加到 `## [Unreleased]` 对应分类下。
+
+#### 6.3 提交流程（复用既有技能）
+
+- 在 `/changelog-summary` 完成并确认文档同步无遗漏后，**只调用一次**项目技能：`commit-docs-workflow`
   - 它会：总结变更 → 同步 PRD/feature/risks 文档 → 生成 Conventional Commit message → `git add` + `git commit`
   - 注意：该技能默认不 push，所以若用户要求 push，需要在其后执行 push。
+  - 约束：不要在版本号更新（`npm version ...` / 修改 `src/manifest.ts`）或修复检查项时拆分多次提交；全部合并到本次唯一提交中。
 
-#### 6.3 创建 Git Tag（推送前必须做）
+#### 6.4 创建 Git Tag（推送前必须做）
 
 在 push 之前，基于最终版本号创建 tag（指向刚提交的 HEAD）：
 
@@ -141,9 +156,10 @@ description: 在发布/上架新版本时执行发布前检查清单：同步更
 - 推荐使用注释 tag：
   - `git tag -a vX.Y.Z -m "vX.Y.Z"`
 
-#### 6.3 推送到 GitHub（安全策略）
+#### 6.5 推送到 GitHub（安全策略）
 
 - 不允许 force push。
+- 不自动执行 `git pull` / `git pull --rebase`。若 push 失败（例如 non-fast-forward），停止并等待用户明确指示同步策略。
 - 若当前在 `main/master`：优先创建发布分支（例如 `release-vX.Y.Z`）再 push。
 - 推送分支：`git push -u origin <branch>`
 - 推送 tag：`git push origin vX.Y.Z`（或 `git push --tags`）
@@ -155,7 +171,7 @@ description: 在发布/上架新版本时执行发布前检查清单：同步更
   - `git checkout -b release-vX.Y.Z`
   - `git push -u origin release-vX.Y.Z`
 
-#### 6.4 可选：创建 PR（推荐）
+#### 6.6 可选：创建 PR（推荐）
 
 若用户要求创建 PR（默认不创建）：
 
