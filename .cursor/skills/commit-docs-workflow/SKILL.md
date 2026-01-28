@@ -59,6 +59,7 @@ description: 在用户准备提交 git、撰写/回复 GitHub PR comment、或�
 - **格式**：`<前缀>: <具体内容>`
 - **前缀**（小写）：`feat` 功能、`fix` 修复、`docs` 文档、`chore` 构建/工具/杂项、`refactor` 重构、`style` 格式、`test` 测试、`perf` 性能。
 - **内容**：简洁说明本次改动，可选括注模块（如 `feat(workstation): 支持一键打开全部书签`）。
+- **语言**：commit message 内容部分（前缀除外）应主要使用中文。
 
 生成后提供给用户，供复制到 `git commit -m "..."` 或 PR 描述。
 
