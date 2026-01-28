@@ -83,12 +83,17 @@ CrossTag Bookmarks - A modern, elegant bookmark manager with powerful tagging an
 • Combined search and filter options
 • Quick access to pinned content
 
+⚡ Performance Boost (NEW in v0.4.1)
+• Virtualized grid lists for Bookmarks and Tags for smoother scrolling with large collections
+• Back-to-top button for quick navigation
+
 ⚙️ Settings & Customization (NEW in v0.4.0)
 • Customize bookmark open mode (new tab or new window)
 • Set default open mode for tags and workstations
 • Light/Dark theme with automatic system preference detection
 • Sidebar navigation for better organization
 • ESC key and button to exit settings
+• About section shows current version and install/update date (NEW in v0.4.1)
 
 🔄 Import & Export
 • Export all data as JSON (with optional click history)
@@ -158,12 +163,17 @@ CrossTag Bookmarks - 一款现代优雅的书签管理工具，提供强大的�
 • 搜索与筛选组合使用
 • 快速查看置顶内容
 
+⚡ 性能提升（v0.4.1 新增）
+• Bookmarks/Tags 升级为虚拟化网格列表，大数据量滚动更流畅
+• 新增“回到顶部”按钮，快速回到列表开头
+
 ⚙️ 设置与自定义（v0.4.0 新增）
 • 自定义书签打开方式（新标签页或新窗口）
 • 设置标签/工作区书签的默认打开方式
 • 明暗主题，自动跟随系统偏好
 • 侧边栏导航，更好的组织方式
 • ESC 键和按钮退出设置
+• 关于信息展示版本号与安装/更新时间（v0.4.1 新增）
 
 🔄 导入导出功能
 • 导出所有数据为 JSON 格式（可选包含点击历史）
