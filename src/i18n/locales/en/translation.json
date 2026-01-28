@@ -187,6 +187,29 @@
       "version": "Version",
       "updateTime": "Installed / Updated"
     },
+    "dataManagement": {
+      "title": "Data Management",
+      "importExport": {
+        "label": "Data Migration",
+        "action": "Open"
+      },
+      "deleteAll": {
+        "label": "Delete all data",
+        "action": "Delete",
+        "modalTitle": "Delete all data?",
+        "modalBody": "This will permanently delete all bookmarks, tags, workstations, and click history on this device. Your Settings preferences will be kept.",
+        "confirm": "Delete all",
+        "deleting": "Deleting...",
+        "success": "Deleted"
+      }
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "themeSystem": "Follow system",
+      "themeLight": "Light",
+      "themeDark": "Dark"
+    },
     "browser": {
       "title": "Browser",
       "defaultOpenMode": "Default Bookmark Open Mode",

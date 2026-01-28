@@ -166,9 +166,14 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 - 语言切换（i18n）
   - 语言存储：`tbm.locale`（`src/lib/storage.ts`）
+- 主题模式（外观）
+  - 主题存储：`tbm.theme`（`system|light|dark`）
 - 浏览器打开方式
   - 单个书签：新标签页 / 新窗口
   - 标签/工作区批量打开：新标签页 / 新窗口
+- 数据管理
+  - 数据迁移：导入/导出（入口已迁移到 Settings）
+  - 删除所有数据：清空书签/标签/工作区/点击历史，但保留设置项（语言/主题/打开方式等）
 - 关于信息
   - 版本号：读取 `chrome.runtime.getManifest().version`
   - 安装/更新时间：读取 `tbm.installUpdateTime`（在 `chrome.runtime.onInstalled` 时写入；显示到“日”维度）

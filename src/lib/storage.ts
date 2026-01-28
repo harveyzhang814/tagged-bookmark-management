@@ -10,7 +10,8 @@ const STORAGE_KEYS = {
   LOCALE: 'tbm.locale',
   SETTINGS_BROWSER_DEFAULT_OPEN_MODE: 'tbm.settings.browser.defaultOpenMode',
   SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode',
-  INSTALL_UPDATE_TIME: 'tbm.installUpdateTime'
+  INSTALL_UPDATE_TIME: 'tbm.installUpdateTime',
+  DEFAULTS_INITIALIZED: 'tbm.flags.defaultsInitialized'
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
@@ -117,6 +118,20 @@ export const resetStorage = async () => {
   ]);
 };
 
+/**
+ * 清空用户数据（书签/标签/工作区），但保留 Settings 配置项。
+ * - 不删除 theme/locale/openMode/activeTab/installUpdateTime 等设置项
+ * - 同时标记 defaultsInitialized=true，确保清空后不会再自动生成默认标签
+ */
+export const clearAllUserData = async () => {
+  await Promise.all([
+    removeValue(STORAGE_KEYS.BOOKMARKS),
+    removeValue(STORAGE_KEYS.TAGS),
+    removeValue(STORAGE_KEYS.WORKSTATIONS)
+  ]);
+  await setDefaultsInitialized(true);
+};
+
 export const watchStorage = <T>(
   key: StorageKey,
   callback: (value: T) => void
@@ -186,6 +201,12 @@ export const getInstallUpdateTime = async (): Promise<number | null> =>
 
 export const saveInstallUpdateTime = async (timestampMs: number) =>
   writeValue(STORAGE_KEYS.INSTALL_UPDATE_TIME, timestampMs);
+
+export const getDefaultsInitialized = async (): Promise<boolean> =>
+  readValue<boolean>(STORAGE_KEYS.DEFAULTS_INITIALIZED, false);
+
+export const setDefaultsInitialized = async (value: boolean) =>
+  writeValue(STORAGE_KEYS.DEFAULTS_INITIALIZED, value);
 
 // 检测是否是首次启动（没有保存过语言偏好）
 export const isFirstLaunch = async (): Promise<boolean> => {
