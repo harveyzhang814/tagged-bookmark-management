@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   type BookmarkOpenMode,
@@ -9,37 +9,52 @@ import {
   saveBrowserTagWorkstationOpenMode,
   getLocale,
   saveLocale,
+  clearAllUserData,
 } from '../../../lib/storage';
+import { getTheme, setTheme, type Theme } from '../../../lib/theme';
 import { changeLanguage } from '../../../i18n/config';
 import { SUPPORTED_LOCALES, LOCALE_CODES, type Locale } from '../../../i18n/locales';
 import { IconButton } from '../../../components/IconButton';
+import { PixelButton } from '../../../components/PixelButton';
+import { ConfirmDeleteAllDataModal } from '../../../components/ConfirmDeleteAllDataModal';
+import { ImportExportModal } from '../../../components/ImportExportModal';
 import './settingsPage.css';
 
 interface SettingsPageProps {
   onClose: () => void;
+  onDataCleared?: () => void;
 }
 
-export const SettingsPage = ({ onClose }: SettingsPageProps) => {
+export const SettingsPage = ({ onClose, onDataCleared }: SettingsPageProps) => {
   const { t } = useTranslation();
   const [defaultOpenMode, setDefaultOpenMode] = useState<BookmarkOpenMode>('newTab');
   const [tagWorkstationOpenMode, setTagWorkstationOpenMode] = useState<BookmarkOpenMode>('newTab');
   const [currentLocale, setCurrentLocale] = useState<Locale>('zh-CN');
+  const [theme, setThemeValue] = useState<Theme>('system');
   const [version, setVersion] = useState<string>('');
   const [installUpdateTimeMs, setInstallUpdateTimeMs] = useState<number | null>(null);
+  const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [isDeleteAllSuccess, setIsDeleteAllSuccess] = useState(false);
+  const [deleteAllError, setDeleteAllError] = useState<string | null>(null);
+  const deleteAllAutoCloseTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      const [defaultMode, tagWorkstationMode, locale] = await Promise.all([
+      const [defaultMode, tagWorkstationMode, locale, currentTheme] = await Promise.all([
         getBrowserDefaultOpenMode(),
         getBrowserTagWorkstationOpenMode(),
-        getLocale()
+        getLocale(),
+        getTheme()
       ]);
       if (cancelled) return;
       setDefaultOpenMode(defaultMode);
       setTagWorkstationOpenMode(tagWorkstationMode);
       setCurrentLocale(locale);
+      setThemeValue(currentTheme);
     };
 
     void load();
@@ -86,15 +101,61 @@ export const SettingsPage = ({ onClose }: SettingsPageProps) => {
     await changeLanguage(locale);
   }, []);
 
+  const handleThemeChange = useCallback(async (nextTheme: Theme) => {
+    setThemeValue(nextTheme);
+    await setTheme(nextTheme);
+  }, []);
+
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
+      // When any modal is open, let modal handle Escape.
+      if (isImportExportModalOpen || isDeleteAllModalOpen) return;
       event.preventDefault();
       onClose();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [onClose, isImportExportModalOpen, isDeleteAllModalOpen]);
+
+  const handleOpenDeleteAllModal = useCallback(() => {
+    if (deleteAllAutoCloseTimerRef.current !== null) {
+      window.clearTimeout(deleteAllAutoCloseTimerRef.current);
+      deleteAllAutoCloseTimerRef.current = null;
+    }
+    setDeleteAllError(null);
+    setIsDeleteAllSuccess(false);
+    setIsDeleteAllModalOpen(true);
+  }, []);
+
+  const handleDeleteAllData = useCallback(async () => {
+    setIsDeletingAll(true);
+    setDeleteAllError(null);
+    try {
+      await clearAllUserData();
+      setIsDeleteAllSuccess(true);
+      onDataCleared?.();
+      deleteAllAutoCloseTimerRef.current = window.setTimeout(() => {
+        setIsDeleteAllModalOpen(false);
+        setIsDeleteAllSuccess(false);
+        deleteAllAutoCloseTimerRef.current = null;
+      }, 900);
+    } catch (err) {
+      console.error('Failed to clear all user data:', err);
+      setDeleteAllError(err instanceof Error ? err.message : t('common.error'));
+    } finally {
+      setIsDeletingAll(false);
+    }
+  }, [onDataCleared, t]);
+
+  useEffect(() => {
+    return () => {
+      if (deleteAllAutoCloseTimerRef.current !== null) {
+        window.clearTimeout(deleteAllAutoCloseTimerRef.current);
+        deleteAllAutoCloseTimerRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className="settings-page">
@@ -181,6 +242,50 @@ export const SettingsPage = ({ onClose }: SettingsPageProps) => {
       </section>
 
       <section className="pixel-panel settings-module">
+        <h3 className="section-title">{t('settings.appearance.title')}</h3>
+
+        <div className="settings-row">
+          <label className="settings-row__label" htmlFor="settings-theme">
+            {t('settings.appearance.theme')}
+          </label>
+          <div className="settings-row__control">
+            <select
+              id="settings-theme"
+              className="settings-select"
+              value={theme}
+              onChange={(e) => void handleThemeChange(e.target.value as Theme)}
+            >
+              <option value="system">{t('settings.appearance.themeSystem')}</option>
+              <option value="light">{t('settings.appearance.themeLight')}</option>
+              <option value="dark">{t('settings.appearance.themeDark')}</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section className="pixel-panel settings-module">
+        <h3 className="section-title">{t('settings.dataManagement.title')}</h3>
+
+        <div className="settings-row">
+          <div className="settings-row__label">{t('settings.dataManagement.importExport.label')}</div>
+          <div className="settings-row__control settings-row__control--actions">
+            <PixelButton variant="secondary" block onClick={() => setIsImportExportModalOpen(true)}>
+              {t('settings.dataManagement.importExport.action')}
+            </PixelButton>
+          </div>
+        </div>
+
+        <div className="settings-row">
+          <div className="settings-row__label">{t('settings.dataManagement.deleteAll.label')}</div>
+          <div className="settings-row__control settings-row__control--actions">
+            <PixelButton variant="danger" block onClick={handleOpenDeleteAllModal}>
+              {t('settings.dataManagement.deleteAll.action')}
+            </PixelButton>
+          </div>
+        </div>
+      </section>
+
+      <section className="pixel-panel settings-module">
         <h3 className="section-title">{t('settings.about.title')}</h3>
 
         <div className="settings-row">
@@ -205,6 +310,25 @@ export const SettingsPage = ({ onClose }: SettingsPageProps) => {
           </div>
         </div>
       </section>
+
+      <ConfirmDeleteAllDataModal
+        isOpen={isDeleteAllModalOpen}
+        isBusy={isDeletingAll}
+        isSuccess={isDeleteAllSuccess}
+        error={deleteAllError}
+        onClose={() => {
+          if (isDeletingAll || isDeleteAllSuccess) return;
+          setIsDeleteAllModalOpen(false);
+          setIsDeleteAllSuccess(false);
+        }}
+        onConfirm={() => void handleDeleteAllData()}
+      />
+
+      <ImportExportModal
+        isOpen={isImportExportModalOpen}
+        onClose={() => setIsImportExportModalOpen(false)}
+        onImportSuccess={onDataCleared}
+      />
     </div>
   );
 };

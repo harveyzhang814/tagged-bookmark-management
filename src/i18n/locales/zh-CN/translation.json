@@ -187,6 +187,29 @@
       "version": "版本号",
       "updateTime": "安装/更新时间"
     },
+    "dataManagement": {
+      "title": "数据管理",
+      "importExport": {
+        "label": "数据迁移",
+        "action": "打开"
+      },
+      "deleteAll": {
+        "label": "删除所有数据",
+        "action": "删除",
+        "modalTitle": "确认删除所有数据？",
+        "modalBody": "这将永久删除本设备上的所有书签、标签、工作区以及点击历史记录，但会保留设置项（语言、打开方式、主题等）。",
+        "confirm": "确认删除",
+        "deleting": "删除中...",
+        "success": "已删除"
+      }
+    },
+    "appearance": {
+      "title": "外观",
+      "theme": "主题",
+      "themeSystem": "跟随系统",
+      "themeLight": "明亮",
+      "themeDark": "暗黑"
+    },
     "browser": {
       "title": "浏览器",
       "defaultOpenMode": "书签默认打开方式",

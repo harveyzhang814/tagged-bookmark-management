@@ -7,7 +7,6 @@ import { RankingPage } from './pages/RankingPage';
 import { WorkstationsPage } from './pages/WorkstationsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ThemeToggle } from '../../components/ThemeToggle';
-import { ImportExportModal } from '../../components/ImportExportModal';
 import { IconButton } from '../../components/IconButton';
 import { NavigationSidebar } from '../../components/NavigationSidebar';
 import { initTheme } from '../../lib/theme';
@@ -24,7 +23,6 @@ export const OptionsApp = () => {
   const [lastNonSettingsTab, setLastNonSettingsTab] = useState<ActiveTab>('home');
   const [isInitialized, setIsInitialized] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
 
   // 获取图标 URL
   const getIconUrl = (size: '16' | '48' | '128' = '48') => {
@@ -122,7 +120,12 @@ export const OptionsApp = () => {
       case 'ranking':
         return <RankingPage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'settings':
-        return <SettingsPage onClose={() => void handleTabChange(lastNonSettingsTab)} />;
+        return (
+          <SettingsPage
+            onClose={() => void handleTabChange(lastNonSettingsTab)}
+            onDataCleared={handleRefresh}
+          />
+        );
       case 'bookmarks':
       default:
         return <BookmarksPage key={refreshKey} onRefresh={handleRefresh} />;
@@ -142,36 +145,6 @@ export const OptionsApp = () => {
         </div>
 
         <div className="options-navigator__actions">
-          <IconButton
-            variant="secondary"
-            icon={
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M8 12h8M8 12l-2-2m2 2l-2 2M16 12l2-2m-2 2l2 2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle
-                  cx="4"
-                  cy="12"
-                  r="2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <circle
-                  cx="20"
-                  cy="12"
-                  r="2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-              </svg>
-            }
-            aria-label={t('tooltip.importExport')}
-            onClick={() => setIsImportExportModalOpen(true)}
-          />
           <ThemeToggle />
           <IconButton
             variant="secondary"
@@ -207,11 +180,6 @@ export const OptionsApp = () => {
         </div>
       </div>
 
-      <ImportExportModal
-        isOpen={isImportExportModalOpen}
-        onClose={() => setIsImportExportModalOpen(false)}
-        onImportSuccess={handleRefresh}
-      />
     </div>
   );
 };
