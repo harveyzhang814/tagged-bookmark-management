@@ -70,6 +70,12 @@
   min-width: 180px;
 }
 
+.settings-row__control--actions {
+  min-width: 180px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .settings-row__value {
   font-size: 12px;
   font-weight: 500;

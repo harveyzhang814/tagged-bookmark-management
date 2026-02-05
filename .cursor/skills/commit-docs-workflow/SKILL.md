@@ -34,6 +34,7 @@ description: 本仓库中 global-commit-docs-workflow 的补充规则：文档�
 
 ## Commit 消息示例（本项目模块名）
 
+- **语言**：commit message 内容部分（前缀除外）应主要使用中文。
 - `feat(home): 首页增加热门标签与工作区卡片`
 - `fix(import): 路径转标签时已存在书签的 pathTagIds 未更新`
 - `docs: 同步 PRD 与 i18n 技术方案`
