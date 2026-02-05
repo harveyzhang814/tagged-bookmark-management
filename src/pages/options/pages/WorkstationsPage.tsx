@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PixelButton } from '../../../components/PixelButton';
 import { SearchInput } from '../../../components/SearchInput';
-import { SortDropdown } from '../../../components/SortDropdown';
+import { SortDropdown, type SortField } from '../../../components/SortDropdown';
 import { WorkstationCard } from '../../../components/WorkstationCard';
 import { WorkstationEditModal } from '../../../components/WorkstationEditModal';
 import { Pagination } from '../../../components/Pagination';
@@ -18,11 +19,12 @@ import type { Workstation, BookmarkItem, Tag } from '../../../lib/types';
 import './workstationsPage.css';
 
 export const WorkstationsPage = () => {
+  const { t } = useTranslation();
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState<'createdAt' | 'bookmarkCount' | 'clickCount'>('createdAt');
+  const [sortBy, setSortBy] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [editingWorkstation, setEditingWorkstation] = useState<Workstation | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -105,8 +107,11 @@ export const WorkstationsPage = () => {
       description: data.description,
       pinned: data.pinned
     });
-    setIsCreateModalOpen(false);
-    await refresh();
+    // 不立即关闭弹窗，让成功提示先显示，弹窗会在1.5秒后自动关闭
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(async () => {
+      await refresh();
+    }, 1600);
   };
 
   const handleEdit = (workstation: Workstation) => {
@@ -207,46 +212,54 @@ export const WorkstationsPage = () => {
     >
       <div className="workstations-toolbar-merged">
         <div className="workstations-filters">
-          <SearchInput value={search} placeholder="搜索工作区" onChange={setSearch} />
+          <SearchInput value={search} placeholder={t('workstation.searchPlaceholder')} onChange={setSearch} />
           <SortDropdown
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSortByChange={setSortBy}
             onSortOrderToggle={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
             options={[
-              { value: 'createdAt', label: '创建日期' },
-              { value: 'bookmarkCount', label: '书签数量' },
-              { value: 'clickCount', label: '打开次数' }
+              { value: 'createdAt', label: t('sort.byCreatedAt') },
+              { value: 'bookmarkCount', label: t('workstation.bookmarkCount') },
+              { value: 'clickCount', label: t('workstation.clickCount') }
             ]}
           />
         </div>
         <div className="workstations-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建工作区
+            {t('workstation.new')}
           </PixelButton>
         </div>
       </div>
 
       <div className="workstations-content-wrapper">
         <div className="workstations-content">
-          <div className="workstation-grid">
-            {paginatedWorkstations.map((workstation) => (
-              <WorkstationCard
-                key={workstation.id}
-                workstation={workstation}
-                onEdit={handleEdit}
-                onTogglePin={handleTogglePin}
-                onClick={handleWorkstationClick}
-              />
-            ))}
-          </div>
-
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+          {filtered.length > 0 ? (
+            <div className="workstations-section">
+              <h2 className="workstations-section-title">{t('workstation.title')}</h2>
+              <div className="workstation-grid">
+                {paginatedWorkstations.map((workstation) => (
+                  <WorkstationCard
+                    key={workstation.id}
+                    workstation={workstation}
+                    onEdit={handleEdit}
+                    onTogglePin={handleTogglePin}
+                    onClick={handleWorkstationClick}
+                  />
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="workstations-empty">
+              <p>{t('workstation.noWorkstations')}</p>
+            </div>
           )}
         </div>
 
@@ -266,6 +279,7 @@ export const WorkstationsPage = () => {
 
       {editingWorkstation && (
         <WorkstationEditModal
+          mode="edit"
           workstation={editingWorkstation}
           onClose={handleCloseEditModal}
           onSave={handleSaveEdit}
@@ -275,7 +289,7 @@ export const WorkstationsPage = () => {
 
       {isCreateModalOpen && (
         <WorkstationEditModal
-          workstation={null}
+          mode="create"
           onClose={handleCloseCreateModal}
           onCreate={handleCreateWorkstation}
         />

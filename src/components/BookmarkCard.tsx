@@ -1,4 +1,5 @@
 import { type MouseEvent, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { BookmarkItem, Tag } from '../lib/types';
@@ -15,6 +16,7 @@ interface BookmarkCardProps {
 }
 
 export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, onWorkstationDrop, onDoubleClick }: BookmarkCardProps) => {
+  const { t } = useTranslation();
   const [isDragOver, setIsDragOver] = useState(false);
   const [faviconError, setFaviconError] = useState(false);
   const dragStartTime = useRef<number>(0);
@@ -22,6 +24,9 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
   const bookmarkTags = bookmark.tags
     .map((tagId) => tags.find((t) => t.id === tagId))
     .filter((t): t is Tag => t !== undefined);
+
+  const visibleTags = bookmarkTags.slice(0, 2);
+  const remainingTagCount = Math.max(0, bookmarkTags.length - visibleTags.length);
 
   const handleCardClick = (e: React.MouseEvent) => {
     // 如果刚刚拖拽过（300ms内），不触发点击
@@ -100,11 +105,7 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
     }
   };
 
-  const thumbnailUrl = bookmark.thumbnail || `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(bookmark.url)}`;
   const faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(bookmark.url)}`;
-  
-  // 判断是否是自定义缩略图（不是 Google favicon 服务）
-  const isCustomThumbnail = bookmark.thumbnail && !bookmark.thumbnail.includes('google.com/s2/favicons');
 
   return (
     <div
@@ -118,14 +119,6 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {isCustomThumbnail && (
-        <div className="bookmark-card__thumbnail">
-          <img src={thumbnailUrl} alt="" onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-          }} />
-        </div>
-      )}
       <div className="bookmark-card__content">
         <div className="bookmark-card__header">
           <div className="bookmark-card__title-wrapper">
@@ -196,20 +189,21 @@ export const BookmarkCard = ({ bookmark, tags, onEdit, onTogglePin, onTagDrop, o
                   />
                 </svg>
               }
-              aria-label={bookmark.pinned ? '取消置顶' : '置顶'}
+              aria-label={bookmark.pinned ? t('bookmark.unpin') : t('bookmark.pin')}
               onClick={handlePinClick}
             />
           </div>
         </div>
         <div className="bookmark-card__url">{bookmark.url}</div>
         <div className="bookmark-card__meta">
-          {bookmarkTags.length > 0 && (
-            <div className="bookmark-card__tags">
-              {bookmarkTags.map((tag) => (
-                <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
-              ))}
-            </div>
-          )}
+          <div className="bookmark-card__tags" aria-hidden={visibleTags.length === 0 && remainingTagCount === 0}>
+            {visibleTags.map((tag) => (
+              <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
+            ))}
+            {remainingTagCount > 0 && (
+              <span className="bookmark-card__tags-more">+{remainingTagCount}</span>
+            )}
+          </div>
           <div className="bookmark-card__click-count">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path

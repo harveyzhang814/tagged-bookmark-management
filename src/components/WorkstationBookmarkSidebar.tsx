@@ -1,9 +1,12 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import { TagPill } from './TagPill';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
+import { openUrlWithMode } from '../lib/chrome';
 import type { BookmarkItem, Tag, Workstation } from '../lib/types';
+import { getBrowserDefaultOpenMode } from '../lib/storage';
 import './bookmarkSidebar.css';
 
 type SortOption = 'createdAt' | 'clickCount';
@@ -27,6 +30,7 @@ export const WorkstationBookmarkSidebar = ({
   onRemoveBookmark,
   onRefresh 
 }: WorkstationBookmarkSidebarProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('createdAt');
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,7 +97,8 @@ export const WorkstationBookmarkSidebar = ({
 
   const handleBookmarkClick = async (bookmark: BookmarkItem) => {
     await incrementBookmarkClick(bookmark.id);
-    window.open(bookmark.url, '_blank');
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
   };
 
   const handleDragStart = (e: React.DragEvent, bookmarkId: string) => {
@@ -131,7 +136,7 @@ export const WorkstationBookmarkSidebar = ({
             <button
               className="bookmark-sidebar__close"
               onClick={onClose}
-              aria-label="关闭侧边栏"
+              aria-label={t('workstation.closeSidebar')}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -151,7 +156,7 @@ export const WorkstationBookmarkSidebar = ({
         <div className="bookmark-sidebar__search">
           <SearchInput
             value={searchQuery}
-            placeholder="搜索书签..."
+            placeholder={t('bookmark.searchPlaceholder')}
             onChange={setSearchQuery}
           />
         </div>
@@ -161,8 +166,8 @@ export const WorkstationBookmarkSidebar = ({
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
           >
-            <option value="createdAt">创建日期</option>
-            <option value="clickCount">点击次数</option>
+            <option value="createdAt">{t('sort.byCreatedAt')}</option>
+            <option value="clickCount">{t('sort.byClickCount')}</option>
           </select>
         </div>
       </div>
@@ -170,7 +175,7 @@ export const WorkstationBookmarkSidebar = ({
       <div className="bookmark-sidebar__content">
         {paginatedBookmarks.length === 0 ? (
           <div className="bookmark-sidebar__empty">
-            {searchQuery ? '未找到匹配的书签' : '该工作区下暂无书签'}
+            {searchQuery ? t('bookmark.noMatch') : t('workstation.noBookmarksInWorkstation')}
           </div>
         ) : (
           <div className="bookmark-sidebar__list">

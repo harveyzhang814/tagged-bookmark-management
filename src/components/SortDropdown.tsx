@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import './sortDropdown.css';
 
-type SortField = 'createdAt' | 'clickCount' | 'usageCount';
+export type SortField = 'createdAt' | 'clickCount' | 'usageCount' | 'bookmarkCount';
 
 interface SortOption {
   value: SortField;
@@ -17,6 +18,7 @@ interface SortDropdownProps {
 }
 
 export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderToggle, options }: SortDropdownProps) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -24,7 +26,7 @@ export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderTog
   const menuRef = useRef<HTMLDivElement>(null);
 
   // 排序字段显示文本
-  const sortByText = options.find(opt => opt.value === sortBy)?.label || '排序';
+  const sortByText = options.find(opt => opt.value === sortBy)?.label || t('sort.title');
 
   // 计算下拉菜单位置的函数
   const updateMenuPosition = useCallback(() => {
@@ -151,7 +153,7 @@ export const SortDropdown = ({ sortBy, sortOrder, onSortByChange, onSortOrderTog
           type="button"
           className="sort-dropdown__order-button"
           onClick={handleSortOrderClick}
-          aria-label={sortOrder === 'desc' ? '切换为升序' : '切换为倒序'}
+          aria-label={sortOrder === 'desc' ? t('sort.toggleAsc') : t('sort.toggleDesc')}
         >
           {sortOrder === 'asc' ? (
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">

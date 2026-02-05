@@ -1,4 +1,5 @@
 import { type MouseEvent, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { IconButton } from './IconButton';
 import { TagPill } from './TagPill';
 import type { Tag } from '../lib/types';
@@ -12,6 +13,7 @@ interface TagCardProps {
 }
 
 export const TagCard = ({ tag, onTogglePin, onClick, onDoubleClick }: TagCardProps) => {
+  const { t } = useTranslation();
   const clickTimer = useRef<NodeJS.Timeout | null>(null);
 
   const handlePinClick = (e: MouseEvent) => {
@@ -68,7 +70,7 @@ export const TagCard = ({ tag, onTogglePin, onClick, onDoubleClick }: TagCardPro
                 />
               </svg>
             }
-            aria-label={tag.pinned ? '取消置顶' : '置顶'}
+            aria-label={tag.pinned ? t('tag.unpin') : t('tag.pin')}
             onClick={handlePinClick}
           />
         </div>

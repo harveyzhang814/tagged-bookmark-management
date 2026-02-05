@@ -104,7 +104,7 @@
 
 /* 自定义滚动条样式 */
 .homepage-workstation-card__bookmarks::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-w-sm);
 }
 
 .homepage-workstation-card__bookmarks::-webkit-scrollbar-track {

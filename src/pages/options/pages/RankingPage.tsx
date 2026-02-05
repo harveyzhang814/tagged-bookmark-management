@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPinnedBookmarks, getHotTags, getHotBookmarks, getAllTags, getAllBookmarks, createBookmark, updateBookmark } from '../../../lib/bookmarkService';
 import type { BookmarkItem, Tag } from '../../../lib/types';
 import { HorizontalScrollList } from '../../../components/HorizontalScrollList';
@@ -7,7 +8,7 @@ import { HotTagCard } from '../../../components/HotTagCard';
 import { RankingList } from '../../../components/RankingList';
 import { HotTagRankingItem } from '../../../components/HotTagRankingItem';
 import { HotBookmarkRankingItem } from '../../../components/HotBookmarkRankingItem';
-import { BookmarkCreateModal } from '../../../components/BookmarkCreateModal';
+import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import { PixelButton } from '../../../components/PixelButton';
 import { SearchInput } from '../../../components/SearchInput';
@@ -19,6 +20,7 @@ interface RankingPageProps {
 }
 
 export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
+  const { t } = useTranslation();
   const [pinnedBookmarks, setPinnedBookmarks] = useState<BookmarkItem[]>([]);
   const [hotTags, setHotTags] = useState<Tag[]>([]);
   const [hotBookmarks, setHotBookmarks] = useState<BookmarkItem[]>([]);
@@ -85,13 +87,16 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
 
   const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
     await createBookmark(data);
-    setIsCreateModalOpen(false);
-    // 重新加载数据
-    await loadData(false);
-    // 触发父组件刷新
-    if (onRefresh) {
-      onRefresh();
-    }
+    // 不立即关闭弹窗，让成功提示先显示，弹窗会在1.5秒后自动关闭
+    // 延迟刷新数据，让成功提示先显示
+    setTimeout(async () => {
+      // 重新加载数据
+      await loadData(false);
+      // 触发父组件刷新
+      if (onRefresh) {
+        onRefresh();
+      }
+    }, 1600);
   };
 
   // 搜索过滤函数
@@ -229,13 +234,13 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
         <div className="ranking-filters">
           <SearchInput 
             value={searchQuery} 
-            placeholder="搜索书签、标签..." 
+            placeholder={t('homepage.searchPlaceholder')} 
             onChange={setSearchQuery} 
           />
         </div>
         <div className="ranking-actions">
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
-            新建书签
+            {t('bookmark.new')}
           </PixelButton>
         </div>
       </div>
@@ -243,7 +248,7 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
       <div className="ranking-content-wrapper">
         <div className="ranking-content">
           <HorizontalScrollList
-            title="置顶书签"
+            title={t('homepage.pinnedBookmarks')}
             onMoreClick={pinnedBookmarks.length > 0 ? handlePinnedMoreClick : undefined}
           >
             {filterBySearch.filteredPinnedBookmarks.length > 0 ? (
@@ -251,12 +256,12 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
                 <PinnedBookmarkCard key={bookmark.id} bookmark={bookmark} tags={allTags} />
               ))
             ) : (
-              <div className="empty-state">暂无置顶书签</div>
+              <div className="empty-state">{t('homepage.noPinnedBookmarks')}</div>
             )}
           </HorizontalScrollList>
 
           <HorizontalScrollList
-            title="置顶标签"
+            title={t('homepage.pinnedTags')}
             onMoreClick={pinnedTags.length > 0 ? () => onNavigate('tags') : undefined}
           >
             {filterBySearch.filteredPinnedTags.length > 0 ? (
@@ -264,13 +269,13 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
                 <HotTagCard key={tag.id} tag={tag} onClick={() => handlePinnedTagClick(tag)} />
               ))
             ) : (
-              <div className="empty-state">暂无置顶标签</div>
+              <div className="empty-state">{t('homepage.noPinnedTags')}</div>
             )}
           </HorizontalScrollList>
 
           <div className="ranking-rankings-container">
             <RankingList
-              title="热门标签"
+              title={t('ranking.hotTags')}
               onMoreClick={filterBySearch.filteredHotTags.length > 0 ? handleHotTagsMoreClick : undefined}
             >
               {filterBySearch.filteredHotTags.length > 0 ? (
@@ -283,12 +288,12 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
                   />
                 ))
               ) : (
-                <div className="empty-state">暂无热门标签</div>
+                <div className="empty-state">{t('ranking.noHotTags')}</div>
               )}
             </RankingList>
 
             <RankingList
-              title="热门书签"
+              title={t('ranking.hotBookmarks')}
               onMoreClick={filterBySearch.filteredHotBookmarks.length > 0 ? handlePinnedMoreClick : undefined}
             >
               {filterBySearch.filteredHotBookmarks.length > 0 ? (
@@ -301,7 +306,7 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
                   />
                 ))
               ) : (
-                <div className="empty-state">暂无热门书签</div>
+                <div className="empty-state">{t('ranking.noHotBookmarks')}</div>
               )}
             </RankingList>
           </div>
@@ -320,11 +325,13 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
         )}
       </div>
 
-      <BookmarkCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreate={handleCreateBookmark}
-      />
+      {isCreateModalOpen && (
+        <BookmarkEditModal
+          mode="create"
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreate={handleCreateBookmark}
+        />
+      )}
     </div>
   );
 };

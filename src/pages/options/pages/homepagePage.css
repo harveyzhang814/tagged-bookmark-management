@@ -107,8 +107,12 @@
 .homepage-page__tags-more-button:hover {
   border-width: 2px;
   border-color: var(--accent);
-  background: var(--accent);
-  color: var(--bg-panel);
+  background: var(--button-hover-bg);
+  color: var(--text-main);
+}
+
+[data-theme='dark'] .homepage-page__tags-more-button:hover {
+  background: var(--button-hover-bg);
 }
 
 .homepage-page__tags-more-button:active {

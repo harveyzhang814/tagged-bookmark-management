@@ -408,45 +408,151 @@ export const filterBookmarks = async (options: FilterOptions): Promise<BookmarkI
 export interface ImportChromeBookmarksResult {
   imported: number;
   skipped: number;
+  updatedExisting: number;
   total: number;
 }
 
 /**
- * 从 Chrome 书签中提取所有有 URL 的书签节点
+ * Chrome 一键同步选项
  */
-const extractBookmarkNodes = (bookmarkTreeNodes: chrome.bookmarks.BookmarkTreeNode[]): chrome.bookmarks.BookmarkTreeNode[] => {
-  const result: chrome.bookmarks.BookmarkTreeNode[] = [];
-  
-  const traverse = (nodes: chrome.bookmarks.BookmarkTreeNode[]) => {
+export interface ImportChromeBookmarksOptions {
+  /**
+   * 是否将书签所在文件夹路径转为 tag
+   */
+  convertPathToTags?: boolean;
+  /**
+   * 路径转换模式：层次=整个路径一个 tag；独立=每级一个 tag
+   */
+  pathMode?: 'hierarchical' | 'independent';
+  /**
+   * 是否对已存在书签执行路径 tag 更新
+   */
+  convertExisting?: boolean;
+}
+
+/**
+ * 从 Chrome 书签树中提取所有有 URL 的书签节点，并携带其文件夹路径（不包含顶层根分组）
+ */
+const extractBookmarkNodesWithPath = (
+  bookmarkTreeNodes: chrome.bookmarks.BookmarkTreeNode[]
+): Array<{ node: chrome.bookmarks.BookmarkTreeNode; pathSegments: string[] }> => {
+  const result: Array<{ node: chrome.bookmarks.BookmarkTreeNode; pathSegments: string[] }> = [];
+
+  const traverse = (nodes: chrome.bookmarks.BookmarkTreeNode[], pathSegments: string[]) => {
     for (const node of nodes) {
-      // 如果有 URL，说明是书签节点（不是文件夹）
       if (node.url) {
-        result.push(node);
+        result.push({ node, pathSegments });
+        continue;
       }
-      // 如果有子节点，递归遍历
+
       if (node.children && node.children.length > 0) {
-        traverse(node.children);
+        const title = (node.title ?? '').trim();
+        const nextPath = title ? [...pathSegments, title] : pathSegments;
+        traverse(node.children, nextPath);
       }
     }
   };
-  
-  traverse(bookmarkTreeNodes);
+
+  // 排除 root + 顶层分组（书签栏/其他书签/移动设备书签等）
+  // getTree() 通常返回 [root]，root.children 才是顶层分组
+  for (const root of bookmarkTreeNodes) {
+    const topGroups = root.children ?? [];
+    for (const group of topGroups) {
+      const children = group.children ?? [];
+      traverse(children, []);
+    }
+  }
+
   return result;
+};
+
+const uniqueIds = (ids: string[]) => Array.from(new Set(ids));
+
+const computeDefaultTagColorFromUsage = (colorUsage: Map<string, number>) => {
+  let minCount = Infinity;
+  let selectedColor = TAG_COLOR_PALETTE_24[0];
+  for (const color of TAG_COLOR_PALETTE_24) {
+    const normalizedColor = color.toLowerCase();
+    const count = colorUsage.get(normalizedColor) ?? 0;
+    if (count < minCount) {
+      minCount = count;
+      selectedColor = color;
+    }
+  }
+  colorUsage.set(selectedColor.toLowerCase(), (colorUsage.get(selectedColor.toLowerCase()) ?? 0) + 1);
+  return selectedColor;
 };
 
 /**
  * 导入 Chrome 书签
  * 只导入新增的书签，跳过已存在的 URL
  */
-export const importChromeBookmarks = async (): Promise<ImportChromeBookmarksResult> => {
+export const importChromeBookmarks = async (
+  options: ImportChromeBookmarksOptions = {}
+): Promise<ImportChromeBookmarksResult> => {
+  const convertPathToTags = Boolean(options.convertPathToTags);
+  const pathMode: 'hierarchical' | 'independent' = options.pathMode ?? 'hierarchical';
+  const convertExisting = Boolean(options.convertExisting);
+
   // 检查是否有 Chrome API
   if (typeof chrome === 'undefined' || !chrome.bookmarks) {
     throw new Error('Chrome 书签 API 不可用');
   }
 
-  // 获取所有现有的书签，用于去重
-  const existingBookmarks = await getAllBookmarks();
-  const existingUrls = new Set(existingBookmarks.map((bm) => bm.url.toLowerCase()));
+  const [bookmarks, tags] = await Promise.all([getBookmarksMap(), getTagsMap()]);
+  const urlToBookmarkId = new Map<string, string>();
+  for (const [id, bm] of Object.entries(bookmarks)) {
+    urlToBookmarkId.set(bm.url.toLowerCase(), id);
+  }
+  const existingUrls = new Set(urlToBookmarkId.keys());
+
+  const tagNameToId = new Map<string, string>();
+  Object.values(tags).forEach((tag) => {
+    const key = tag.name.trim().toLowerCase();
+    if (!key) return;
+    if (!tagNameToId.has(key)) {
+      tagNameToId.set(key, tag.id);
+    }
+  });
+
+  // 统计每种预设颜色的使用次数（用于给新建 tag 分配颜色）
+  const colorUsage = new Map<string, number>();
+  TAG_COLOR_PALETTE_24.forEach((color) => {
+    colorUsage.set(color.toLowerCase(), 0);
+  });
+  Object.values(tags).forEach((tag) => {
+    const normalizedColor = tag.color.toLowerCase();
+    if (colorUsage.has(normalizedColor)) {
+      colorUsage.set(normalizedColor, (colorUsage.get(normalizedColor) ?? 0) + 1);
+    }
+  });
+
+  let tagsChanged = false;
+  const ensureTagIdByName = (name: string): string | null => {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    const key = trimmed.toLowerCase();
+    const existing = tagNameToId.get(key);
+    if (existing) return existing;
+
+    const now = Date.now();
+    const id = generateId('tag');
+    const color = computeDefaultTagColorFromUsage(colorUsage);
+    const tag: Tag = {
+      id,
+      name: trimmed,
+      color,
+      usageCount: 0,
+      clickCount: 0,
+      pinned: false,
+      createdAt: now,
+      updatedAt: now
+    };
+    tags[id] = tag;
+    tagNameToId.set(key, id);
+    tagsChanged = true;
+    return id;
+  };
 
   // 获取 Chrome 书签树
   const bookmarkTree = await new Promise<chrome.bookmarks.BookmarkTreeNode[]>((resolve, reject) => {
@@ -459,22 +565,61 @@ export const importChromeBookmarks = async (): Promise<ImportChromeBookmarksResu
     });
   });
 
-  // 提取所有有 URL 的书签节点
-  const bookmarkNodes = extractBookmarkNodes(bookmarkTree);
+  // 提取所有有 URL 的书签节点（带路径）
+  const bookmarkNodes = extractBookmarkNodesWithPath(bookmarkTree);
   
   let imported = 0;
   let skipped = 0;
-  const bookmarks = await getBookmarksMap();
+  let updatedExisting = 0;
+  let bookmarksChanged = false;
 
   // 批量创建新书签
-  for (const node of bookmarkNodes) {
+  for (const { node, pathSegments } of bookmarkNodes) {
     if (!node.url || !node.title) continue;
 
     const normalizedUrl = node.url.toLowerCase();
-    
-    // 检查是否已存在
+
+    const pathTagNames = !convertPathToTags
+      ? []
+      : pathMode === 'hierarchical'
+        ? [pathSegments.join('/')].filter(Boolean)
+        : pathSegments;
+    const pathTagIds = uniqueIds(
+      pathTagNames.map((name) => ensureTagIdByName(name)).filter(Boolean) as string[]
+    );
+
+    // 已存在
     if (existingUrls.has(normalizedUrl)) {
       skipped++;
+
+      if (convertPathToTags && convertExisting) {
+        const bookmarkId = urlToBookmarkId.get(normalizedUrl);
+        if (!bookmarkId) continue;
+        const target = bookmarks[bookmarkId];
+        if (!target) continue;
+
+        const oldPathTagIds = target.pathTagIds ?? [];
+        const oldPathTagIdSet = new Set(oldPathTagIds);
+        const preserved = target.tags.filter((id) => !oldPathTagIdSet.has(id));
+        const nextTags = uniqueIds([...preserved, ...pathTagIds]);
+
+        const beforeSet = new Set(target.tags);
+        const afterSet = new Set(nextTags);
+        const changed =
+          beforeSet.size !== afterSet.size || Array.from(beforeSet).some((id) => !afterSet.has(id));
+
+        if (changed || oldPathTagIds.length > 0 || pathTagIds.length > 0) {
+          bookmarks[bookmarkId] = normalizeBookmark({
+            ...target,
+            tags: nextTags,
+            pathTagIds,
+            updatedAt: Date.now()
+          });
+          updatedExisting++;
+          bookmarksChanged = true;
+        }
+      }
+
       continue;
     }
 
@@ -486,7 +631,8 @@ export const importChromeBookmarks = async (): Promise<ImportChromeBookmarksResu
       url: node.url,
       title: node.title,
       note: '',
-      tags: [],
+      tags: pathTagIds,
+      pathTagIds: convertPathToTags ? pathTagIds : [],
       thumbnail: getThumbnailForUrl(node.url),
       pinned: false,
       clickCount: 0,
@@ -496,19 +642,26 @@ export const importChromeBookmarks = async (): Promise<ImportChromeBookmarksResu
     });
     
     bookmarks[id] = bookmark;
+    urlToBookmarkId.set(normalizedUrl, id);
     existingUrls.add(normalizedUrl); // 添加到已存在集合，避免同批次重复
     imported++;
+    bookmarksChanged = true;
   }
 
-  // 保存所有新书签
-  if (imported > 0) {
+  if (tagsChanged) {
+    await saveTagsMap(tags);
+  }
+  if (bookmarksChanged) {
     await saveBookmarksMap(bookmarks);
+  }
+  if (tagsChanged || bookmarksChanged) {
     await syncUsageCounts();
   }
 
   return {
     imported,
     skipped,
+    updatedExisting,
     total: bookmarkNodes.length
   };
 };

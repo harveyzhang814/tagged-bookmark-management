@@ -70,7 +70,7 @@
 
 /* 自定义滚动条样式 */
 .ranking-list-content::-webkit-scrollbar {
-  width: 6px;
+  width: var(--scrollbar-w-sm);
 }
 
 .ranking-list-content::-webkit-scrollbar-track {

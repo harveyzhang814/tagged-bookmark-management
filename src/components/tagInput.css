@@ -24,7 +24,7 @@
 
 .tag-chips:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
+  box-shadow: var(--focus-ring);
   background: var(--bg-panel);
   outline: none;
 }
@@ -126,6 +126,5 @@
 }
 
 .tag-suggestion-item:hover {
-  background: rgba(91, 155, 213, 0.1);
+  background: var(--button-primary-hover-bg);
 }
-

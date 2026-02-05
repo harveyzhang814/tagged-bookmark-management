@@ -1,8 +1,8 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SearchInput } from './SearchInput';
 import { Pagination } from './Pagination';
 import type { Tag } from '../lib/types';
-import { getTheme, type Theme } from '../lib/theme';
 import { getTagDotColor } from '../lib/colorUtils';
 import './tagSidebar.css';
 
@@ -11,10 +11,17 @@ interface TagSidebarProps {
   onCreateTag?: (name: string) => Promise<void>;
 }
 
+// 从 DOM 读取当前实际应用的主题（同步，高效）
+const getThemeFromDOM = (): 'light' | 'dark' => {
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+};
+
 export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [theme, setTheme] = useState<Theme>('light');
+  // 优化：直接使用 'light' | 'dark' 类型，因为颜色计算只需要实际应用的主题
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>(() => getThemeFromDOM());
   const ITEMS_PER_PAGE = 15;
 
   // 过滤标签
@@ -53,15 +60,14 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
 
   // 初始化主题并监听变化
   useEffect(() => {
-    const initTheme = async () => {
-      const currentTheme = await getTheme();
-      setTheme(currentTheme);
-    };
-    void initTheme();
+    // 初始化：从 DOM 读取主题（同步，无需异步）
+    const theme = getThemeFromDOM();
+    setEffectiveTheme(theme);
 
+    // 监听主题变化
     const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      setTheme(isDark ? 'dark' : 'light');
+      const theme = getThemeFromDOM();
+      setEffectiveTheme(theme);
     });
 
     observer.observe(document.documentElement, {
@@ -89,13 +95,13 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
   return (
     <div className="tag-sidebar">
       <div className="tag-sidebar__header">
-        <h3 className="tag-sidebar__title">标签列表</h3>
+        <h3 className="tag-sidebar__title">{t('tag.tagList')}</h3>
       </div>
       
       <div className="tag-sidebar__search">
         <SearchInput
           value={searchQuery}
-          placeholder="搜索标签..."
+          placeholder={t('tag.searchPlaceholder')}
           onChange={setSearchQuery}
         />
       </div>
@@ -103,7 +109,7 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
       <div className="tag-sidebar__content">
         {paginatedTags.length === 0 && !showCreateCard ? (
           <div className="tag-sidebar__empty">
-            {searchQuery ? '未找到匹配的标签' : '暂无标签'}
+            {searchQuery ? t('tag.noMatch') : t('tag.noTags')}
           </div>
         ) : (
           <div className="tag-sidebar__list">
@@ -129,7 +135,7 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="tag-sidebar__name">创建标签: {searchQuery.trim()}</span>
+                <span className="tag-sidebar__name">{t('tag.createTag')}: {searchQuery.trim()}</span>
               </div>
             )}
             {paginatedTags.map((tag) => (
@@ -139,7 +145,7 @@ export const TagSidebar = ({ tags, onCreateTag }: TagSidebarProps) => {
                 draggable={true}
                 onDragStart={(e) => handleDragStart(e, tag.id)}
               >
-                <span className="tag-sidebar__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, theme) }} />
+                <span className="tag-sidebar__color-dot" style={{ backgroundColor: getTagDotColor(tag.color, effectiveTheme) }} />
                 <span className="tag-sidebar__name">{tag.name}</span>
               </div>
             ))}

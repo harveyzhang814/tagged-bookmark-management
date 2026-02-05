@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import type { Tag } from '../lib/types';
-import { getTheme, type Theme } from '../lib/theme';
 import { getTagDotColor } from '../lib/colorUtils';
 import './hotTagCard.css';
 
@@ -9,23 +8,27 @@ interface HotTagCardProps {
   onClick: () => void;
 }
 
+// 从 DOM 读取当前实际应用的主题（同步，高效）
+const getThemeFromDOM = (): 'light' | 'dark' => {
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+};
+
 export const HotTagCard = ({ tag, onClick }: HotTagCardProps) => {
-  const [theme, setTheme] = useState<Theme>('light');
+  // 优化：直接使用 'light' | 'dark' 类型，因为颜色计算只需要实际应用的主题
+  const [effectiveTheme, setEffectiveTheme] = useState<'light' | 'dark'>(() => getThemeFromDOM());
   const [dotColor, setDotColor] = useState<string>(tag.color);
 
   useEffect(() => {
-    const initTheme = async () => {
-      const currentTheme = await getTheme();
-      setTheme(currentTheme);
-      setDotColor(getTagDotColor(tag.color, currentTheme));
-    };
-    void initTheme();
+    // 初始化：从 DOM 读取主题并计算颜色（同步，无需异步）
+    const theme = getThemeFromDOM();
+    setEffectiveTheme(theme);
+    setDotColor(getTagDotColor(tag.color, theme));
 
+    // 监听主题变化
     const observer = new MutationObserver(() => {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const currentTheme: Theme = isDark ? 'dark' : 'light';
-      setTheme(currentTheme);
-      setDotColor(getTagDotColor(tag.color, currentTheme));
+      const theme = getThemeFromDOM();
+      setEffectiveTheme(theme);
+      setDotColor(getTagDotColor(tag.color, theme));
     });
 
     observer.observe(document.documentElement, {

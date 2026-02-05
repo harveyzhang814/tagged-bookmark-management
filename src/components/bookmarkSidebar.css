@@ -109,7 +109,7 @@
 
 /* 自定义滚动条样式 */
 .bookmark-sidebar__content::-webkit-scrollbar {
-  width: 8px;
+  width: var(--scrollbar-w);
 }
 
 .bookmark-sidebar__content::-webkit-scrollbar-track {

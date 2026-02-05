@@ -1,5 +1,6 @@
 import { getBookmarksMap, getWorkstationsMap, saveWorkstationsMap } from './storage';
-import { openBookmark } from './chrome';
+import { openUrlsWithMode } from './chrome';
+import { getBrowserTagWorkstationOpenMode } from './storage';
 import { TAG_COLOR_PALETTE_24 } from './bookmarkService';
 import type { Workstation, WorkstationInput } from './types';
 
@@ -173,12 +174,17 @@ export const openWorkstation = async (workstationId: string): Promise<void> => {
   // 获取所有书签
   const bookmarks = await getBookmarksMap();
   
-  // 打开工作区中的所有书签
+  // 打开工作区中的所有书签（按“标签/工作区书签打开方式”）
+  const urls: string[] = [];
   for (const bookmarkId of workstation.bookmarks) {
     const bookmark = bookmarks[bookmarkId];
-    if (bookmark && bookmark.url) {
-      await openBookmark(bookmark.url);
+    if (bookmark?.url) {
+      urls.push(bookmark.url);
     }
+  }
+  if (urls.length > 0) {
+    const mode = await getBrowserTagWorkstationOpenMode();
+    await openUrlsWithMode(urls, mode);
   }
   
   // 更新打开次数

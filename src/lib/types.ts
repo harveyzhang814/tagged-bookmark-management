@@ -16,6 +16,10 @@ export interface BookmarkItem {
   title: string;
   note?: string;
   tags: string[];
+  /**
+   * 由“路径转标签”同步逻辑写入的 tag id 列表，用于后续仅替换路径标签并保留用户手动标签
+   */
+  pathTagIds?: string[];
   thumbnail?: string;
   pinned: boolean;
   clickCount: number;

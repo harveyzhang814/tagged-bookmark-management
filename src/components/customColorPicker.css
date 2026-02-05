@@ -84,7 +84,7 @@
   background: var(--bg-card);
   color: var(--text-main);
   font-size: 13px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   transition: all 0.2s ease;
   box-sizing: border-box;
   font-weight: 500;
@@ -97,12 +97,8 @@
 .custom-color-picker__hex-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.1);
+  box-shadow: var(--focus-ring);
   background: var(--bg-panel);
-}
-
-[data-theme='dark'] .custom-color-picker__hex-input:focus {
-  box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
 }
 
 .custom-color-picker__hex-input:disabled {

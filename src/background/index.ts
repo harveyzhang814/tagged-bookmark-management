@@ -1,9 +1,11 @@
 import { createBookmark, ensureDefaults } from '../lib/bookmarkService';
+import { saveInstallUpdateTime } from '../lib/storage';
 
 const QUICK_ADD_MENU_ID = 'tbm.quickAdd';
 
 chrome.runtime.onInstalled.addListener(async () => {
   await ensureDefaults();
+  await saveInstallUpdateTime(Date.now());
   // 创建上下文菜单项
   // 如果菜单项已存在，Chrome会报错，但这是正常的，可以忽略
   chrome.contextMenus.create({
