@@ -47,7 +47,6 @@ export interface Workstation {
   id: string;
   name: string;
   description?: string;
-  color: string;
   bookmarks: string[];
   pinned: boolean;
   clickCount: number;
@@ -58,7 +57,6 @@ export interface Workstation {
 export interface WorkstationInput {
   name: string;
   description?: string;
-  color: string;
   pinned?: boolean;
 }
 

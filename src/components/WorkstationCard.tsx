@@ -1,7 +1,6 @@
 import { type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from './IconButton';
-import { TagPill } from './TagPill';
 import type { Workstation } from '../lib/types';
 import './workstationCard.css';
 
@@ -36,7 +35,7 @@ export const WorkstationCard = ({ workstation, onEdit, onTogglePin, onClick }: W
       onClick={handleCardClick}
     >
       <div className="workstation-card__header">
-        <TagPill label={workstation.name} color={workstation.color} size="large" />
+        <h3 className="workstation-card__title">{workstation.name}</h3>
         <div className="workstation-card__actions">
           <IconButton
             variant="secondary"

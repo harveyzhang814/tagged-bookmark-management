@@ -127,7 +127,6 @@
     "namePlaceholder": "Workstation name",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Workstation description (optional)",
-    "colorLabel": "Color",
     "pinnedLabel": "Pinned",
     "createSuccess": "Created successfully",
     "saveSuccess": "Saved successfully",

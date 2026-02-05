@@ -127,7 +127,6 @@
     "namePlaceholder": "工作区名称",
     "descriptionLabel": "描述",
     "descriptionPlaceholder": "工作区描述（可选）",
-    "colorLabel": "颜色",
     "pinnedLabel": "置顶",
     "createSuccess": "新建成功",
     "saveSuccess": "保存成功",

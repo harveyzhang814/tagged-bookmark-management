@@ -352,7 +352,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   };
 
   const handleCreateWorkstation = async (name: string) => {
-    await createWorkstation({ name, color: '', description: undefined, pinned: false });
+    await createWorkstation({ name, description: undefined, pinned: false });
     await refresh();
   };
 

@@ -102,10 +102,9 @@ export const WorkstationsPage = () => {
     }
   }, [totalPages, currentPage]);
 
-  const handleCreateWorkstation = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
-    const newWorkstation = await createWorkstation({ 
-      name: data.name, 
-      color: data.color, 
+  const handleCreateWorkstation = async (data: { name: string; description?: string; pinned: boolean }) => {
+    const newWorkstation = await createWorkstation({
+      name: data.name,
       description: data.description,
       pinned: data.pinned
     });
@@ -130,7 +129,7 @@ export const WorkstationsPage = () => {
 
   const handleSaveEdit = async (
     workstationId: string,
-    data: { name: string; color: string; description?: string; pinned: boolean }
+    data: { name: string; description?: string; pinned: boolean }
   ) => {
     await updateWorkstation(workstationId, data);
     await refresh();

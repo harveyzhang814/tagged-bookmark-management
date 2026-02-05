@@ -494,8 +494,8 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     }, 1600);
   };
 
-  const handleCreateWorkstation = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
-    await createWorkstation(data);
+  const handleCreateWorkstation = async (data: { name: string; description?: string; pinned: boolean }) => {
+    await createWorkstation({ name: data.name, description: data.description, pinned: data.pinned });
     // 延迟刷新数据，让成功提示先显示
     setTimeout(() => {
       void loadData();

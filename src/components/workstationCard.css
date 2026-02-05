@@ -45,6 +45,19 @@
   gap: 10px;
 }
 
+.workstation-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.3;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .workstation-card__actions {
   display: flex;
   gap: 6px;

@@ -32,7 +32,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - Tag（`src/lib/types.ts#L1`）
   - `name/color/description/pinned/usageCount/clickCount`
 - Workstation（`src/lib/types.ts#L46`）
-  - `name/color/description/pinned/bookmarks[]/clickCount`
+  - `name/description/pinned/bookmarks[]/clickCount`
 
 此外还包含少量“偏好/元信息”类 key（示例）：
 
@@ -141,7 +141,6 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
   - 分页（每页 40）
 - CRUD
   - 新建/编辑/删除（`WorkstationEditModal`）
-  - 颜色：预设色板 + 智能分配默认色
   - 置顶切换
 - 关联浏览
   - WorkstationBookmarkSidebar：查看工作区内书签；支持拖拽书签到侧边栏外移除绑定；搜索排序区提供「添加书签」按钮，打开书签选择弹窗
