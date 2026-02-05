@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconButton } from './IconButton';
 import { SearchInput } from './SearchInput';
 import { SortDropdown, type SortField } from './SortDropdown';
 import { TagPill } from './TagPill';
-import { ToggleSwitch } from './ToggleSwitch';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
 import { updateWorkstation } from '../lib/workstationService';
-import { openUrlWithMode } from '../lib/chrome';
+import { openUrlWithMode, openUrlsWithMode } from '../lib/chrome';
 import type { BookmarkItem, Tag, Workstation } from '../lib/types';
-import { getBrowserDefaultOpenMode } from '../lib/storage';
+import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode } from '../lib/storage';
 import './bookmarkSidebar.css';
 
 type SortOption = 'createdAt' | 'clickCount';
@@ -165,6 +165,13 @@ export const WorkstationBookmarkSidebar = ({
     return sortedList;
   }, [filteredBySearch, sortBy]);
 
+  const handleOpenAll = useCallback(async () => {
+    const urls = sorted.map((b) => b.url).filter(Boolean);
+    if (urls.length === 0) return;
+    const mode = await getBrowserTagWorkstationOpenMode();
+    await openUrlsWithMode(urls, mode);
+  }, [sorted]);
+
   // 当 workstationId 改变时重置搜索
   useEffect(() => {
     setSearchQuery('');
@@ -273,22 +280,59 @@ export const WorkstationBookmarkSidebar = ({
             </span>
           </button>
         )}
-        <div className="bookmark-sidebar__pinned-row">
-          <ToggleSwitch
-            checked={pinned}
-            onChange={handlePinnedChange}
-            label={t('workstation.pinnedLabel')}
+        <div className="bookmark-sidebar__main-actions">
+          <IconButton
+            variant={pinned ? 'primary' : 'secondary'}
+            icon={
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M3.33333 13.3334L8 8.66671L12.6667 13.3334V3.33337C12.6667 2.89135 12.4911 2.46742 12.1785 2.15486C11.866 1.8423 11.442 1.66671 11 1.66671H5C4.55797 1.66671 4.13405 1.8423 3.82149 2.15486C3.50893 2.46742 3.33333 2.89135 3.33333 3.33337V13.3334Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill={pinned ? 'currentColor' : 'none'}
+                />
+              </svg>
+            }
+            aria-label={pinned ? t('workstation.unpin') : t('workstation.pin')}
+            onClick={() => handlePinnedChange(!pinned)}
           />
+          <IconButton
+            variant="secondary"
+            icon={
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6 3H3v10h10v-3M13 3l-5 5M13 3v3h-3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+            aria-label={t('workstation.openAll')}
+            onClick={() => void handleOpenAll()}
+          />
+          {onDeleteClick && (
+            <IconButton
+              variant="danger"
+              icon={
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M2 4H14M5 4V3C5 2.44772 5.44772 2 6 2H10C10.5523 2 11 2.44772 11 3V4M13 4V13C13 13.5523 12.5523 14 12 14H4C3.44772 14 3 13.5523 3 13V4H13Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              }
+              aria-label={t('workstation.delete')}
+              onClick={() => onDeleteClick(workstation)}
+            />
+          )}
         </div>
-        {onDeleteClick && (
-          <button
-            type="button"
-            className="bookmark-sidebar__delete"
-            onClick={() => onDeleteClick(workstation)}
-          >
-            {t('workstation.delete')}
-          </button>
-        )}
       </div>
 
       {/* 绑定书签区：搜索、排序、添加按钮同一行；列表可滚动不分页 */}
@@ -297,7 +341,7 @@ export const WorkstationBookmarkSidebar = ({
         <div className="bookmark-sidebar__search">
           <SearchInput
             value={searchQuery}
-            placeholder={t('bookmark.searchPlaceholder')}
+            placeholder={t('workstation.sidebarSearchPlaceholder')}
             onChange={setSearchQuery}
           />
         </div>
@@ -357,14 +401,14 @@ export const WorkstationBookmarkSidebar = ({
                   <div className="bookmark-sidebar__item-header">
                     <h4 className="bookmark-sidebar__item-title">{bookmark.title}</h4>
                   </div>
-                  {bookmarkTags.length > 0 && (
-                    <div className="bookmark-sidebar__item-tags">
-                      {bookmarkTags.map((tag) => (
-                        <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
-                      ))}
-                    </div>
-                  )}
-                  <div className="bookmark-sidebar__item-footer">
+                  <div className="bookmark-sidebar__item-meta">
+                    {bookmarkTags.length > 0 && (
+                      <div className="bookmark-sidebar__item-tags">
+                        {bookmarkTags.map((tag) => (
+                          <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
+                        ))}
+                      </div>
+                    )}
                     <div className="bookmark-sidebar__item-click-count">
                       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path

@@ -268,7 +268,7 @@ export const WorkstationsPage = () => {
         </div>
 
         {isBookmarkSidebarOpen && selectedWorkstation && (
-          <div ref={sidebarRef}>
+          <div ref={sidebarRef} className="workstations-sidebar-wrapper">
             <WorkstationBookmarkSidebar
               workstationId={selectedWorkstationId}
               workstation={selectedWorkstation}

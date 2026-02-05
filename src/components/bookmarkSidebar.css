@@ -1,8 +1,9 @@
 .bookmark-sidebar {
   width: 300px;
+  height: 100%;
   background: var(--bg-panel);
   border-left: 1px solid var(--border-muted);
-  border-radius: 8px 0 0 8px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
   display: flex;
   flex-direction: column;
   align-self: stretch;
@@ -160,31 +161,16 @@
   box-shadow: var(--focus-ring);
 }
 
-.bookmark-sidebar__pinned-row {
+.bookmark-sidebar__main-actions {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  gap: 8px;
 }
 
-.bookmark-sidebar__delete {
-  align-self: flex-start;
-  padding: 4px 8px;
-  font-size: 12px;
-  font-family: var(--font-family);
-  color: var(--danger-strong);
-  background: transparent;
-  border: 1px solid var(--danger-border);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.bookmark-sidebar__delete:hover {
-  background: var(--danger-surface);
-}
-
-.bookmark-sidebar__delete:focus {
-  outline: none;
-  box-shadow: var(--focus-ring);
+.bookmark-sidebar__main-actions .icon-button {
+  flex: 1;
+  min-width: 0;
 }
 
 /* 绑定书签区：占据剩余空间，内部可滚动 */
@@ -206,7 +192,7 @@
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
   flex-shrink: 0;
   padding: 0;
@@ -219,13 +205,25 @@
 
 .bookmark-sidebar__toolbar {
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border-muted);
   flex-shrink: 0;
   background: var(--bg-panel);
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 8px;
+}
+
+/* 列表功能区内的排序/添加按钮：略微收紧高度与字号 */
+.bookmark-sidebar__toolbar .sort-dropdown__trigger {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.bookmark-sidebar__toolbar .search-input input {
+  height: 26px;
+  padding: 4px 10px;
+  font-size: 11px;
 }
 
 .bookmark-sidebar__search {
@@ -235,8 +233,8 @@
 
 .bookmark-sidebar__add-bookmark {
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   display: flex;
   align-items: center;
@@ -245,7 +243,7 @@
   color: var(--accent);
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
@@ -279,7 +277,7 @@
   width: 100%;
   padding: 6px 10px;
   border: 1px solid var(--border-muted);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-main);
   font-size: 13px;
@@ -299,14 +297,14 @@
 .bookmark-sidebar__sort-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(91, 155, 213, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .bookmark-sidebar__content {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 12px;
+  padding: 4px 12px 8px 12px;
 }
 
 /* 自定义滚动条样式 */
@@ -334,15 +332,15 @@
 }
 
 .bookmark-sidebar__item {
-  padding: 12px;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1.5px solid var(--border-muted);
   background: transparent;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   user-select: none;
 }
 
@@ -370,30 +368,38 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  min-width: 0;
 }
 
 .bookmark-sidebar__item-title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--text-main);
   margin: 0;
   line-height: 1.4;
   letter-spacing: -0.01em;
-  word-break: break-word;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookmark-sidebar__item-meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .bookmark-sidebar__item-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-}
-
-.bookmark-sidebar__item-footer {
-  display: flex;
+  flex: 1;
+  min-width: 0;
   align-items: center;
-  justify-content: flex-end;
-  margin-top: auto;
 }
 
 .bookmark-sidebar__item-click-count {
@@ -403,6 +409,7 @@
   font-size: 12px;
   color: var(--text-muted);
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .bookmark-sidebar__item-click-count svg {
