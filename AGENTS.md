@@ -29,6 +29,7 @@ npm run build
 - Outputs to `dist/` via `@crxjs/vite-plugin` and uses:
   - `src/pages/popup/main.html`
   - `src/pages/options/main.html`
+- **Chrome 内测试**：每次对源码或配置有修改后，在建议用户到 Chrome 中重新加载扩展验证前，必须先执行一次 `npm run build`，否则扩展加载的是旧产物。
 
 ### Package (release zip)
 

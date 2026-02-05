@@ -138,6 +138,10 @@ export const WorkstationsPage = () => {
   const handleDeleteWorkstation = async (workstationId: string) => {
     await deleteWorkstation(workstationId);
     await refresh();
+    if (selectedWorkstationId === workstationId) {
+      setIsBookmarkSidebarOpen(false);
+      setSelectedWorkstationId(null);
+    }
   };
 
   const handleTogglePin = async (workstationId: string) => {
@@ -243,7 +247,6 @@ export const WorkstationsPage = () => {
                   <WorkstationCard
                     key={workstation.id}
                     workstation={workstation}
-                    onEdit={handleEdit}
                     onTogglePin={handleTogglePin}
                     onClick={handleWorkstationClick}
                   />
@@ -274,6 +277,8 @@ export const WorkstationsPage = () => {
               onClose={handleCloseSidebar}
               onRemoveBookmark={handleRemoveBookmark}
               onAddBookmarkClick={() => setIsAddBookmarkModalOpen(true)}
+              onWorkstationUpdated={() => void refresh()}
+              onDeleteClick={handleEdit}
             />
           </div>
         )}

@@ -64,14 +64,15 @@ export const AddBookmarkToWorkstationModal = ({
   const initialBookmarkIdsRef = useRef<string[]>([]);
   const [currentBookmarkIds, setCurrentBookmarkIds] = useState<string[]>([]);
 
+  // 仅在弹窗打开或切换工作区时初始化；不依赖 workstation 引用，避免父组件 refresh 后引用变化导致搜索被清空、结果闪回默认
   useEffect(() => {
-    if (isOpen && workstation) {
+    if (isOpen && workstationId && workstation) {
       const ids = [...workstation.bookmarks];
       initialBookmarkIdsRef.current = ids;
       setCurrentBookmarkIds(ids);
       setSearchQuery('');
     }
-  }, [isOpen, workstation]);
+  }, [isOpen, workstationId]);
 
   const tagById = useMemo(() => {
     const map = new Map<string, Tag>();
