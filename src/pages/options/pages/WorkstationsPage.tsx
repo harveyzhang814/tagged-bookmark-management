@@ -6,6 +6,7 @@ import { SortDropdown, type SortField } from '../../../components/SortDropdown';
 import { WorkstationCard } from '../../../components/WorkstationCard';
 import { WorkstationEditModal } from '../../../components/WorkstationEditModal';
 import { Pagination } from '../../../components/Pagination';
+import { AddBookmarkToWorkstationModal } from '../../../components/AddBookmarkToWorkstationModal';
 import { WorkstationBookmarkSidebar } from '../../../components/WorkstationBookmarkSidebar';
 import {
   getAllWorkstations,
@@ -31,6 +32,7 @@ export const WorkstationsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
   const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
+  const [isAddBookmarkModalOpen, setIsAddBookmarkModalOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const ITEMS_PER_PAGE = 40;
 
@@ -272,6 +274,7 @@ export const WorkstationsPage = () => {
               tags={tags}
               onClose={handleCloseSidebar}
               onRemoveBookmark={handleRemoveBookmark}
+              onAddBookmarkClick={() => setIsAddBookmarkModalOpen(true)}
             />
           </div>
         )}
@@ -292,6 +295,20 @@ export const WorkstationsPage = () => {
           mode="create"
           onClose={handleCloseCreateModal}
           onCreate={handleCreateWorkstation}
+        />
+      )}
+
+      {isAddBookmarkModalOpen && selectedWorkstationId && selectedWorkstation && (
+        <AddBookmarkToWorkstationModal
+          isOpen={isAddBookmarkModalOpen}
+          onClose={async () => {
+            await refresh();
+            setIsAddBookmarkModalOpen(false);
+          }}
+          workstationId={selectedWorkstationId}
+          workstation={selectedWorkstation}
+          bookmarks={bookmarks}
+          tags={tags}
         />
       )}
     </div>

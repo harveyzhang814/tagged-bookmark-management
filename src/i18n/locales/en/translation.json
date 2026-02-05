@@ -146,7 +146,11 @@
     "noMatch": "No matching workstations found",
     "createWorkstation": "Create Workstation",
     "closeSidebar": "Close Sidebar",
-    "noBookmarksInWorkstation": "No bookmarks in this workstation"
+    "noBookmarksInWorkstation": "No bookmarks in this workstation",
+    "addBookmark": "Add Bookmark",
+    "selectBookmark": "Select Bookmark",
+    "alreadyAdded": "Added",
+    "selectedThisSession": "Selected this time"
   },
   "homepage": {
     "title": "Home",

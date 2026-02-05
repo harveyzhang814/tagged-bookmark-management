@@ -146,7 +146,11 @@
     "noMatch": "未找到匹配的工作区",
     "createWorkstation": "创建工作区",
     "closeSidebar": "关闭侧边栏",
-    "noBookmarksInWorkstation": "该工作区下暂无书签"
+    "noBookmarksInWorkstation": "该工作区下暂无书签",
+    "addBookmark": "添加书签",
+    "selectBookmark": "选择书签",
+    "alreadyAdded": "已添加",
+    "selectedThisSession": "本次已选中"
   },
   "homepage": {
     "title": "首页",

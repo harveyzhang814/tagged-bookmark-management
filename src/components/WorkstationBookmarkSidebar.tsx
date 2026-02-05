@@ -19,6 +19,7 @@ interface WorkstationBookmarkSidebarProps {
   onClose?: () => void;
   onRemoveBookmark?: (bookmarkId: string) => Promise<void>;
   onRefresh?: () => Promise<void>;
+  onAddBookmarkClick?: () => void;
 }
 
 export const WorkstationBookmarkSidebar = ({ 
@@ -28,7 +29,8 @@ export const WorkstationBookmarkSidebar = ({
   tags, 
   onClose, 
   onRemoveBookmark,
-  onRefresh 
+  onRefresh,
+  onAddBookmarkClick
 }: WorkstationBookmarkSidebarProps) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -160,15 +162,26 @@ export const WorkstationBookmarkSidebar = ({
             onChange={setSearchQuery}
           />
         </div>
-        <div className="bookmark-sidebar__sort">
-          <select
-            className="bookmark-sidebar__sort-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
-          >
-            <option value="createdAt">{t('sort.byCreatedAt')}</option>
-            <option value="clickCount">{t('sort.byClickCount')}</option>
-          </select>
+        <div className="bookmark-sidebar__toolbar-row">
+          <div className="bookmark-sidebar__sort">
+            <select
+              className="bookmark-sidebar__sort-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+            >
+              <option value="createdAt">{t('sort.byCreatedAt')}</option>
+              <option value="clickCount">{t('sort.byClickCount')}</option>
+            </select>
+          </div>
+          {onAddBookmarkClick && (
+            <button
+              type="button"
+              className="bookmark-sidebar__add-bookmark"
+              onClick={onAddBookmarkClick}
+            >
+              {t('workstation.addBookmark')}
+            </button>
+          )}
         </div>
       </div>
 

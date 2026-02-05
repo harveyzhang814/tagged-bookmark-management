@@ -1,0 +1,252 @@
+.add-bookmark-modal__backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: add-bookmark-modal-fadeIn 0.2s ease;
+}
+
+@keyframes add-bookmark-modal-fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.add-bookmark-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: add-bookmark-modal-slideUp 0.2s ease;
+  border: 1px solid var(--border-muted);
+}
+
+@keyframes add-bookmark-modal-slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.add-bookmark-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-muted);
+  flex-shrink: 0;
+}
+
+.add-bookmark-modal__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.add-bookmark-modal__close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.add-bookmark-modal__close:hover {
+  background: var(--bg-panel);
+  color: var(--text-main);
+}
+
+.add-bookmark-modal__close:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.add-bookmark-modal__content {
+  padding: 16px 20px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.add-bookmark-modal__search {
+  flex-shrink: 0;
+}
+
+.add-bookmark-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-bookmark-modal__section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.add-bookmark-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.add-bookmark-modal__empty {
+  padding: 10px 12px;
+  border: 1px dashed var(--border-muted);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  background: var(--bg-panel);
+}
+
+.add-bookmark-modal__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-muted);
+  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  transition: all 0.15s ease;
+}
+
+.add-bookmark-modal__item-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.add-bookmark-modal__item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.add-bookmark-modal__item-url {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.add-bookmark-modal__item-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  max-width: 45%;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.add-bookmark-modal__item-tags-more {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.add-bookmark-modal__item-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.add-bookmark-modal__btn-add {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.add-bookmark-modal__btn-add:hover {
+  background: var(--button-hover-bg);
+  color: var(--accent);
+}
+
+.add-bookmark-modal__btn-add:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.add-bookmark-modal__btn-add.selected {
+  background: var(--accent);
+  color: var(--bg-card);
+}
+
+.add-bookmark-modal__btn-add.selected:hover {
+  background: var(--accent-hover);
+}
+
+.add-bookmark-modal__status-added {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+
+.add-bookmark-modal__highlight {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: rgba(91, 155, 213, 0.14);
+}
+
+[data-theme='dark'] .add-bookmark-modal__highlight {
+  background: rgba(91, 155, 213, 0.22);
+}
+
+@media (max-width: 640px) {
+  .add-bookmark-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .add-bookmark-modal__backdrop {
+    padding: 0;
+  }
+}

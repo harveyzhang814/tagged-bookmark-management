@@ -69,8 +69,40 @@
   width: 100%;
 }
 
-.bookmark-sidebar__sort {
+.bookmark-sidebar__toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
+}
+
+.bookmark-sidebar__sort {
+  flex: 1;
+  min-width: 0;
+}
+
+.bookmark-sidebar__add-bookmark {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--accent);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.bookmark-sidebar__add-bookmark:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--accent-hover);
+}
+
+.bookmark-sidebar__add-bookmark:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .bookmark-sidebar__sort-select {
