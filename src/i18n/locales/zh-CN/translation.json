@@ -13,6 +13,7 @@
     "open": "打开菜单",
     "confirm": "确认",
     "back": "返回",
+    "backToTop": "回到顶部",
     "loading": "加载中...",
     "saving": "保存中...",
     "creating": "新建中...",
@@ -111,8 +112,13 @@
     "selected": "已选择",
     "available": "可选标签",
     "createTag": "创建标签",
+    "addBookmark": "添加书签到标签",
     "showSidebar": "显示标签栏",
-    "hideSidebar": "隐藏标签栏"
+    "hideSidebar": "隐藏标签栏",
+    "graph": "关系图",
+    "graphGlobal": "全局",
+    "graphRefresh": "刷新关系数据",
+    "graphClose": "关闭"
   },
   "workstation": {
     "title": "工作区",
@@ -161,20 +167,22 @@
     "pinnedWorkstations": "置顶工作区",
     "hotTags": "热门标签",
     "hotBookmarks": "热门书签",
-    "searchPlaceholder": "搜索书签、标签...",
-    "searchMode": "搜索模式",
-    "exitSearch": "退出搜索",
     "newBookmark": "新书签",
     "newTag": "新标签",
     "newWorkstation": "新工作区",
-    "noResults": "暂无结果",
     "noPinnedBookmarks": "暂无置顶书签",
     "noPinnedTags": "暂无置顶标签",
     "viewAll": "更多",
     "chooseTags": "选择标签"
   },
+  "globalSearch": {
+    "placeholder": "搜索书签、标签...",
+    "noResults": "暂无结果",
+    "open": "打开全局搜索"
+  },
   "ranking": {
     "title": "榜单",
+    "searchPlaceholder": "搜索书签、标签...",
     "hotTags": "热门标签",
     "hotBookmarks": "热门书签",
     "sortByClickCount": "按点击次数",

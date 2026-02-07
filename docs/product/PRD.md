@@ -36,6 +36,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 此外还包含少量“偏好/元信息”类 key（示例）：
 
+- `tbm.tagCooccurrence`：标签共现次数（key: `tagId1|tagId2`，value: 共现次数），用于关系图
 - `tbm.locale`：界面语言
 - `tbm.theme`：主题模式
 - `tbm.settings.browser.*`：打开方式偏好
@@ -65,6 +66,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 - 页面入口：`src/pages/options/main.html` / `src/pages/options/main.tsx`
 - Shell：`src/pages/options/OptionsApp.tsx`
+- 顶栏：全局搜索入口（快捷键或按钮打开 `GlobalSearchOverlay`），浮层内搜索书签/标签，单击跳转 Bookmarks 或按标签筛选，双击打开并计数
 - Tab（左侧导航）：
   - Home：`src/pages/options/pages/HomepagePage.tsx`
   - Bookmarks：`src/pages/options/pages/BookmarksPage.tsx`
@@ -130,6 +132,14 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - 关联浏览
   - 标签双击：打开该标签下所有书签（按“标签/工作区打开方式”设置）并累加标签 clickCount
   - BookmarkSidebar：按标签查看书签列表；支持拖拽书签到侧边栏外移除标签绑定
+- 关系图
+  - 入口：Tags 页工具栏「关系图」按钮，打开悬浮关系图（`TagGraphOverlay`），仅覆盖内容区
+  - 数据：标签共现（`tbm.tagCooccurrence`），书签增/改/删后自动同步，支持手动「刷新关系数据」
+  - 全局模式：所有标签与边，按连通分量分簇布局（簇越大越靠近中心），边线宽 1–6 随共现强度变化
+  - 中心模式：以选中标签为中心、仅显示其邻居；中心节点固定于画布中央；边上显示「概率 (数量)」；边线宽 1–6 随概率变化；点击节点可切换中心
+- 添加书签到标签
+  - 入口：Tags 页某标签的「添加书签」等入口，打开 `AddBookmarkToTagModal`
+  - 弹窗：搜索匹配标题/URL/标签名，选中区与结果区，添加/移除立即写入书签 tags
 
 ### 5.4 Workstations（工作区管理）
 
@@ -198,6 +208,8 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - Chrome 原生书签导入：可选“路径转标签”、可选更新已存在书签的路径标签
 - 主题与国际化：主题切换、语言切换
 - 交互增强：拖拽赋值/移除、侧边栏辅助管理
+- 标签关系图：共现图全局/中心模式、簇布局与边线宽、边标签「概率 (数量)」
+- 全局搜索：Options 顶栏入口，浮层内搜索书签/标签并跳转或打开
 
 ## 7. 权限与隐私
 

@@ -7,6 +7,7 @@ import {
   getDefaultsInitialized,
   setDefaultsInitialized
 } from './storage';
+import { syncTagCooccurrence } from './tagCooccurrenceService';
 import type {
   BookmarkInput,
   BookmarkItem,
@@ -313,6 +314,7 @@ export const createBookmark = async (payload: BookmarkInput): Promise<BookmarkIt
   bookmarks[id] = bookmark;
   await saveBookmarksMap(bookmarks);
   await syncUsageCounts();
+  await syncTagCooccurrence();
   return bookmark;
 };
 
@@ -334,6 +336,7 @@ export const updateBookmark = async (bookmarkId: string, patch: Partial<Bookmark
   bookmarks[bookmarkId] = updated;
   await saveBookmarksMap(bookmarks);
   await syncUsageCounts();
+  await syncTagCooccurrence();
   return updated;
 };
 
@@ -343,6 +346,7 @@ export const deleteBookmark = async (bookmarkId: string) => {
   delete bookmarks[bookmarkId];
   await saveBookmarksMap(bookmarks);
   await syncUsageCounts();
+  await syncTagCooccurrence();
 };
 
 export const incrementBookmarkClick = async (bookmarkId: string) => {
@@ -668,6 +672,7 @@ export const importChromeBookmarks = async (
   }
   if (tagsChanged || bookmarksChanged) {
     await syncUsageCounts();
+    await syncTagCooccurrence();
   }
 
   return {

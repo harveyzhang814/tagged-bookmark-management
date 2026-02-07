@@ -1,0 +1,129 @@
+/* 遮罩仅覆盖标签页内容区（父级 .tags-page 需 position: relative） */
+.tag-graph-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+[data-theme='dark'] .tag-graph-overlay__backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.tag-graph-overlay__panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 16px;
+  background: var(--bg-panel);
+  color: var(--text-main);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.tag-graph-overlay__topbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-muted);
+}
+
+.tag-graph-overlay__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.tag-graph-overlay__debug {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-muted);
+  word-break: break-all;
+}
+
+.tag-graph-overlay__close {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.tag-graph-overlay__close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tag-graph-overlay__close:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.tag-graph-overlay__content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--bg-card);
+}
+
+.tag-graph-overlay__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-graph-overlay__btn {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-family);
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.tag-graph-overlay__btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tag-graph-overlay__btn:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.tag-graph-overlay__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tag-graph-overlay__empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}

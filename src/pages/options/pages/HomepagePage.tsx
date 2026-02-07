@@ -1,12 +1,11 @@
-import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode, type KeyboardEvent } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHotTags, getAllBookmarks, getAllTags, incrementBookmarkClick, createBookmark, createTag } from '../../../lib/bookmarkService';
+import { getHotTags, getAllBookmarks, getAllTags, createBookmark, createTag } from '../../../lib/bookmarkService';
 import { getAllWorkstations, createWorkstation, deleteWorkstation } from '../../../lib/workstationService';
-import { openUrlWithMode, openUrlsWithMode } from '../../../lib/chrome';
-import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode, getTagsMap, saveTagsMap } from '../../../lib/storage';
+import { openUrlsWithMode } from '../../../lib/chrome';
+import { getBrowserTagWorkstationOpenMode } from '../../../lib/storage';
 import type { Tag, Workstation, BookmarkItem } from '../../../lib/types';
-import { useClickDoubleClick } from '../../../lib/hooks/useClickDoubleClick';
-import { SearchInput } from '../../../components/SearchInput';
+import { IconButton } from '../../../components/IconButton';
 import { TagPill } from '../../../components/TagPill';
 import { HomepageWorkstationCard } from '../../../components/HomepageWorkstationCard';
 import { PixelButton } from '../../../components/PixelButton';
@@ -20,149 +19,6 @@ interface HomepagePageProps {
   onNavigate: (tab: 'bookmarks' | 'tags' | 'workstations') => void;
 }
 
-type BookmarkSearchResult = {
-  bookmark: BookmarkItem;
-  matchScore: number;
-  sortScore: number;
-};
-
-type TagSearchResult = {
-  tag: Tag;
-  matchScore: number;
-  sortScore: number;
-};
-
-const normalizeQuery = (q: string) => q.trim().toLowerCase();
-
-const includesCI = (text: string | undefined, q: string) => {
-  if (!text) return false;
-  return text.toLowerCase().includes(q);
-};
-
-const renderHighlighted = (text: string, rawQuery: string): ReactNode => {
-  const query = normalizeQuery(rawQuery);
-  if (!query) return text;
-
-  const lowerText = text.toLowerCase();
-  const parts: ReactNode[] = [];
-  let i = 0;
-
-  while (i < text.length) {
-    const hitIndex = lowerText.indexOf(query, i);
-    if (hitIndex === -1) {
-      parts.push(text.slice(i));
-      break;
-    }
-    if (hitIndex > i) {
-      parts.push(text.slice(i, hitIndex));
-    }
-    parts.push(
-      <span key={`${hitIndex}-${i}`} className="homepage-search__highlight">
-        {text.slice(hitIndex, hitIndex + query.length)}
-      </span>
-    );
-    i = hitIndex + query.length;
-  }
-
-  return <>{parts}</>;
-};
-
-// Bookmark搜索结果项组件
-interface BookmarkSearchResultItemProps {
-  bookmark: BookmarkItem;
-  tagById: Map<string, Tag>;
-  searchQuery: string;
-  renderHighlighted: (text: string, rawQuery: string) => ReactNode;
-  onSingleClick: (bookmark: BookmarkItem) => void;
-  onDoubleClick: (bookmark: BookmarkItem) => void;
-}
-
-const BookmarkSearchResultItem = ({
-  bookmark,
-  tagById,
-  searchQuery,
-  renderHighlighted,
-  onSingleClick,
-  onDoubleClick,
-}: BookmarkSearchResultItemProps) => {
-  const tags = (bookmark.tags ?? []).map((id) => tagById.get(id)).filter((t): t is Tag => Boolean(t));
-  const visibleTags = tags.slice(0, 2);
-  const remainingCount = Math.max(0, tags.length - visibleTags.length);
-
-  const { handleClick, handleDoubleClick } = useClickDoubleClick({
-    onClick: () => onSingleClick(bookmark),
-    onDoubleClick: () => void onDoubleClick(bookmark),
-  });
-
-  return (
-    <button
-      type="button"
-      className="homepage-search__bookmark-item"
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-    >
-      <div className="homepage-search__bookmark-main">
-        <div className="homepage-search__bookmark-title" title={bookmark.title}>
-          {renderHighlighted(bookmark.title, searchQuery)}
-        </div>
-        <div className="homepage-search__bookmark-url" title={bookmark.url}>
-          {renderHighlighted(bookmark.url, searchQuery)}
-        </div>
-      </div>
-      {(visibleTags.length > 0 || remainingCount > 0) && (
-        <div className="homepage-search__bookmark-tags" aria-label="tags">
-          {visibleTags.map((t) => (
-            <TagPill key={t.id} label={t.name} color={t.color} size="small" />
-          ))}
-          {remainingCount > 0 && <span className="homepage-search__bookmark-tags-more">+{remainingCount}</span>}
-        </div>
-      )}
-    </button>
-  );
-};
-
-// Tag搜索结果项组件
-interface TagSearchResultItemProps {
-  tag: Tag;
-  searchQuery: string;
-  renderHighlighted: (text: string, rawQuery: string) => ReactNode;
-  onSingleClick: (tagId: string) => void;
-  onDoubleClick: (tagId: string) => void;
-}
-
-const TagSearchResultItem = ({
-  tag,
-  searchQuery,
-  renderHighlighted,
-  onSingleClick,
-  onDoubleClick,
-}: TagSearchResultItemProps) => {
-  const { t } = useTranslation();
-  const { handleClick, handleDoubleClick } = useClickDoubleClick({
-    onClick: () => onSingleClick(tag.id),
-    onDoubleClick: () => void onDoubleClick(tag.id),
-  });
-
-  return (
-    <button
-      type="button"
-      className="homepage-search__tag-item"
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-    >
-      <span className="homepage-search__tag-dot" style={{ backgroundColor: tag.color }} aria-hidden="true" />
-      <div className="homepage-search__tag-main">
-        <div className="homepage-search__tag-title" title={tag.name}>
-          {renderHighlighted(tag.name, searchQuery)}
-        </div>
-        <div className="homepage-search__tag-desc" title={tag.description ?? ''}>
-          {tag.description ? renderHighlighted(tag.description, searchQuery) : <span className="homepage-search__tag-desc-empty">{t('tag.noDescription')}</span>}
-        </div>
-      </div>
-    </button>
-  );
-};
-
 export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const { t } = useTranslation();
   const [hotTags, setHotTags] = useState<Tag[]>([]);
@@ -170,13 +26,12 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchMode, setIsSearchMode] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const [visibleTagCount, setVisibleTagCount] = useState<number>(0);
   const tagsListRef = useRef<HTMLDivElement>(null);
   const tagRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [visibleWorkstationCount, setVisibleWorkstationCount] = useState<number>(4);
+  const homepageContentRef = useRef<HTMLDivElement>(null);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const workstationsListRef = useRef<HTMLDivElement>(null);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
@@ -205,11 +60,6 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   useEffect(() => {
     void loadData();
   }, []);
-
-  useEffect(() => {
-    if (!isSearchMode) return;
-    pageRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [isSearchMode]);
 
   // 动态计算可见的tag数量
   const calculateVisibleTags = useCallback(() => {
@@ -276,45 +126,23 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     };
   }, [calculateVisibleTags]);
 
-  // 计算可见的工作区数量
-  const calculateVisibleWorkstations = useCallback(() => {
-    if (!workstationsListRef.current || workstations.length === 0) {
-      setVisibleWorkstationCount(workstations.length);
-      return;
-    }
-
-    const container = workstationsListRef.current;
-    const containerWidth = container.offsetWidth;
-    const cardWidth = 200; // card固定宽度
-    const gap = 16; // gap大小
-    
-    // 计算能放多少个card（向下取整）
-    const count = Math.floor((containerWidth + gap) / (cardWidth + gap));
-    const visibleCount = Math.max(1, count); // 至少显示1个
-    
-    setVisibleWorkstationCount(visibleCount);
-  }, [workstations.length]);
-
-  // 监听工作区列表容器大小变化
+  /* 内容区滚动：超过阈值显示回到顶部（与 bookmarks/tags 一致） */
   useEffect(() => {
-    if (!workstationsListRef.current || workstations.length === 0) {
-      setVisibleWorkstationCount(workstations.length);
-      return;
-    }
+    const scrollParent = homepageContentRef.current;
+    if (!scrollParent) return;
 
-    const resizeObserver = new ResizeObserver(() => {
-      calculateVisibleWorkstations();
-    });
-
-    resizeObserver.observe(workstationsListRef.current);
-
-    // 初始计算
-    calculateVisibleWorkstations();
-
-    return () => {
-      resizeObserver.disconnect();
+    const onScroll = () => {
+      setShowScrollToTop(scrollParent.scrollTop > 400);
     };
-  }, [workstations.length, calculateVisibleWorkstations]);
+
+    onScroll();
+    scrollParent.addEventListener('scroll', onScroll, { passive: true });
+    return () => scrollParent.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const handleScrollToTop = () => {
+    homepageContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleOpenAll = async (workstationId: string) => {
     const workstation = workstations.find((w) => w.id === workstationId);
@@ -349,125 +177,6 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     // 切换到书签页
     onNavigate('bookmarks');
   };
-
-  const handleEnterSearchMode = () => {
-    if (isSearchMode) return;
-    setIsSearchMode(true);
-  };
-
-  const handleCancelSearch = () => {
-    setSearchQuery('');
-    setIsSearchMode(false);
-  };
-
-  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Escape') return;
-    event.preventDefault();
-    handleCancelSearch();
-    // 避免退出后仍保持焦点，触发 onFocus 又进入搜索模式
-    (event.currentTarget as HTMLInputElement).blur();
-  };
-
-  // 导航到bookmark列表页，带query搜索关键词
-  const navigateToBookmarksWithQuery = (query: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('tab', 'bookmarks');
-    url.searchParams.set('query', query);
-    window.history.replaceState({}, '', url.toString());
-    onNavigate('bookmarks');
-  };
-
-  // bookmark搜索结果：单击跳转到bookmark列表页，双击打开书签网页
-  const handleBookmarkResultClick = (bookmark: BookmarkItem) => {
-    navigateToBookmarksWithQuery(bookmark.title);
-  };
-
-  const handleBookmarkResultDoubleClick = async (bookmark: BookmarkItem) => {
-    await incrementBookmarkClick(bookmark.id);
-    setBookmarks((prev) =>
-      prev.map((b) => (b.id === bookmark.id ? { ...b, clickCount: (b.clickCount ?? 0) + 1 } : b))
-    );
-    const mode = await getBrowserDefaultOpenMode();
-    await openUrlWithMode(bookmark.url, mode);
-  };
-
-  // tag搜索结果：单击跳转到bookmark列表页，双击打开tag所有书签网页
-  const handleTagResultClick = (tagId: string) => {
-    setIsSearchMode(false);
-    handleTagClick(tagId);
-  };
-
-  const handleTagResultDoubleClick = async (tagId: string) => {
-    // 双击打开标签下的所有书签
-    const tagBookmarks = bookmarks.filter((bookmark) => bookmark.tags.includes(tagId));
-    if (tagBookmarks.length === 0) return;
-
-    // 获取所有书签的URL
-    const urls = tagBookmarks.map((bookmark) => bookmark.url).filter(Boolean);
-    if (urls.length > 0) {
-      const mode = await getBrowserTagWorkstationOpenMode();
-      await openUrlsWithMode(urls, mode);
-      
-      // 更新标签的点击计数
-      const tag = allTags.find((t) => t.id === tagId);
-      if (tag) {
-        const tagsMap = await getTagsMap();
-        const targetTag = tagsMap[tagId];
-        if (targetTag) {
-          targetTag.clickCount += 1;
-          targetTag.updatedAt = Date.now();
-          await saveTagsMap(tagsMap);
-          await loadData();
-        }
-      }
-    }
-  };
-
-  const tagById = useMemo(() => {
-    const map = new Map<string, Tag>();
-    allTags.forEach((t) => map.set(t.id, t));
-    return map;
-  }, [allTags]);
-
-  const { bookmarkResults, tagResults } = useMemo(() => {
-    const q = normalizeQuery(searchQuery);
-    if (!q) {
-      return { bookmarkResults: [] as BookmarkSearchResult[], tagResults: [] as TagSearchResult[] };
-    }
-
-    const scoredBookmarks: BookmarkSearchResult[] = [];
-    for (const bookmark of bookmarks) {
-      const titleHit = includesCI(bookmark.title, q);
-      const urlHit = includesCI(bookmark.url, q);
-      const matchScore = (titleHit ? 1.2 : 0) + (urlHit ? 1.0 : 0);
-      if (matchScore <= 0) continue;
-      const frequencyScore = (bookmark.clickCount ?? 0) / 100;
-      const sortScore = 0.75 * matchScore + 0.25 * frequencyScore;
-      scoredBookmarks.push({ bookmark, matchScore, sortScore });
-    }
-    scoredBookmarks.sort((a, b) => {
-      const scoreDiff = b.sortScore - a.sortScore;
-      if (scoreDiff !== 0) return scoreDiff;
-      return b.bookmark.createdAt - a.bookmark.createdAt;
-    });
-
-    const scoredTags: TagSearchResult[] = [];
-    for (const tag of allTags) {
-      const nameHit = includesCI(tag.name, q);
-      const descHit = includesCI(tag.description ?? '', q);
-      const matchScore = (nameHit ? 1.5 : 0) + (descHit ? 1.0 : 0);
-      if (matchScore <= 0) continue;
-      const sortScore = matchScore; // alpha=1, frequency=0
-      scoredTags.push({ tag, matchScore, sortScore });
-    }
-    scoredTags.sort((a, b) => {
-      const scoreDiff = b.sortScore - a.sortScore;
-      if (scoreDiff !== 0) return scoreDiff;
-      return b.tag.createdAt - a.tag.createdAt;
-    });
-
-    return { bookmarkResults: scoredBookmarks, tagResults: scoredTags };
-  }, [searchQuery, bookmarks, allTags]);
 
   const handleMoreWorkstations = () => {
     onNavigate('workstations');
@@ -507,153 +216,98 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   }
 
   return (
-    <div className={`homepage-page ${isSearchMode ? 'homepage-page--search-mode' : ''}`} ref={pageRef}>
-      {isSearchMode ? (
-        <div className="homepage-search__topbar">
-          <div className="homepage-search__input">
-            <SearchInput
-              value={searchQuery}
-              placeholder={t('homepage.searchPlaceholder')}
-              onChange={setSearchQuery}
-              onFocus={handleEnterSearchMode}
-              onKeyDown={handleSearchKeyDown}
-              autoFocus
-            />
-          </div>
-          <button type="button" className="homepage-search__cancel" onClick={handleCancelSearch}>
-            {t('common.cancel')}
-          </button>
+    <div className="homepage-page" ref={pageRef}>
+      <div className="homepage-page__header-section">
+        <div className="homepage-page__header">
+          <h1 className="homepage-page__title">{t('app.title')}</h1>
+          <p className="homepage-page__slogan">{t('homepage.slogan')}</p>
         </div>
-      ) : (
-        <>
-          <div className="homepage-page__header-section">
-            <div className="homepage-page__header">
-              <h1 className="homepage-page__title">{t('app.title')}</h1>
-              <p className="homepage-page__slogan">{t('homepage.slogan')}</p>
-            </div>
-          </div>
+      </div>
 
-          <div className="homepage-page__search-tags-container">
-            <div className="homepage-page__search">
-              <SearchInput
-                value={searchQuery}
-                placeholder={t('homepage.searchPlaceholder')}
-                onChange={setSearchQuery}
-                onFocus={handleEnterSearchMode}
-                onKeyDown={handleSearchKeyDown}
-              />
-            </div>
-
-            <div className="homepage-page__tags-section">
-              <div className="homepage-page__tags-label">{t('homepage.chooseTags')}</div>
-              <div className="homepage-page__tags-list" ref={tagsListRef}>
-                {hotTags.map((tag, index) => {
-                  const isVisible = index < visibleTagCount;
-                  return (
-                    <div
-                      key={tag.id}
-                      ref={(el) => {
-                        tagRefs.current[index] = el;
-                      }}
-                      style={{ display: isVisible ? 'block' : 'none' }}
-                    >
-                      <TagPill
-                        label={tag.name}
-                        color={tag.color}
-                        size="default"
-                        onClick={() => handleTagClick(tag.id)}
-                      />
-                    </div>
-                  );
-                })}
-                {hotTags.length > 0 && (
-                  <button
-                    type="button"
-                    className="homepage-page__tags-more-button"
-                    onClick={handleMoreTags}
-                  >
-                    {t('homepage.viewAll')}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {workstations.length > 0 && (
-            <div className="homepage-page__workstations-section">
-              {workstations.length > visibleWorkstationCount && (
-                <div className="homepage-page__workstations-header">
-                  <button
-                    type="button"
-                    className="homepage-page__workstations-more"
-                    onClick={handleMoreWorkstations}
-                  >
-                    {t('homepage.viewAll')}
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
+      <div className="homepage-page__tags-container">
+        <div className="homepage-page__tags-section">
+          <div className="homepage-page__tags-label">{t('homepage.chooseTags')}</div>
+          <div className="homepage-page__tags-list" ref={tagsListRef}>
+            {hotTags.map((tag, index) => {
+              const isVisible = index < visibleTagCount;
+              return (
+                <div
+                  key={tag.id}
+                  ref={(el) => {
+                    tagRefs.current[index] = el;
+                  }}
+                  style={{ display: isVisible ? 'block' : 'none' }}
+                >
+                  <TagPill
+                    label={tag.name}
+                    color={tag.color}
+                    size="default"
+                    onClick={() => handleTagClick(tag.id)}
+                  />
                 </div>
-              )}
-              <div className="homepage-page__workstations-list" ref={workstationsListRef}>
-                {workstations.slice(0, visibleWorkstationCount).map((workstation) => (
-                  <HomepageWorkstationCard
-                    key={workstation.id}
-                    workstation={workstation}
-                    bookmarks={bookmarks}
-                    onOpenAll={handleOpenAll}
-                    onDelete={handleDeleteWorkstation}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {isSearchMode && (
-        <div className="homepage-search__results">
-          <div className="homepage-search__section">
-            <div className="homepage-search__section-title">{t('bookmark.title')}</div>
-            <div className="homepage-search__list">
-              {bookmarkResults.length === 0 ? (
-                <div className="homepage-search__empty">{t('homepage.noResults')}</div>
-              ) : (
-                bookmarkResults.map(({ bookmark }) => (
-                  <BookmarkSearchResultItem
-                    key={bookmark.id}
-                    bookmark={bookmark}
-                    tagById={tagById}
-                    searchQuery={searchQuery}
-                    renderHighlighted={renderHighlighted}
-                    onSingleClick={handleBookmarkResultClick}
-                    onDoubleClick={handleBookmarkResultDoubleClick}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="homepage-search__section">
-            <div className="homepage-search__section-title">{t('tag.title')}</div>
-            <div className="homepage-search__list">
-              {tagResults.length === 0 ? (
-                <div className="homepage-search__empty">{t('homepage.noResults')}</div>
-              ) : (
-                tagResults.map(({ tag }) => (
-                  <TagSearchResultItem
-                    key={tag.id}
-                    tag={tag}
-                    searchQuery={searchQuery}
-                    renderHighlighted={renderHighlighted}
-                    onSingleClick={handleTagResultClick}
-                    onDoubleClick={handleTagResultDoubleClick}
-                  />
-                ))
-              )}
-            </div>
+              );
+            })}
+            {hotTags.length > 0 && (
+              <button
+                type="button"
+                className="homepage-page__tags-more-button"
+                onClick={handleMoreTags}
+              >
+                {t('homepage.viewAll')}
+              </button>
+            )}
           </div>
         </div>
+      </div>
+
+      <div className="homepage-page__content" ref={homepageContentRef}>
+        {workstations.length > 0 && (
+          <div className="homepage-page__workstations-section">
+            <div className="homepage-page__workstations-header">
+              <button
+                type="button"
+                className="homepage-page__workstations-more"
+                onClick={handleMoreWorkstations}
+              >
+                {t('homepage.viewAll')}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="homepage-page__workstations-list" ref={workstationsListRef}>
+              {workstations.map((workstation) => (
+                <HomepageWorkstationCard
+                  key={workstation.id}
+                  workstation={workstation}
+                  bookmarks={bookmarks}
+                  onOpenAll={handleOpenAll}
+                  onDelete={handleDeleteWorkstation}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {showScrollToTop && (
+        <IconButton
+          variant="secondary"
+          className="homepage-scroll-to-top"
+          aria-label={t('common.backToTop')}
+          onClick={handleScrollToTop}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 5l-7 7m7-7l7 7M12 5v14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          }
+        />
       )}
 
       <FloatingActionButton
