@@ -50,6 +50,14 @@
   overflow: hidden;
 }
 
+/* 编辑侧边栏吸住：高度由视口减去顶栏与工具栏决定 */
+.bookmarks-edit-sidebar-wrapper {
+  height: calc(100vh - var(--ws-sidebar-offset, 180px));
+  overflow: hidden;
+  align-self: flex-start;
+  flex-shrink: 0;
+}
+
 .bookmarks-content {
   flex: 1;
   display: flex;

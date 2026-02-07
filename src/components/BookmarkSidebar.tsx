@@ -523,6 +523,7 @@ export const BookmarkSidebar = ({
             <div className="bookmark-sidebar__list">
               {sorted.map((bookmark) => {
                 const bookmarkTags = bookmark.tags
+                  .filter((tId) => tId !== tagId)
                   .map((tId) => tags.find((t) => t.id === tId))
                   .filter((t): t is Tag => t !== undefined);
 

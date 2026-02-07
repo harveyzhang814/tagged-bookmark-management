@@ -1,14 +1,18 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHotTags, getAllBookmarks, getAllTags, createBookmark, createTag } from '../../../lib/bookmarkService';
-import { getAllWorkstations, createWorkstation, deleteWorkstation } from '../../../lib/workstationService';
-import { openUrlsWithMode } from '../../../lib/chrome';
-import { getBrowserTagWorkstationOpenMode } from '../../../lib/storage';
+import { getAllBookmarks, getAllTags, createBookmark, createTag, getPinnedBookmarks, updateTag, updateBookmark, deleteBookmark } from '../../../lib/bookmarkService';
+import { getAllWorkstations, createWorkstation, updateWorkstation, openWorkstation } from '../../../lib/workstationService';
+import { openUrlsWithMode, openUrlWithMode } from '../../../lib/chrome';
+import { getBrowserTagWorkstationOpenMode, getBrowserDefaultOpenMode } from '../../../lib/storage';
 import type { Tag, Workstation, BookmarkItem } from '../../../lib/types';
 import { IconButton } from '../../../components/IconButton';
-import { TagPill } from '../../../components/TagPill';
-import { HomepageWorkstationCard } from '../../../components/HomepageWorkstationCard';
-import { PixelButton } from '../../../components/PixelButton';
+import { HorizontalScrollList } from '../../../components/HorizontalScrollList';
+import { HomepagePinnedWorkstationCard } from '../../../components/HomepagePinnedWorkstationCard';
+import { HomepagePinnedTagCard } from '../../../components/HomepagePinnedTagCard';
+import { HomepagePinnedBookmarkCard } from '../../../components/HomepagePinnedBookmarkCard';
+import { WorkstationBookmarkSidebar } from '../../../components/WorkstationBookmarkSidebar';
+import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
+import { BookmarkEditSidebar } from '../../../components/BookmarkEditSidebar';
 import { FloatingActionButton } from '../../../components/FloatingActionButton';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { TagEditModal } from '../../../components/TagEditModal';
@@ -21,32 +25,33 @@ interface HomepagePageProps {
 
 export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const { t } = useTranslation();
-  const [hotTags, setHotTags] = useState<Tag[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const pageRef = useRef<HTMLDivElement>(null);
-  const [visibleTagCount, setVisibleTagCount] = useState<number>(0);
-  const tagsListRef = useRef<HTMLDivElement>(null);
-  const tagRefs = useRef<(HTMLDivElement | null)[]>([]);
   const homepageContentRef = useRef<HTMLDivElement>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const workstationsListRef = useRef<HTMLDivElement>(null);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isWorkstationModalOpen, setIsWorkstationModalOpen] = useState(false);
+  
+  // 侧边栏状态
+  const [isWorkstationSidebarOpen, setIsWorkstationSidebarOpen] = useState(false);
+  const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
+  const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [hotTagsData, workstationsData, bookmarksData, tagsData] = await Promise.all([
-        getHotTags(10),
+      const [workstationsData, bookmarksData, tagsData] = await Promise.all([
         getAllWorkstations(),
         getAllBookmarks(),
         getAllTags(),
       ]);
-      setHotTags(hotTagsData.map((ht) => ht.tag));
       setWorkstations(workstationsData);
       setBookmarks(bookmarksData);
       setAllTags(tagsData);
@@ -61,70 +66,24 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     void loadData();
   }, []);
 
-  // 动态计算可见的tag数量
-  const calculateVisibleTags = useCallback(() => {
-    if (!tagsListRef.current || hotTags.length === 0) {
-      setVisibleTagCount(hotTags.length);
-      return;
-    }
+  // 获取置顶数据（按clickCount倒序）
+  const pinnedWorkstations = useMemo(() => {
+    return workstations
+      .filter((w) => w.pinned)
+      .sort((a, b) => b.clickCount - a.clickCount);
+  }, [workstations]);
 
-    const container = tagsListRef.current;
-    const containerWidth = container.offsetWidth;
-    const labelWidth = 80; // "choose tags" 标签的宽度
-    const moreButtonWidth = 60; // more按钮的宽度
-    const gap = 12; // tag之间的间距
-    // 始终为more按钮预留空间（只要有标签，more按钮就会显示）
-    let availableWidth = containerWidth - labelWidth - gap - moreButtonWidth - gap;
-    let totalWidth = 0;
-    let count = 0;
+  const pinnedTags = useMemo(() => {
+    return allTags
+      .filter((t) => t.pinned)
+      .sort((a, b) => b.clickCount - a.clickCount);
+  }, [allTags]);
 
-    for (let i = 0; i < hotTags.length; i++) {
-      const tagElement = tagRefs.current[i];
-      if (!tagElement) continue;
-
-      const tagWidth = tagElement.offsetWidth || 0;
-      const neededWidth = totalWidth + tagWidth + (count > 0 ? gap : 0);
-
-      if (neededWidth <= availableWidth) {
-        totalWidth = neededWidth;
-        count++;
-      } else {
-        break;
-      }
-    }
-
-    setVisibleTagCount(count);
-  }, [hotTags]);
-
-  // 监听容器大小变化和tag数量变化
-  useEffect(() => {
-    if (hotTags.length === 0) {
-      setVisibleTagCount(0);
-      return;
-    }
-
-    // 延迟计算，确保DOM已渲染
-    const timer = setTimeout(() => {
-      calculateVisibleTags();
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [hotTags, calculateVisibleTags]);
-
-  // 使用ResizeObserver监听容器大小变化
-  useEffect(() => {
-    if (!tagsListRef.current) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      calculateVisibleTags();
-    });
-
-    resizeObserver.observe(tagsListRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [calculateVisibleTags]);
+  const pinnedBookmarks = useMemo(() => {
+    return bookmarks
+      .filter((b) => b.pinned)
+      .sort((a, b) => b.clickCount - a.clickCount);
+  }, [bookmarks]);
 
   /* 内容区滚动：超过阈值显示回到顶部（与 bookmarks/tags 一致） */
   useEffect(() => {
@@ -144,47 +103,105 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     homepageContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleOpenAll = async (workstationId: string) => {
+  // 工作区交互
+  const handleWorkstationClick = (workstationId: string) => {
+    if (!isWorkstationSidebarOpen || selectedWorkstationId !== workstationId) {
+      setSelectedWorkstationId(workstationId);
+      setIsWorkstationSidebarOpen(true);
+    } else {
+      void loadData();
+    }
+  };
+
+  const handleWorkstationDoubleClick = async (workstationId: string) => {
+    await openWorkstation(workstationId);
+    await loadData();
+  };
+
+  const handleToggleWorkstationPin = async (workstationId: string) => {
     const workstation = workstations.find((w) => w.id === workstationId);
-    if (!workstation) return;
-
-    // 获取工作区绑定的书签URL
-    const bookmarkUrls: string[] = [];
-    for (const bookmarkId of workstation.bookmarks) {
-      const bookmark = bookmarks.find((b) => b.id === bookmarkId);
-      if (bookmark?.url) {
-        bookmarkUrls.push(bookmark.url);
-      }
+    if (workstation) {
+      await updateWorkstation(workstationId, { pinned: !workstation.pinned });
+      await loadData();
     }
+  };
 
-    if (bookmarkUrls.length > 0) {
+  const handleCloseWorkstationSidebar = () => {
+    setIsWorkstationSidebarOpen(false);
+    setSelectedWorkstationId(null);
+  };
+
+  // Tag交互
+  const handleTagClick = (tagId: string) => {
+    if (!isTagSidebarOpen || selectedTagId !== tagId) {
+      setSelectedTagId(tagId);
+      setIsTagSidebarOpen(true);
+    } else {
+      void loadData();
+    }
+  };
+
+  const handleTagDoubleClick = async (tagId: string) => {
+    const tagBookmarks = bookmarks.filter((b) => b.tags.includes(tagId));
+    const urls = tagBookmarks.map((b) => b.url).filter(Boolean);
+    if (urls.length > 0) {
       const mode = await getBrowserTagWorkstationOpenMode();
-      await openUrlsWithMode(bookmarkUrls, mode);
+      await openUrlsWithMode(urls, mode);
     }
+  };
+
+  const handleToggleTagPin = async (tagId: string) => {
+    const tag = allTags.find((t) => t.id === tagId);
+    if (tag) {
+      await updateTag(tagId, { pinned: !tag.pinned });
+      await loadData();
+    }
+  };
+
+  const handleCloseTagSidebar = () => {
+    setIsTagSidebarOpen(false);
+    setSelectedTagId(null);
+  };
+
+  // Bookmark交互
+  const handleBookmarkClick = (bookmark: BookmarkItem) => {
+    setEditingBookmark(bookmark);
+  };
+
+  const handleBookmarkDoubleClick = async (bookmark: BookmarkItem) => {
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
+  };
+
+  const handleToggleBookmarkPin = async (bookmarkId: string) => {
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (bookmark) {
+      await updateBookmark(bookmarkId, { pinned: !bookmark.pinned });
+      await loadData();
+    }
+  };
+
+  const handleCloseBookmarkEditSidebar = () => {
+    setEditingBookmark(null);
+  };
+
+  const handleDeleteBookmark = async (bookmarkId: string) => {
+    await deleteBookmark(bookmarkId);
+    await loadData();
+    setEditingBookmark(null);
+  };
+
+  // 更多按钮
+  const handleMoreWorkstations = () => {
+    onNavigate('workstations');
   };
 
   const handleMoreTags = () => {
     onNavigate('tags');
   };
 
-  const handleTagClick = (tagId: string) => {
-    // 跳转到书签列表页，并通过URL参数传递tag筛选条件
-    const url = new URL(window.location.href);
-    url.searchParams.set('tab', 'bookmarks');
-    url.searchParams.set('tag', tagId);
-    // 更新URL参数（不刷新页面）
-    window.history.replaceState({}, '', url.toString());
-    // 切换到书签页
+  const handleMoreBookmarks = () => {
     onNavigate('bookmarks');
-  };
-
-  const handleMoreWorkstations = () => {
-    onNavigate('workstations');
-  };
-
-  const handleDeleteWorkstation = async (workstationId: string) => {
-    await deleteWorkstation(workstationId);
-    await loadData();
   };
 
   const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
@@ -215,6 +232,9 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     return <div className="homepage-page" aria-busy="true" />;
   }
 
+  const selectedWorkstation = workstations.find((w) => w.id === selectedWorkstationId);
+  const selectedTag = allTags.find((t) => t.id === selectedTagId);
+
   return (
     <div className="homepage-page" ref={pageRef}>
       <div className="homepage-page__header-section">
@@ -224,68 +244,102 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
         </div>
       </div>
 
-      <div className="homepage-page__tags-container">
-        <div className="homepage-page__tags-section">
-          <div className="homepage-page__tags-label">{t('homepage.chooseTags')}</div>
-          <div className="homepage-page__tags-list" ref={tagsListRef}>
-            {hotTags.map((tag, index) => {
-              const isVisible = index < visibleTagCount;
-              return (
-                <div
-                  key={tag.id}
-                  ref={(el) => {
-                    tagRefs.current[index] = el;
-                  }}
-                  style={{ display: isVisible ? 'block' : 'none' }}
-                >
-                  <TagPill
-                    label={tag.name}
-                    color={tag.color}
-                    size="default"
-                    onClick={() => handleTagClick(tag.id)}
-                  />
-                </div>
-              );
-            })}
-            {hotTags.length > 0 && (
-              <button
-                type="button"
-                className="homepage-page__tags-more-button"
-                onClick={handleMoreTags}
-              >
-                {t('homepage.viewAll')}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="homepage-page__content" ref={homepageContentRef}>
-        {workstations.length > 0 && (
-          <div className="homepage-page__workstations-section">
-            <div className="homepage-page__workstations-header">
-              <button
-                type="button"
-                className="homepage-page__workstations-more"
-                onClick={handleMoreWorkstations}
-              >
-                {t('homepage.viewAll')}
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            </div>
-            <div className="homepage-page__workstations-list" ref={workstationsListRef}>
-              {workstations.map((workstation) => (
-                <HomepageWorkstationCard
+      <div className="homepage-content-wrapper">
+        <div className="homepage-page__content" ref={homepageContentRef}>
+          {pinnedWorkstations.length > 0 && (
+            <HorizontalScrollList
+              title={t('homepage.pinnedWorkstations')}
+              onMoreClick={handleMoreWorkstations}
+            >
+              {pinnedWorkstations.map((workstation) => (
+                <HomepagePinnedWorkstationCard
                   key={workstation.id}
                   workstation={workstation}
                   bookmarks={bookmarks}
-                  onOpenAll={handleOpenAll}
-                  onDelete={handleDeleteWorkstation}
+                  onClick={handleWorkstationClick}
+                  onDoubleClick={handleWorkstationDoubleClick}
+                  onTogglePin={handleToggleWorkstationPin}
                 />
               ))}
-            </div>
+            </HorizontalScrollList>
+          )}
+
+          {pinnedTags.length > 0 && (
+            <HorizontalScrollList
+              title={t('homepage.pinnedTags')}
+              onMoreClick={handleMoreTags}
+            >
+              {pinnedTags.map((tag) => (
+                <HomepagePinnedTagCard
+                  key={tag.id}
+                  tag={tag}
+                  onClick={handleTagClick}
+                  onDoubleClick={handleTagDoubleClick}
+                  onTogglePin={handleToggleTagPin}
+                />
+              ))}
+            </HorizontalScrollList>
+          )}
+
+          {pinnedBookmarks.length > 0 && (
+            <HorizontalScrollList
+              title={t('homepage.pinnedBookmarks')}
+              onMoreClick={handleMoreBookmarks}
+            >
+              {pinnedBookmarks.map((bookmark) => (
+                <HomepagePinnedBookmarkCard
+                  key={bookmark.id}
+                  bookmark={bookmark}
+                  onClick={handleBookmarkClick}
+                  onDoubleClick={handleBookmarkDoubleClick}
+                  onTogglePin={handleToggleBookmarkPin}
+                />
+              ))}
+            </HorizontalScrollList>
+          )}
+        </div>
+
+        {isWorkstationSidebarOpen && selectedWorkstation && (
+          <div ref={sidebarRef} className="homepage-sidebar-wrapper">
+            <WorkstationBookmarkSidebar
+              workstationId={selectedWorkstationId}
+              workstation={selectedWorkstation}
+              bookmarks={bookmarks}
+              tags={allTags}
+              onClose={handleCloseWorkstationSidebar}
+              onRemoveBookmark={async () => {}}
+              onRefresh={() => void loadData()}
+              onAddBookmarkClick={() => {}}
+              onWorkstationUpdated={() => void loadData()}
+              onDeleteClick={() => {}}
+            />
+          </div>
+        )}
+
+        {isTagSidebarOpen && selectedTag && (
+          <div ref={sidebarRef} className="homepage-sidebar-wrapper">
+            <BookmarkSidebar
+              tagId={selectedTagId}
+              tag={selectedTag}
+              bookmarks={bookmarks}
+              tags={allTags}
+              onClose={handleCloseTagSidebar}
+              onRefresh={() => void loadData()}
+              onTagUpdated={() => void loadData()}
+            />
+          </div>
+        )}
+
+        {editingBookmark && (
+          <div ref={sidebarRef} className="homepage-sidebar-wrapper">
+            <BookmarkEditSidebar
+              bookmark={editingBookmark}
+              workstations={workstations}
+              tags={allTags}
+              onClose={handleCloseBookmarkEditSidebar}
+              onBookmarkUpdated={() => void loadData()}
+              onDelete={handleDeleteBookmark}
+            />
           </div>
         )}
       </div>

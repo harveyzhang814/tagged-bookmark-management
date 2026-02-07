@@ -157,7 +157,11 @@
     "addBookmark": "添加书签",
     "selectBookmark": "选择书签",
     "alreadyAdded": "已添加",
-    "selectedThisSession": "本次已选中"
+    "selectedThisSession": "本次已选中",
+    "workstationIncluded": "包含的工作区",
+    "addPlaceholder": "添加工作区",
+    "removeFromIncluded": "从包含中移除",
+    "none": "未绑定"
   },
   "homepage": {
     "title": "首页",

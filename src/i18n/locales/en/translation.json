@@ -157,7 +157,11 @@
     "addBookmark": "Add Bookmark",
     "selectBookmark": "Select Bookmark",
     "alreadyAdded": "Added",
-    "selectedThisSession": "Selected this time"
+    "selectedThisSession": "Selected this time",
+    "workstationIncluded": "Workstation included",
+    "addPlaceholder": "Add workstation",
+    "removeFromIncluded": "Remove from included",
+    "none": "None"
   },
   "homepage": {
     "title": "Home",
