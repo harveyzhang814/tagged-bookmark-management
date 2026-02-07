@@ -1,69 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PixelButton } from './PixelButton';
-import { TagPill } from './TagPill';
 import { ToggleSwitch } from './ToggleSwitch';
-import { ColorPicker } from './ColorPicker';
-import { TAG_COLOR_PALETTE_24 } from '../lib/bookmarkService';
-import { getAllWorkstations } from '../lib/workstationService';
 import type { Workstation } from '../lib/types';
 import './workstationEditModal.css';
+
+export type WorkstationFormData = { name: string; description?: string; pinned: boolean };
 
 interface WorkstationEditModalProps {
   mode: 'create' | 'edit';
   workstation?: Workstation | null;
   onClose: () => void;
-  onSave?: (workstationId: string, data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
-  onCreate?: (data: { name: string; color: string; description?: string; pinned: boolean }) => Promise<void>;
+  onSave?: (workstationId: string, data: WorkstationFormData) => Promise<void>;
+  onCreate?: (data: WorkstationFormData) => Promise<void>;
   onDelete?: (workstationId: string) => Promise<void>;
 }
-
-/**
- * 获取智能分配的默认颜色（基于现有工作区使用情况）
- */
-const getDefaultWorkstationColor = async (): Promise<string> => {
-  const workstations = await getAllWorkstations();
-  
-  // 统计每种预设颜色的使用次数
-  const colorUsage = new Map<string, number>();
-  TAG_COLOR_PALETTE_24.forEach(color => {
-    colorUsage.set(color.toLowerCase(), 0);
-  });
-  
-  // 统计现有工作区使用的颜色
-  workstations.forEach(workstation => {
-    const normalizedColor = workstation.color.toLowerCase();
-    if (colorUsage.has(normalizedColor)) {
-      const count = colorUsage.get(normalizedColor) ?? 0;
-      colorUsage.set(normalizedColor, count + 1);
-    }
-  });
-  
-  // 找到使用次数最少的颜色
-  let minCount = Infinity;
-  let selectedColor = TAG_COLOR_PALETTE_24[0];
-  
-  for (const color of TAG_COLOR_PALETTE_24) {
-    const normalizedColor = color.toLowerCase();
-    const count = colorUsage.get(normalizedColor) ?? 0;
-    if (count < minCount) {
-      minCount = count;
-      selectedColor = color;
-    }
-  }
-  
-  return selectedColor;
-};
 
 export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCreate, onDelete }: WorkstationEditModalProps) => {
   const { t } = useTranslation();
   const [name, setName] = useState('');
-  const [color, setColor] = useState(TAG_COLOR_PALETTE_24[0]);
   const [description, setDescription] = useState('');
   const [pinned, setPinned] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [isLoadingDefaultColor, setIsLoadingDefaultColor] = useState(false);
   const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
   const isCreateMode = mode === 'create';
 
@@ -74,23 +33,12 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
 
   useEffect(() => {
     if (isCreateMode) {
-      // 创建模式：重置表单并获取智能分配的默认颜色
       setName('');
       setDescription('');
       setPinned(false);
       setShowSuccess(false);
-      setIsLoadingDefaultColor(true);
-      getDefaultWorkstationColor().then((defaultColor) => {
-        setColor(defaultColor);
-        setIsLoadingDefaultColor(false);
-      }).catch(() => {
-        setColor(TAG_COLOR_PALETTE_24[0]);
-        setIsLoadingDefaultColor(false);
-      });
     } else if (workstation) {
-      // 编辑模式：加载现有工作区信息
       setName(workstation.name);
-      setColor(workstation.color);
       setDescription(workstation.description || '');
       setPinned(workstation.pinned);
       setShowSuccess(false);
@@ -117,18 +65,16 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
     setIsSaving(true);
     try {
       if (isCreateMode && onCreate) {
-        await onCreate({ 
-          name: name.trim(), 
-          color: color.trim(), 
+        await onCreate({
+          name: name.trim(),
           description: description.trim() || undefined,
-          pinned 
+          pinned
         });
       } else if (workstation && onSave) {
-        await onSave(workstation.id, { 
-          name: name.trim(), 
-          color: color.trim(), 
+        await onSave(workstation.id, {
+          name: name.trim(),
           description: description.trim() || undefined,
-          pinned 
+          pinned
         });
       }
       // 先停止保存状态
@@ -238,25 +184,11 @@ export const WorkstationEditModal = ({ mode, workstation, onClose, onSave, onCre
             />
           </div>
           <div className="workstation-edit-modal__field">
-            <label className="workstation-edit-modal__label">{t('workstation.colorLabel')}</label>
-            <ColorPicker
-              value={color}
-              onChange={setColor}
-              disabled={isLoadingDefaultColor}
-            />
-          </div>
-          <div className="workstation-edit-modal__field">
             <ToggleSwitch
               checked={pinned}
               onChange={setPinned}
               label={t('workstation.pinnedLabel')}
             />
-          </div>
-          <div className="workstation-edit-modal__preview">
-            <div className="workstation-edit-modal__preview-label">预览效果</div>
-            <div className="workstation-edit-modal__preview-content">
-              <TagPill label={name || t('workstation.namePlaceholder')} color={color} size="large" />
-            </div>
           </div>
             </>
           )}

@@ -1,0 +1,149 @@
+/* 与 tag 字段展示一致，芯片无颜色 */
+.workstation-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.workstation-input-wrapper * {
+  box-sizing: border-box;
+}
+
+.workstation-input-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-muted);
+  background: var(--bg-panel);
+  border-radius: 6px;
+  min-height: 32px;
+  align-items: center;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.workstation-input-chips:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+  background: var(--bg-panel);
+  outline: none;
+}
+
+.workstation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-muted);
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 3px 6px 3px 8px;
+  height: 20px;
+  line-height: 14px;
+  box-sizing: border-box;
+}
+
+.workstation-chip__name {
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.workstation-chip-remove {
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.workstation-chip-remove:hover {
+  background: rgba(229, 115, 115, 0.15);
+  color: var(--danger);
+}
+
+.workstation-input {
+  flex: 1;
+  min-width: 120px;
+  border: none !important;
+  background: transparent !important;
+  color: var(--text-main);
+  font-size: 13px;
+  font-family: var(--font-family);
+  padding: 0;
+  margin: 0;
+  outline: none !important;
+  height: 24px;
+  line-height: 24px;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.workstation-input:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.workstation-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.workstation-input-suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+}
+
+.workstation-input-suggestion-item {
+  background: transparent;
+  border: none;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: 13px;
+}
+
+.workstation-input-suggestion-item:hover {
+  background: var(--button-primary-hover-bg);
+}
+
+.workstation-input-suggestion-item .workstation-chip__name {
+  font-size: 13px;
+}

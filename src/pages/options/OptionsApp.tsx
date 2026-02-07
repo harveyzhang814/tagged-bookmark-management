@@ -6,9 +6,10 @@ import { HomepagePage } from './pages/HomepagePage';
 import { RankingPage } from './pages/RankingPage';
 import { WorkstationsPage } from './pages/WorkstationsPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { ThemeToggle } from '../../components/ThemeToggle';
+import { GlobalSearchOverlay } from '../../components/GlobalSearchOverlay';
 import { IconButton } from '../../components/IconButton';
 import { NavigationSidebar } from '../../components/NavigationSidebar';
+import { ThemeToggle } from '../../components/ThemeToggle';
 import { initTheme } from '../../lib/theme';
 import { type ActiveTab, getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
@@ -23,6 +24,7 @@ export const OptionsApp = () => {
   const [lastNonSettingsTab, setLastNonSettingsTab] = useState<ActiveTab>('home');
   const [isInitialized, setIsInitialized] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
 
   // 获取图标 URL
   const getIconUrl = (size: '16' | '48' | '128' = '48') => {
@@ -105,6 +107,22 @@ export const OptionsApp = () => {
     setRefreshKey((prev) => prev + 1);
   }, []);
 
+  const handleNavigateToBookmarks = useCallback(
+    (params?: { tag?: string; query?: string }) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'bookmarks');
+      if (params?.tag) url.searchParams.set('tag', params.tag);
+      if (params?.query) url.searchParams.set('query', params.query);
+      window.history.replaceState({}, '', url.toString());
+      setGlobalSearchOpen(false);
+      setActiveTab('bookmarks');
+      void saveActiveTab('bookmarks');
+      setLastNonSettingsTab('bookmarks');
+      if (params?.tag || params?.query) setRefreshKey((k) => k + 1);
+    },
+    []
+  );
+
   const renderContent = useMemo(() => {
     if (!isInitialized) {
       return null; // 等待初始化完成
@@ -145,6 +163,16 @@ export const OptionsApp = () => {
         </div>
 
         <div className="options-navigator__actions">
+          <button
+            type="button"
+            className="options-navigator__search-trigger"
+            onClick={() => setGlobalSearchOpen(true)}
+            aria-label={t('globalSearch.open')}
+          >
+            <svg className="options-navigator__search-trigger-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
           <ThemeToggle />
           <IconButton
             variant="secondary"
@@ -177,9 +205,13 @@ export const OptionsApp = () => {
         
         <div className="options-content">
           <main>{renderContent}</main>
+          <GlobalSearchOverlay
+            isOpen={globalSearchOpen}
+            onClose={() => setGlobalSearchOpen(false)}
+            onNavigateToBookmarks={handleNavigateToBookmarks}
+          />
         </div>
       </div>
-
     </div>
   );
 };

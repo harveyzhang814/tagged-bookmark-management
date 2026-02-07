@@ -217,17 +217,18 @@ export const importData = async (
       };
     });
 
-    // 转换工作区数据，添加clickCount
+    // 转换工作区数据，添加clickCount，排除已废弃的 color 字段
     if (fileData.data.workstations) {
       Object.entries(fileData.data.workstations).forEach(([id, workstation]) => {
+        const { color: _c, ...rest } = workstation as typeof workstation & { color?: string };
         workstations[id] = {
-          ...workstation,
+          ...rest,
           id,
           clickCount: 0,
-          pinned: workstation.pinned ?? false,
-          bookmarks: workstation.bookmarks ?? [],
-          createdAt: workstation.createdAt ?? Date.now(),
-          updatedAt: workstation.updatedAt ?? Date.now()
+          pinned: rest.pinned ?? false,
+          bookmarks: rest.bookmarks ?? [],
+          createdAt: rest.createdAt ?? Date.now(),
+          updatedAt: rest.updatedAt ?? Date.now()
         };
       });
     }
@@ -358,14 +359,15 @@ export const importData = async (
           .map((oldBookmarkId) => bookmarkIdMap.get(oldBookmarkId))
           .filter((id): id is string => id !== undefined); // 过滤掉未映射的ID（被跳过的书签）
 
+        const { color: _c, ...workstationRest } = workstation as typeof workstation & { color?: string };
         newWorkstations[newWorkstationId] = {
-          ...workstation,
+          ...workstationRest,
           id: newWorkstationId,
           bookmarks: mappedBookmarkIds,
           clickCount: 0,
-          pinned: workstation.pinned ?? false,
-          createdAt: workstation.createdAt ?? Date.now(),
-          updatedAt: workstation.updatedAt ?? Date.now()
+          pinned: workstationRest.pinned ?? false,
+          createdAt: workstationRest.createdAt ?? Date.now(),
+          updatedAt: workstationRest.updatedAt ?? Date.now()
         };
         workstationIdMap.set(oldWorkstationId, newWorkstationId);
         existingWorkstationNames.add(workstation.name); // 避免同批次重复

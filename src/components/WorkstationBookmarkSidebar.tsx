@@ -1,12 +1,14 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { IconButton } from './IconButton';
 import { SearchInput } from './SearchInput';
-import { Pagination } from './Pagination';
+import { SortDropdown, type SortField } from './SortDropdown';
 import { TagPill } from './TagPill';
 import { incrementBookmarkClick } from '../lib/bookmarkService';
-import { openUrlWithMode } from '../lib/chrome';
+import { updateWorkstation } from '../lib/workstationService';
+import { openUrlWithMode, openUrlsWithMode } from '../lib/chrome';
 import type { BookmarkItem, Tag, Workstation } from '../lib/types';
-import { getBrowserDefaultOpenMode } from '../lib/storage';
+import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode } from '../lib/storage';
 import './bookmarkSidebar.css';
 
 type SortOption = 'createdAt' | 'clickCount';
@@ -19,6 +21,9 @@ interface WorkstationBookmarkSidebarProps {
   onClose?: () => void;
   onRemoveBookmark?: (bookmarkId: string) => Promise<void>;
   onRefresh?: () => Promise<void>;
+  onAddBookmarkClick?: () => void;
+  onWorkstationUpdated?: () => void;
+  onDeleteClick?: (workstation: Workstation) => void;
 }
 
 export const WorkstationBookmarkSidebar = ({ 
@@ -28,14 +33,107 @@ export const WorkstationBookmarkSidebar = ({
   tags, 
   onClose, 
   onRemoveBookmark,
-  onRefresh 
+  onRefresh,
+  onAddBookmarkClick,
+  onWorkstationUpdated,
+  onDeleteClick
 }: WorkstationBookmarkSidebarProps) => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('createdAt');
-  const [currentPage, setCurrentPage] = useState(1);
   const dragStartTime = useRef<number>(0);
-  const ITEMS_PER_PAGE = 15;
+
+  // 主信息区：本地编辑 state，以 workstation 为初始值
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [pinned, setPinned] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (workstation) {
+      setName(workstation.name);
+      setDescription(workstation.description ?? '');
+      setPinned(workstation.pinned);
+    }
+  }, [workstation?.id, workstation?.name, workstation?.description, workstation?.pinned]);
+
+  useEffect(() => {
+    if (editingTitle) titleInputRef.current?.focus();
+  }, [editingTitle]);
+
+  const resizeDescriptionTextarea = useCallback(() => {
+    const el = descriptionInputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const max = 200;
+    el.style.height = `${Math.min(el.scrollHeight, max)}px`;
+  }, []);
+
+  useEffect(() => {
+    if (editingDescription) {
+      descriptionInputRef.current?.focus();
+      const t = requestAnimationFrame(() => resizeDescriptionTextarea());
+      return () => cancelAnimationFrame(t);
+    }
+  }, [editingDescription, resizeDescriptionTextarea]);
+
+  useEffect(() => {
+    if (editingDescription) resizeDescriptionTextarea();
+  }, [description, editingDescription, resizeDescriptionTextarea]);
+
+  const saveMainInfo = useCallback(
+    async (payload: { name: string; description?: string; pinned: boolean }) => {
+      if (!workstationId) return;
+      const updated = await updateWorkstation(workstationId, payload);
+      if (updated) void onWorkstationUpdated?.();
+    },
+    [workstationId, onWorkstationUpdated]
+  );
+
+  const commitTitle = useCallback(() => {
+    if (!workstationId || !workstation) return;
+    const trimmedName = name.trim() || workstation.name;
+    const nextDesc = description.trim() || undefined;
+    const same = trimmedName === workstation.name && nextDesc === (workstation.description ?? '') && pinned === workstation.pinned;
+    if (!same) {
+      void saveMainInfo({ name: trimmedName, description: nextDesc, pinned });
+    }
+    setEditingTitle(false);
+  }, [workstationId, workstation, name, description, pinned, saveMainInfo]);
+
+  const commitDescription = useCallback(() => {
+    if (!workstationId || !workstation) return;
+    const trimmedName = name.trim() || workstation.name;
+    const trimmedDesc = description.trim() || undefined;
+    const same = trimmedName === workstation.name && trimmedDesc === (workstation.description ?? '') && pinned === workstation.pinned;
+    if (!same) {
+      void saveMainInfo({ name: trimmedName, description: trimmedDesc, pinned });
+    }
+    setEditingDescription(false);
+  }, [workstationId, workstation, name, description, pinned, saveMainInfo]);
+
+  const handleNameBlur = () => {
+    commitTitle();
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      commitTitle();
+    }
+  };
+
+  const handleDescriptionBlur = () => {
+    commitDescription();
+  };
+
+  const handlePinnedChange = (next: boolean) => {
+    setPinned(next);
+    if (workstationId) void saveMainInfo({ name: name.trim(), description: description.trim() || undefined, pinned: next });
+  };
 
   // 根据工作区的bookmarks数组过滤书签
   const filteredByWorkstation = useMemo(() => {
@@ -67,32 +165,16 @@ export const WorkstationBookmarkSidebar = ({
     return sortedList;
   }, [filteredBySearch, sortBy]);
 
-  // 分页计算
-  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
-  const paginatedBookmarks = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return sorted.slice(startIndex, endIndex);
-  }, [sorted, currentPage]);
+  const handleOpenAll = useCallback(async () => {
+    const urls = sorted.map((b) => b.url).filter(Boolean);
+    if (urls.length === 0) return;
+    const mode = await getBrowserTagWorkstationOpenMode();
+    await openUrlsWithMode(urls, mode);
+  }, [sorted]);
 
-  // 当搜索条件或排序改变时，重置到第一页
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, sortBy]);
-
-  // 当总页数变化时，确保当前页不超过总页数
-  useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    } else if (totalPages === 0 && currentPage > 1) {
-      setCurrentPage(1);
-    }
-  }, [totalPages, currentPage]);
-
-  // 当workstationId改变时，重置搜索和分页
+  // 当 workstationId 改变时重置搜索
   useEffect(() => {
     setSearchQuery('');
-    setCurrentPage(1);
   }, [workstationId]);
 
   const handleBookmarkClick = async (bookmark: BookmarkItem) => {
@@ -129,11 +211,36 @@ export const WorkstationBookmarkSidebar = ({
 
   return (
     <div className="bookmark-sidebar">
-      <div className="bookmark-sidebar__header">
-        <div className="bookmark-sidebar__title-wrapper">
-          <h3 className="bookmark-sidebar__title">{workstation.name}</h3>
+      {/* 主信息区：标题、描述、置顶、关闭、删除 */}
+      <div className="bookmark-sidebar__main-info">
+        <div className="bookmark-sidebar__title-row">
+          {editingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              className="bookmark-sidebar__title-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={handleNameBlur}
+              onKeyDown={handleTitleKeyDown}
+              placeholder={t('workstation.namePlaceholder')}
+              aria-label={t('workstation.nameLabel')}
+            />
+          ) : (
+            <button
+              type="button"
+              className="bookmark-sidebar__title-display"
+              onClick={() => setEditingTitle(true)}
+              aria-label={t('workstation.edit')}
+            >
+              <span className="bookmark-sidebar__title-display__text">
+                {name.trim() || t('workstation.namePlaceholder')}
+              </span>
+            </button>
+          )}
           {onClose && (
             <button
+              type="button"
               className="bookmark-sidebar__close"
               onClick={onClose}
               aria-label={t('workstation.closeSidebar')}
@@ -150,36 +257,133 @@ export const WorkstationBookmarkSidebar = ({
             </button>
           )}
         </div>
+        {editingDescription ? (
+          <textarea
+            ref={descriptionInputRef}
+            className="bookmark-sidebar__description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onBlur={handleDescriptionBlur}
+            placeholder={t('workstation.descriptionPlaceholder')}
+            aria-label={t('workstation.descriptionLabel')}
+            rows={1}
+          />
+        ) : (
+          <button
+            type="button"
+            className={`bookmark-sidebar__description-display ${!description.trim() ? 'bookmark-sidebar__description-display--placeholder' : ''}`}
+            onClick={() => setEditingDescription(true)}
+            aria-label={t('workstation.edit')}
+          >
+            <span className="bookmark-sidebar__description-display__text">
+              {description.trim() ? description : t('workstation.descriptionPlaceholder')}
+            </span>
+          </button>
+        )}
+        <div className="bookmark-sidebar__main-actions">
+          <IconButton
+            variant={pinned ? 'primary' : 'secondary'}
+            icon={
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M3.33333 13.3334L8 8.66671L12.6667 13.3334V3.33337C12.6667 2.89135 12.4911 2.46742 12.1785 2.15486C11.866 1.8423 11.442 1.66671 11 1.66671H5C4.55797 1.66671 4.13405 1.8423 3.82149 2.15486C3.50893 2.46742 3.33333 2.89135 3.33333 3.33337V13.3334Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill={pinned ? 'currentColor' : 'none'}
+                />
+              </svg>
+            }
+            aria-label={pinned ? t('workstation.unpin') : t('workstation.pin')}
+            onClick={() => handlePinnedChange(!pinned)}
+          />
+          <IconButton
+            variant="secondary"
+            icon={
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6 3H3v10h10v-3M13 3l-5 5M13 3v3h-3"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            }
+            aria-label={t('workstation.openAll')}
+            onClick={() => void handleOpenAll()}
+          />
+          {onDeleteClick && (
+            <IconButton
+              variant="danger"
+              icon={
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M2 4H14M5 4V3C5 2.44772 5.44772 2 6 2H10C10.5523 2 11 2.44772 11 3V4M13 4V13C13 13.5523 12.5523 14 12 14H4C3.44772 14 3 13.5523 3 13V4H13Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              }
+              aria-label={t('workstation.delete')}
+              onClick={() => onDeleteClick(workstation)}
+            />
+          )}
+        </div>
       </div>
 
+      {/* 绑定书签区：搜索、排序、添加按钮同一行；列表可滚动不分页 */}
+      <div className="bookmark-sidebar__bind-area">
       <div className="bookmark-sidebar__toolbar">
         <div className="bookmark-sidebar__search">
           <SearchInput
             value={searchQuery}
-            placeholder={t('bookmark.searchPlaceholder')}
+            placeholder={t('workstation.sidebarSearchPlaceholder')}
             onChange={setSearchQuery}
           />
         </div>
-        <div className="bookmark-sidebar__sort">
-          <select
-            className="bookmark-sidebar__sort-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
+        <SortDropdown
+          sortBy={sortBy as SortField}
+          sortOrder="desc"
+          onSortByChange={(v) => setSortBy(v as SortOption)}
+          onSortOrderToggle={() => {}}
+          options={[
+            { value: 'createdAt', label: t('sort.byCreatedAt') },
+            { value: 'clickCount', label: t('sort.byClickCount') }
+          ]}
+        />
+        {onAddBookmarkClick && (
+          <button
+            type="button"
+            className="bookmark-sidebar__add-bookmark"
+            onClick={onAddBookmarkClick}
+            aria-label={t('workstation.addBookmark')}
+            title={t('workstation.addBookmark')}
           >
-            <option value="createdAt">{t('sort.byCreatedAt')}</option>
-            <option value="clickCount">{t('sort.byClickCount')}</option>
-          </select>
-        </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M8 3.33333V12.6667M3.33333 8H12.6667"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       <div className="bookmark-sidebar__content">
-        {paginatedBookmarks.length === 0 ? (
+        {sorted.length === 0 ? (
           <div className="bookmark-sidebar__empty">
             {searchQuery ? t('bookmark.noMatch') : t('workstation.noBookmarksInWorkstation')}
           </div>
         ) : (
           <div className="bookmark-sidebar__list">
-            {paginatedBookmarks.map((bookmark) => {
+            {sorted.map((bookmark) => {
               // 获取书签的所有标签
               const bookmarkTags = bookmark.tags
                 .map((tId) => tags.find((t) => t.id === tId))
@@ -197,14 +401,14 @@ export const WorkstationBookmarkSidebar = ({
                   <div className="bookmark-sidebar__item-header">
                     <h4 className="bookmark-sidebar__item-title">{bookmark.title}</h4>
                   </div>
-                  {bookmarkTags.length > 0 && (
-                    <div className="bookmark-sidebar__item-tags">
-                      {bookmarkTags.map((tag) => (
-                        <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
-                      ))}
-                    </div>
-                  )}
-                  <div className="bookmark-sidebar__item-footer">
+                  <div className="bookmark-sidebar__item-meta">
+                    {bookmarkTags.length > 0 && (
+                      <div className="bookmark-sidebar__item-tags">
+                        {bookmarkTags.map((tag) => (
+                          <TagPill key={tag.id} label={tag.name} color={tag.color} size="small" />
+                        ))}
+                      </div>
+                    )}
                     <div className="bookmark-sidebar__item-click-count">
                       <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -233,16 +437,7 @@ export const WorkstationBookmarkSidebar = ({
           </div>
         )}
       </div>
-
-      {totalPages > 1 && (
-        <div className="bookmark-sidebar__pagination">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
+      </div>
     </div>
   );
 };

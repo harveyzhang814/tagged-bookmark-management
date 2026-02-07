@@ -56,7 +56,6 @@ CrossTag Bookmarks - A modern, elegant bookmark manager with powerful tagging an
 💼 Workstation Groups (NEW in v0.4.0)
 • Create workstation groups to organize related bookmarks
 • One-click open all bookmarks in a workstation
-• Color-coded workstations with smart color assignment
 • Pin frequently used workstations for quick access
 • Track workstation usage statistics
 • Drag-and-drop to manage bookmarks in workstations
@@ -136,7 +135,6 @@ CrossTag Bookmarks - 一款现代优雅的书签管理工具，提供强大的�
 💼 工作区分组（v0.4.0 新增）
 • 创建工作区将相关书签组织在一起
 • 一键打开工作区中的所有书签
-• 彩色标记工作区，智能自动分配颜色
 • 置顶常用工作区，快速访问
 • 统计工作区使用次数
 • 拖拽操作管理工作区中的书签

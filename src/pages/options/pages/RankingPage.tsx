@@ -234,7 +234,7 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
         <div className="ranking-filters">
           <SearchInput 
             value={searchQuery} 
-            placeholder={t('homepage.searchPlaceholder')} 
+            placeholder={t('ranking.searchPlaceholder')} 
             onChange={setSearchQuery} 
           />
         </div>
@@ -312,14 +312,16 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
           </div>
         </div>
 
-        {isBookmarkSidebarOpen && (
-          <div ref={sidebarRef}>
+        {isBookmarkSidebarOpen && selectedTagId && (
+          <div ref={sidebarRef} className="tags-sidebar-wrapper">
             <BookmarkSidebar
               tagId={selectedTagId}
+              tag={allTags.find((t) => t.id === selectedTagId) ?? null}
               bookmarks={allBookmarks}
               tags={allTags}
               onClose={handleCloseSidebar}
               onRemoveTag={handleRemoveTag}
+              onTagUpdated={() => void loadData(false)}
             />
           </div>
         )}

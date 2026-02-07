@@ -11,7 +11,8 @@ const STORAGE_KEYS = {
   SETTINGS_BROWSER_DEFAULT_OPEN_MODE: 'tbm.settings.browser.defaultOpenMode',
   SETTINGS_BROWSER_TAG_WORKSTATION_OPEN_MODE: 'tbm.settings.browser.tagWorkstationOpenMode',
   INSTALL_UPDATE_TIME: 'tbm.installUpdateTime',
-  DEFAULTS_INITIALIZED: 'tbm.flags.defaultsInitialized'
+  DEFAULTS_INITIALIZED: 'tbm.flags.defaultsInitialized',
+  TAG_COOCCURRENCE: 'tbm.tagCooccurrence'
 } as const;
 
 type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS];
@@ -110,11 +111,19 @@ export const getWorkstationsMap = async (): Promise<Record<string, Workstation>>
 export const saveWorkstationsMap = async (payload: Record<string, Workstation>) =>
   writeValue(STORAGE_KEYS.WORKSTATIONS, payload);
 
+/** Tag 共现次数：key 为 "tagId1|tagId2"（按字符串排序），value 为同时出现的次数 */
+export const getTagCooccurrenceMap = async (): Promise<Record<string, number>> =>
+  readValue<Record<string, number>>(STORAGE_KEYS.TAG_COOCCURRENCE, {});
+
+export const saveTagCooccurrenceMap = async (payload: Record<string, number>) =>
+  writeValue(STORAGE_KEYS.TAG_COOCCURRENCE, payload);
+
 export const resetStorage = async () => {
   await Promise.all([
     removeValue(STORAGE_KEYS.BOOKMARKS),
     removeValue(STORAGE_KEYS.TAGS),
-    removeValue(STORAGE_KEYS.WORKSTATIONS)
+    removeValue(STORAGE_KEYS.WORKSTATIONS),
+    removeValue(STORAGE_KEYS.TAG_COOCCURRENCE)
   ]);
 };
 
@@ -127,7 +136,8 @@ export const clearAllUserData = async () => {
   await Promise.all([
     removeValue(STORAGE_KEYS.BOOKMARKS),
     removeValue(STORAGE_KEYS.TAGS),
-    removeValue(STORAGE_KEYS.WORKSTATIONS)
+    removeValue(STORAGE_KEYS.WORKSTATIONS),
+    removeValue(STORAGE_KEYS.TAG_COOCCURRENCE)
   ]);
   await setDefaultsInitialized(true);
 };

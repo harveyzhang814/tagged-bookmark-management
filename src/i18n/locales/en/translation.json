@@ -13,6 +13,7 @@
     "open": "Open Menu",
     "confirm": "Confirm",
     "back": "Back",
+    "backToTop": "Back to top",
     "loading": "Loading...",
     "saving": "Saving...",
     "creating": "Creating...",
@@ -111,8 +112,13 @@
     "selected": "Selected",
     "available": "Available Tags",
     "createTag": "Create Tag",
+    "addBookmark": "Add bookmark to tag",
     "showSidebar": "Show Tag Sidebar",
-    "hideSidebar": "Hide Tag Sidebar"
+    "hideSidebar": "Hide Tag Sidebar",
+    "graph": "Relationship Graph",
+    "graphGlobal": "Global",
+    "graphRefresh": "Refresh relationship data",
+    "graphClose": "Close"
   },
   "workstation": {
     "title": "Workstations",
@@ -127,7 +133,6 @@
     "namePlaceholder": "Workstation name",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Workstation description (optional)",
-    "colorLabel": "Color",
     "pinnedLabel": "Pinned",
     "createSuccess": "Created successfully",
     "saveSuccess": "Saved successfully",
@@ -146,7 +151,17 @@
     "noMatch": "No matching workstations found",
     "createWorkstation": "Create Workstation",
     "closeSidebar": "Close Sidebar",
-    "noBookmarksInWorkstation": "No bookmarks in this workstation"
+    "noBookmarksInWorkstation": "No bookmarks in this workstation",
+    "openAll": "Open all",
+    "sidebarSearchPlaceholder": "Search",
+    "addBookmark": "Add Bookmark",
+    "selectBookmark": "Select Bookmark",
+    "alreadyAdded": "Added",
+    "selectedThisSession": "Selected this time",
+    "workstationIncluded": "Workstation included",
+    "addPlaceholder": "Add workstation",
+    "removeFromIncluded": "Remove from included",
+    "none": "None"
   },
   "homepage": {
     "title": "Home",
@@ -156,20 +171,22 @@
     "pinnedWorkstations": "Pinned Workstations",
     "hotTags": "Popular Tags",
     "hotBookmarks": "Popular Bookmarks",
-    "searchPlaceholder": "Search bookmarks, tags...",
-    "searchMode": "Search Mode",
-    "exitSearch": "Exit Search",
     "newBookmark": "New Bookmark",
     "newTag": "New Tag",
     "newWorkstation": "New Workstation",
-    "noResults": "No results found",
     "noPinnedBookmarks": "No pinned bookmarks",
     "noPinnedTags": "No pinned tags",
     "viewAll": "View All",
     "chooseTags": "Choose Tags"
   },
+  "globalSearch": {
+    "placeholder": "Search bookmarks, tags...",
+    "noResults": "No results found",
+    "open": "Open global search"
+  },
   "ranking": {
     "title": "Ranking",
+    "searchPlaceholder": "Search bookmarks, tags...",
     "hotTags": "Popular Tags",
     "hotBookmarks": "Popular Bookmarks",
     "sortByClickCount": "By Click Count",
@@ -284,8 +301,8 @@
   },
   "sort": {
     "title": "Sort",
-    "byCreatedAt": "By Created Time",
-    "byClickCount": "By Click Count",
+    "byCreatedAt": "Created Time",
+    "byClickCount": "Click Count",
     "asc": "Ascending",
     "desc": "Descending",
     "toggleAsc": "Switch to Ascending",

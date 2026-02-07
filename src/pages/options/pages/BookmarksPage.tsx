@@ -6,6 +6,7 @@ import { TagFilterDropdown } from '../../../components/TagFilterDropdown';
 import { SortDropdown } from '../../../components/SortDropdown';
 import { BookmarkCard } from '../../../components/BookmarkCard';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
+import { BookmarkEditSidebar } from '../../../components/BookmarkEditSidebar';
 import { Tooltip } from '../../../components/Tooltip';
 import { TagSidebar } from '../../../components/TagSidebar';
 import { WorkstationSidebar } from '../../../components/WorkstationSidebar';
@@ -352,7 +353,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   };
 
   const handleCreateWorkstation = async (name: string) => {
-    await createWorkstation({ name, color: '', description: undefined, pinned: false });
+    await createWorkstation({ name, description: undefined, pinned: false });
     await refresh();
   };
 
@@ -572,17 +573,20 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
             onBookmarkDrop={handleWorkstationDrop}
           />
         )}
-      </div>
 
-      {editingBookmark && (
-        <BookmarkEditModal
-          mode="edit"
-          bookmark={editingBookmark}
-          onClose={handleCloseEditModal}
-          onSave={handleSaveEdit}
-          onDelete={handleDeleteBookmark}
-        />
-      )}
+        {editingBookmark && (
+          <div className="bookmarks-edit-sidebar-wrapper">
+            <BookmarkEditSidebar
+              bookmark={editingBookmark}
+              workstations={workstations}
+              tags={tags}
+              onClose={handleCloseEditModal}
+              onBookmarkUpdated={() => void refresh()}
+              onDelete={handleDeleteBookmark}
+            />
+          </div>
+        )}
+      </div>
 
       {isCreateModalOpen && (
         <BookmarkEditModal
