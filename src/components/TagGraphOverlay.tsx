@@ -386,15 +386,15 @@ export const TagGraphOverlay = ({ isOpen, onClose }: TagGraphOverlayProps) => {
           ) : (
             <ForceGraph2D
               key={`graph-${graphData.nodes.length}`}
-              ref={fgRef as React.RefObject<ForceGraphMethods<GraphNode, GraphLink>>}
+              ref={fgRef as never}
               graphData={graphData}
               width={width}
               height={height}
               backgroundColor="transparent"
               nodeId="id"
-              nodeVal={(n) => Math.max(4, 2 + Math.sqrt((n as GraphNode).usageCount || 0))}
-              nodeColor={(n) => (n as GraphNode).color ?? 'var(--accent)'}
-              nodeLabel={(n) => (n as GraphNode).name}
+              nodeVal={(n) => Math.max(4, 2 + Math.sqrt((n as unknown as GraphNode).usageCount || 0))}
+              nodeColor={(n) => (n as unknown as GraphNode).color ?? 'var(--accent)'}
+              nodeLabel={(n) => (n as unknown as GraphNode).name}
               onRenderFramePost={(ctx, globalScale) => {
                 debugRef.current.renderFramePostCalls += 1;
                 const currentMode = modeRef.current;
