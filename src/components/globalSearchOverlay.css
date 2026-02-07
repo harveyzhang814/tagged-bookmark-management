@@ -1,92 +1,35 @@
-/* 遮罩仅覆盖右侧内容区（不覆盖顶栏与左侧导航）；上缘贴齐 header 下边缘 */
-.global-search__backdrop {
+/* 下拉面板：紧贴 header 搜索框下方展开 */
+.global-search__dropdown-panel {
   position: absolute;
-  inset: 0;
-  z-index: 50;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 16px 16px;
-}
-
-[data-theme='dark'] .global-search__backdrop {
-  background: rgba(0, 0, 0, 0.6);
-}
-
-.global-search__panel {
+  top: 100%;
+  left: 0;
   width: 100%;
-  max-width: 640px;
-  max-height: 100%;
-  height: auto;
-  display: flex;
-  flex-direction: column;
-  background: var(--bg-main);
-  color: var(--text-main);
-  outline: none;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  max-height: 70vh;
   overflow-x: hidden;
   overflow-y: auto;
+  background: var(--bg-main);
+  color: var(--text-main);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  margin-top: 4px;
+  outline: none;
 }
 
-.global-search__panel::-webkit-scrollbar {
+.global-search__dropdown-panel::-webkit-scrollbar {
   width: var(--scrollbar-w);
 }
 
-.global-search__panel::-webkit-scrollbar-track {
+.global-search__dropdown-panel::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.global-search__panel::-webkit-scrollbar-thumb {
+.global-search__dropdown-panel::-webkit-scrollbar-thumb {
   background: var(--border-muted);
   border-radius: 4px;
 }
 
-.global-search__panel::-webkit-scrollbar-thumb:hover {
+.global-search__dropdown-panel::-webkit-scrollbar-thumb:hover {
   background: var(--border-color);
-}
-
-/* 搜索框吸顶：面板整体滚动时顶栏固定在上方 */
-.global-search__topbar {
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border-muted);
-}
-
-.global-search__input {
-  flex: 1;
-  min-width: 0;
-}
-
-.global-search__cancel {
-  flex-shrink: 0;
-  border: 1px solid var(--border-muted);
-  background: var(--bg-card);
-  color: var(--text-main);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: var(--font-family);
-  padding: 8px 10px;
-  transition: all 0.2s ease;
-}
-
-.global-search__cancel:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.global-search__cancel:active {
-  transform: scale(0.98);
 }
 
 .global-search__results {

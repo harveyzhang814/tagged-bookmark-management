@@ -66,7 +66,8 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 - 页面入口：`src/pages/options/main.html` / `src/pages/options/main.tsx`
 - Shell：`src/pages/options/OptionsApp.tsx`
-- 顶栏：全局搜索入口（快捷键或按钮打开 `GlobalSearchOverlay`），浮层内搜索书签/标签，单击跳转 Bookmarks 或按标签筛选，双击打开并计数
+- 布局：左侧为导航栏（`NavigationSidebar`，含品牌图标/标题 + Tab 按钮），右侧为内容区；内容区顶栏（header）左侧为可输入全局搜索框（带搜索图标、偏灰背景），宽度约 30% header，有输入时在搜索框正下方以下拉形式展示书签/标签结果，无输入或点击外部或按 Escape 关闭；顶栏右侧为主题切换与设置按钮。
+- 全局搜索（`GlobalSearchOverlay`）：在 header 搜索框内输入即展开下拉结果；书签/标签结果交互与原先一致（单击跳转 Bookmarks 或按标签筛选，双击打开并计数）。
 - Tab（左侧导航）：
   - Home：`src/pages/options/pages/HomepagePage.tsx`
   - Bookmarks：`src/pages/options/pages/BookmarksPage.tsx`
@@ -221,7 +222,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - 主题与国际化：主题切换、语言切换
 - 交互增强：拖拽赋值/移除、侧边栏辅助管理
 - 标签关系图：共现图全局/中心模式、簇布局与边线宽、边标签「概率 (数量)」
-- 全局搜索：Options 顶栏入口，浮层内搜索书签/标签并跳转或打开
+- 全局搜索：Options 右侧顶栏内可输入搜索框，下拉展示书签/标签结果并跳转或打开
 
 ## 7. 权限与隐私
 

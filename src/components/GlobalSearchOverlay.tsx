@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useState, useRef, type ReactNode, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useState, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getAllBookmarks, getAllTags, incrementBookmarkClick } from '../lib/bookmarkService';
 import { openUrlWithMode, openUrlsWithMode } from '../lib/chrome';
 import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode, getTagsMap, saveTagsMap } from '../lib/storage';
 import type { Tag, BookmarkItem } from '../lib/types';
 import { useClickDoubleClick } from '../lib/hooks/useClickDoubleClick';
-import { SearchInput } from './SearchInput';
 import { TagPill } from './TagPill';
 import './globalSearchOverlay.css';
 
@@ -98,20 +97,19 @@ const TagResultItem = ({ tag, searchQuery, onSingleClick, onDoubleClick }: TagRe
 };
 
 export interface GlobalSearchOverlayProps {
-  isOpen: boolean;
-  onClose: () => void;
+  searchQuery: string;
   onNavigateToBookmarks: (params?: { tag?: string; query?: string }) => void;
 }
 
-export const GlobalSearchOverlay = ({ isOpen, onClose, onNavigateToBookmarks }: GlobalSearchOverlayProps) => {
+export const GlobalSearchOverlay = ({ searchQuery, onNavigateToBookmarks }: GlobalSearchOverlayProps) => {
   const { t } = useTranslation();
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const resultsRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
     const load = async () => {
       try {
         const [bookmarksData, tagsData] = await Promise.all([getAllBookmarks(), getAllTags()]);
@@ -122,20 +120,7 @@ export const GlobalSearchOverlay = ({ isOpen, onClose, onNavigateToBookmarks }: 
       }
     };
     void load();
-    setSearchQuery('');
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, onClose]);
+  }, [searchQuery]);
 
   const tagById = useMemo(() => {
     const map = new Map<string, Tag>();
@@ -200,68 +185,44 @@ export const GlobalSearchOverlay = ({ isOpen, onClose, onNavigateToBookmarks }: 
     }
   };
 
-  const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      onClose();
-      (e.currentTarget as HTMLInputElement).blur();
-    }
-  };
-
-  if (!isOpen) return null;
+  if (searchQuery.trim() === '') return null;
 
   return (
-    <div className="global-search__backdrop" role="dialog" aria-modal="true" aria-label={t('common.search')}>
-      <div className="global-search__panel" ref={resultsRef} tabIndex={-1}>
-        <div className="global-search__topbar">
-          <div className="global-search__input">
-            <SearchInput
-              value={searchQuery}
-              placeholder={t('globalSearch.placeholder')}
-              onChange={setSearchQuery}
-              onKeyDown={handleInputKeyDown}
-              autoFocus
-            />
+    <div className="global-search__dropdown-panel" ref={dropdownRef} role="listbox" aria-label={t('common.search')}>
+      <div className="global-search__results">
+        {bookmarkResults.length > 0 && (
+          <div className="global-search__section">
+            <div className="global-search__section-title">{t('bookmark.title')}</div>
+            <div className="global-search__list">
+              {bookmarkResults.map(({ bookmark }) => (
+                <BookmarkResultItem
+                  key={bookmark.id}
+                  bookmark={bookmark}
+                  tagById={tagById}
+                  searchQuery={searchQuery}
+                  onSingleClick={handleBookmarkSingle}
+                  onDoubleClick={handleBookmarkDouble}
+                />
+              ))}
+            </div>
           </div>
-          <button type="button" className="global-search__cancel" onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-        </div>
-        <div className="global-search__results">
-          {bookmarkResults.length > 0 && (
-            <div className="global-search__section">
-              <div className="global-search__section-title">{t('bookmark.title')}</div>
-              <div className="global-search__list">
-                {bookmarkResults.map(({ bookmark }) => (
-                  <BookmarkResultItem
-                    key={bookmark.id}
-                    bookmark={bookmark}
-                    tagById={tagById}
-                    searchQuery={searchQuery}
-                    onSingleClick={handleBookmarkSingle}
-                    onDoubleClick={handleBookmarkDouble}
-                  />
-                ))}
-              </div>
+        )}
+        {tagResults.length > 0 && (
+          <div className="global-search__section">
+            <div className="global-search__section-title">{t('tag.title')}</div>
+            <div className="global-search__list">
+              {tagResults.map(({ tag }) => (
+                <TagResultItem
+                  key={tag.id}
+                  tag={tag}
+                  searchQuery={searchQuery}
+                  onSingleClick={handleTagSingle}
+                  onDoubleClick={handleTagDouble}
+                />
+              ))}
             </div>
-          )}
-          {tagResults.length > 0 && (
-            <div className="global-search__section">
-              <div className="global-search__section-title">{t('tag.title')}</div>
-              <div className="global-search__list">
-                {tagResults.map(({ tag }) => (
-                  <TagResultItem
-                    key={tag.id}
-                    tag={tag}
-                    searchQuery={searchQuery}
-                    onSingleClick={handleTagSingle}
-                    onDoubleClick={handleTagDouble}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
