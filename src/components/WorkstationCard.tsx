@@ -1,23 +1,17 @@
 import { type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from './IconButton';
-import { TagPill } from './TagPill';
 import type { Workstation } from '../lib/types';
 import './workstationCard.css';
 
 interface WorkstationCardProps {
   workstation: Workstation;
-  onEdit: (workstation: Workstation) => void;
   onTogglePin: (workstationId: string) => void;
   onClick?: (workstationId: string) => void;
 }
 
-export const WorkstationCard = ({ workstation, onEdit, onTogglePin, onClick }: WorkstationCardProps) => {
+export const WorkstationCard = ({ workstation, onTogglePin, onClick }: WorkstationCardProps) => {
   const { t } = useTranslation();
-  const handleEditClick = (e: MouseEvent) => {
-    e.stopPropagation();
-    onEdit(workstation);
-  };
 
   const handlePinClick = (e: MouseEvent) => {
     e.stopPropagation();
@@ -36,24 +30,8 @@ export const WorkstationCard = ({ workstation, onEdit, onTogglePin, onClick }: W
       onClick={handleCardClick}
     >
       <div className="workstation-card__header">
-        <TagPill label={workstation.name} color={workstation.color} size="large" />
+        <h3 className="workstation-card__title">{workstation.name}</h3>
         <div className="workstation-card__actions">
-          <IconButton
-            variant="secondary"
-            icon={
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M11.333 2.00004C11.5084 1.82464 11.7163 1.68576 11.9447 1.59203C12.1731 1.4983 12.4173 1.45166 12.6637 1.45504C12.91 1.45842 13.1527 1.51174 13.3777 1.61182C13.6027 1.7119 13.8055 1.85664 13.974 2.03771C14.1425 2.21878 14.2732 2.43249 14.3586 2.66604C14.444 2.89959 14.4822 3.14819 14.471 3.39671C14.4598 3.64523 14.3994 3.88888 14.2933 4.11338C14.1872 4.33788 14.0377 4.53875 13.8533 4.70404L6.18 12.3774L2.66667 13.3334L3.62267 9.82004L11.333 2.00004Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
-            aria-label={t('workstation.edit')}
-            onClick={handleEditClick}
-          />
           <IconButton
             variant={workstation.pinned ? 'primary' : 'secondary'}
             icon={

@@ -1,15 +1,18 @@
-import { useEffect, useState, useRef, useCallback, useMemo, type ReactNode, type KeyboardEvent } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getHotTags, getAllBookmarks, getAllTags, incrementBookmarkClick, createBookmark, createTag } from '../../../lib/bookmarkService';
-import { getAllWorkstations, createWorkstation, deleteWorkstation } from '../../../lib/workstationService';
-import { openUrlWithMode, openUrlsWithMode } from '../../../lib/chrome';
-import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode, getTagsMap, saveTagsMap } from '../../../lib/storage';
+import { getAllBookmarks, getAllTags, createBookmark, createTag, getPinnedBookmarks, updateTag, updateBookmark, deleteBookmark } from '../../../lib/bookmarkService';
+import { getAllWorkstations, createWorkstation, updateWorkstation, openWorkstation } from '../../../lib/workstationService';
+import { openUrlsWithMode, openUrlWithMode } from '../../../lib/chrome';
+import { getBrowserTagWorkstationOpenMode, getBrowserDefaultOpenMode } from '../../../lib/storage';
 import type { Tag, Workstation, BookmarkItem } from '../../../lib/types';
-import { useClickDoubleClick } from '../../../lib/hooks/useClickDoubleClick';
-import { SearchInput } from '../../../components/SearchInput';
-import { TagPill } from '../../../components/TagPill';
-import { HomepageWorkstationCard } from '../../../components/HomepageWorkstationCard';
-import { PixelButton } from '../../../components/PixelButton';
+import { IconButton } from '../../../components/IconButton';
+import { HorizontalScrollList } from '../../../components/HorizontalScrollList';
+import { HomepagePinnedWorkstationCard } from '../../../components/HomepagePinnedWorkstationCard';
+import { HomepagePinnedTagCard } from '../../../components/HomepagePinnedTagCard';
+import { HomepagePinnedBookmarkCard } from '../../../components/HomepagePinnedBookmarkCard';
+import { WorkstationBookmarkSidebar } from '../../../components/WorkstationBookmarkSidebar';
+import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
+import { BookmarkEditSidebar } from '../../../components/BookmarkEditSidebar';
 import { FloatingActionButton } from '../../../components/FloatingActionButton';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { TagEditModal } from '../../../components/TagEditModal';
@@ -20,178 +23,35 @@ interface HomepagePageProps {
   onNavigate: (tab: 'bookmarks' | 'tags' | 'workstations') => void;
 }
 
-type BookmarkSearchResult = {
-  bookmark: BookmarkItem;
-  matchScore: number;
-  sortScore: number;
-};
-
-type TagSearchResult = {
-  tag: Tag;
-  matchScore: number;
-  sortScore: number;
-};
-
-const normalizeQuery = (q: string) => q.trim().toLowerCase();
-
-const includesCI = (text: string | undefined, q: string) => {
-  if (!text) return false;
-  return text.toLowerCase().includes(q);
-};
-
-const renderHighlighted = (text: string, rawQuery: string): ReactNode => {
-  const query = normalizeQuery(rawQuery);
-  if (!query) return text;
-
-  const lowerText = text.toLowerCase();
-  const parts: ReactNode[] = [];
-  let i = 0;
-
-  while (i < text.length) {
-    const hitIndex = lowerText.indexOf(query, i);
-    if (hitIndex === -1) {
-      parts.push(text.slice(i));
-      break;
-    }
-    if (hitIndex > i) {
-      parts.push(text.slice(i, hitIndex));
-    }
-    parts.push(
-      <span key={`${hitIndex}-${i}`} className="homepage-search__highlight">
-        {text.slice(hitIndex, hitIndex + query.length)}
-      </span>
-    );
-    i = hitIndex + query.length;
-  }
-
-  return <>{parts}</>;
-};
-
-// Bookmark搜索结果项组件
-interface BookmarkSearchResultItemProps {
-  bookmark: BookmarkItem;
-  tagById: Map<string, Tag>;
-  searchQuery: string;
-  renderHighlighted: (text: string, rawQuery: string) => ReactNode;
-  onSingleClick: (bookmark: BookmarkItem) => void;
-  onDoubleClick: (bookmark: BookmarkItem) => void;
-}
-
-const BookmarkSearchResultItem = ({
-  bookmark,
-  tagById,
-  searchQuery,
-  renderHighlighted,
-  onSingleClick,
-  onDoubleClick,
-}: BookmarkSearchResultItemProps) => {
-  const tags = (bookmark.tags ?? []).map((id) => tagById.get(id)).filter((t): t is Tag => Boolean(t));
-  const visibleTags = tags.slice(0, 2);
-  const remainingCount = Math.max(0, tags.length - visibleTags.length);
-
-  const { handleClick, handleDoubleClick } = useClickDoubleClick({
-    onClick: () => onSingleClick(bookmark),
-    onDoubleClick: () => void onDoubleClick(bookmark),
-  });
-
-  return (
-    <button
-      type="button"
-      className="homepage-search__bookmark-item"
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-    >
-      <div className="homepage-search__bookmark-main">
-        <div className="homepage-search__bookmark-title" title={bookmark.title}>
-          {renderHighlighted(bookmark.title, searchQuery)}
-        </div>
-        <div className="homepage-search__bookmark-url" title={bookmark.url}>
-          {renderHighlighted(bookmark.url, searchQuery)}
-        </div>
-      </div>
-      {(visibleTags.length > 0 || remainingCount > 0) && (
-        <div className="homepage-search__bookmark-tags" aria-label="tags">
-          {visibleTags.map((t) => (
-            <TagPill key={t.id} label={t.name} color={t.color} size="small" />
-          ))}
-          {remainingCount > 0 && <span className="homepage-search__bookmark-tags-more">+{remainingCount}</span>}
-        </div>
-      )}
-    </button>
-  );
-};
-
-// Tag搜索结果项组件
-interface TagSearchResultItemProps {
-  tag: Tag;
-  searchQuery: string;
-  renderHighlighted: (text: string, rawQuery: string) => ReactNode;
-  onSingleClick: (tagId: string) => void;
-  onDoubleClick: (tagId: string) => void;
-}
-
-const TagSearchResultItem = ({
-  tag,
-  searchQuery,
-  renderHighlighted,
-  onSingleClick,
-  onDoubleClick,
-}: TagSearchResultItemProps) => {
-  const { t } = useTranslation();
-  const { handleClick, handleDoubleClick } = useClickDoubleClick({
-    onClick: () => onSingleClick(tag.id),
-    onDoubleClick: () => void onDoubleClick(tag.id),
-  });
-
-  return (
-    <button
-      type="button"
-      className="homepage-search__tag-item"
-      onClick={handleClick}
-      onDoubleClick={handleDoubleClick}
-    >
-      <span className="homepage-search__tag-dot" style={{ backgroundColor: tag.color }} aria-hidden="true" />
-      <div className="homepage-search__tag-main">
-        <div className="homepage-search__tag-title" title={tag.name}>
-          {renderHighlighted(tag.name, searchQuery)}
-        </div>
-        <div className="homepage-search__tag-desc" title={tag.description ?? ''}>
-          {tag.description ? renderHighlighted(tag.description, searchQuery) : <span className="homepage-search__tag-desc-empty">{t('tag.noDescription')}</span>}
-        </div>
-      </div>
-    </button>
-  );
-};
-
 export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const { t } = useTranslation();
-  const [hotTags, setHotTags] = useState<Tag[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchMode, setIsSearchMode] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
-  const [visibleTagCount, setVisibleTagCount] = useState<number>(0);
-  const tagsListRef = useRef<HTMLDivElement>(null);
-  const tagRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [visibleWorkstationCount, setVisibleWorkstationCount] = useState<number>(4);
-  const workstationsListRef = useRef<HTMLDivElement>(null);
+  const homepageContentRef = useRef<HTMLDivElement>(null);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isWorkstationModalOpen, setIsWorkstationModalOpen] = useState(false);
+  
+  // 侧边栏状态
+  const [isWorkstationSidebarOpen, setIsWorkstationSidebarOpen] = useState(false);
+  const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
+  const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
+  const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
+  const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [hotTagsData, workstationsData, bookmarksData, tagsData] = await Promise.all([
-        getHotTags(10),
+      const [workstationsData, bookmarksData, tagsData] = await Promise.all([
         getAllWorkstations(),
         getAllBookmarks(),
         getAllTags(),
       ]);
-      setHotTags(hotTagsData.map((ht) => ht.tag));
       setWorkstations(workstationsData);
       setBookmarks(bookmarksData);
       setAllTags(tagsData);
@@ -206,276 +66,142 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     void loadData();
   }, []);
 
+  // 获取置顶数据（按clickCount倒序）
+  const pinnedWorkstations = useMemo(() => {
+    return workstations
+      .filter((w) => w.pinned)
+      .sort((a, b) => b.clickCount - a.clickCount);
+  }, [workstations]);
+
+  const pinnedTags = useMemo(() => {
+    return allTags
+      .filter((t) => t.pinned)
+      .sort((a, b) => b.clickCount - a.clickCount);
+  }, [allTags]);
+
+  const pinnedBookmarks = useMemo(() => {
+    return bookmarks
+      .filter((b) => b.pinned)
+      .sort((a, b) => b.clickCount - a.clickCount);
+  }, [bookmarks]);
+
+  /* 内容区滚动：超过阈值显示回到顶部（与 bookmarks/tags 一致） */
   useEffect(() => {
-    if (!isSearchMode) return;
-    pageRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [isSearchMode]);
+    const scrollParent = homepageContentRef.current;
+    if (!scrollParent) return;
 
-  // 动态计算可见的tag数量
-  const calculateVisibleTags = useCallback(() => {
-    if (!tagsListRef.current || hotTags.length === 0) {
-      setVisibleTagCount(hotTags.length);
-      return;
-    }
-
-    const container = tagsListRef.current;
-    const containerWidth = container.offsetWidth;
-    const labelWidth = 80; // "choose tags" 标签的宽度
-    const moreButtonWidth = 60; // more按钮的宽度
-    const gap = 12; // tag之间的间距
-    // 始终为more按钮预留空间（只要有标签，more按钮就会显示）
-    let availableWidth = containerWidth - labelWidth - gap - moreButtonWidth - gap;
-    let totalWidth = 0;
-    let count = 0;
-
-    for (let i = 0; i < hotTags.length; i++) {
-      const tagElement = tagRefs.current[i];
-      if (!tagElement) continue;
-
-      const tagWidth = tagElement.offsetWidth || 0;
-      const neededWidth = totalWidth + tagWidth + (count > 0 ? gap : 0);
-
-      if (neededWidth <= availableWidth) {
-        totalWidth = neededWidth;
-        count++;
-      } else {
-        break;
-      }
-    }
-
-    setVisibleTagCount(count);
-  }, [hotTags]);
-
-  // 监听容器大小变化和tag数量变化
-  useEffect(() => {
-    if (hotTags.length === 0) {
-      setVisibleTagCount(0);
-      return;
-    }
-
-    // 延迟计算，确保DOM已渲染
-    const timer = setTimeout(() => {
-      calculateVisibleTags();
-    }, 0);
-
-    return () => clearTimeout(timer);
-  }, [hotTags, calculateVisibleTags]);
-
-  // 使用ResizeObserver监听容器大小变化
-  useEffect(() => {
-    if (!tagsListRef.current) return;
-
-    const resizeObserver = new ResizeObserver(() => {
-      calculateVisibleTags();
-    });
-
-    resizeObserver.observe(tagsListRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
+    const onScroll = () => {
+      setShowScrollToTop(scrollParent.scrollTop > 400);
     };
-  }, [calculateVisibleTags]);
 
-  // 计算可见的工作区数量
-  const calculateVisibleWorkstations = useCallback(() => {
-    if (!workstationsListRef.current || workstations.length === 0) {
-      setVisibleWorkstationCount(workstations.length);
-      return;
+    onScroll();
+    scrollParent.addEventListener('scroll', onScroll, { passive: true });
+    return () => scrollParent.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const handleScrollToTop = () => {
+    homepageContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 工作区交互
+  const handleWorkstationClick = (workstationId: string) => {
+    if (!isWorkstationSidebarOpen || selectedWorkstationId !== workstationId) {
+      setSelectedWorkstationId(workstationId);
+      setIsWorkstationSidebarOpen(true);
+    } else {
+      void loadData();
     }
+  };
 
-    const container = workstationsListRef.current;
-    const containerWidth = container.offsetWidth;
-    const cardWidth = 200; // card固定宽度
-    const gap = 16; // gap大小
-    
-    // 计算能放多少个card（向下取整）
-    const count = Math.floor((containerWidth + gap) / (cardWidth + gap));
-    const visibleCount = Math.max(1, count); // 至少显示1个
-    
-    setVisibleWorkstationCount(visibleCount);
-  }, [workstations.length]);
+  const handleWorkstationDoubleClick = async (workstationId: string) => {
+    await openWorkstation(workstationId);
+    await loadData();
+  };
 
-  // 监听工作区列表容器大小变化
-  useEffect(() => {
-    if (!workstationsListRef.current || workstations.length === 0) {
-      setVisibleWorkstationCount(workstations.length);
-      return;
-    }
-
-    const resizeObserver = new ResizeObserver(() => {
-      calculateVisibleWorkstations();
-    });
-
-    resizeObserver.observe(workstationsListRef.current);
-
-    // 初始计算
-    calculateVisibleWorkstations();
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [workstations.length, calculateVisibleWorkstations]);
-
-  const handleOpenAll = async (workstationId: string) => {
+  const handleToggleWorkstationPin = async (workstationId: string) => {
     const workstation = workstations.find((w) => w.id === workstationId);
-    if (!workstation) return;
-
-    // 获取工作区绑定的书签URL
-    const bookmarkUrls: string[] = [];
-    for (const bookmarkId of workstation.bookmarks) {
-      const bookmark = bookmarks.find((b) => b.id === bookmarkId);
-      if (bookmark?.url) {
-        bookmarkUrls.push(bookmark.url);
-      }
+    if (workstation) {
+      await updateWorkstation(workstationId, { pinned: !workstation.pinned });
+      await loadData();
     }
+  };
 
-    if (bookmarkUrls.length > 0) {
+  const handleCloseWorkstationSidebar = () => {
+    setIsWorkstationSidebarOpen(false);
+    setSelectedWorkstationId(null);
+  };
+
+  // Tag交互
+  const handleTagClick = (tagId: string) => {
+    if (!isTagSidebarOpen || selectedTagId !== tagId) {
+      setSelectedTagId(tagId);
+      setIsTagSidebarOpen(true);
+    } else {
+      void loadData();
+    }
+  };
+
+  const handleTagDoubleClick = async (tagId: string) => {
+    const tagBookmarks = bookmarks.filter((b) => b.tags.includes(tagId));
+    const urls = tagBookmarks.map((b) => b.url).filter(Boolean);
+    if (urls.length > 0) {
       const mode = await getBrowserTagWorkstationOpenMode();
-      await openUrlsWithMode(bookmarkUrls, mode);
+      await openUrlsWithMode(urls, mode);
     }
+  };
+
+  const handleToggleTagPin = async (tagId: string) => {
+    const tag = allTags.find((t) => t.id === tagId);
+    if (tag) {
+      await updateTag(tagId, { pinned: !tag.pinned });
+      await loadData();
+    }
+  };
+
+  const handleCloseTagSidebar = () => {
+    setIsTagSidebarOpen(false);
+    setSelectedTagId(null);
+  };
+
+  // Bookmark交互
+  const handleBookmarkClick = (bookmark: BookmarkItem) => {
+    setEditingBookmark(bookmark);
+  };
+
+  const handleBookmarkDoubleClick = async (bookmark: BookmarkItem) => {
+    const mode = await getBrowserDefaultOpenMode();
+    await openUrlWithMode(bookmark.url, mode);
+  };
+
+  const handleToggleBookmarkPin = async (bookmarkId: string) => {
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (bookmark) {
+      await updateBookmark(bookmarkId, { pinned: !bookmark.pinned });
+      await loadData();
+    }
+  };
+
+  const handleCloseBookmarkEditSidebar = () => {
+    setEditingBookmark(null);
+  };
+
+  const handleDeleteBookmark = async (bookmarkId: string) => {
+    await deleteBookmark(bookmarkId);
+    await loadData();
+    setEditingBookmark(null);
+  };
+
+  // 更多按钮
+  const handleMoreWorkstations = () => {
+    onNavigate('workstations');
   };
 
   const handleMoreTags = () => {
     onNavigate('tags');
   };
 
-  const handleTagClick = (tagId: string) => {
-    // 跳转到书签列表页，并通过URL参数传递tag筛选条件
-    const url = new URL(window.location.href);
-    url.searchParams.set('tab', 'bookmarks');
-    url.searchParams.set('tag', tagId);
-    // 更新URL参数（不刷新页面）
-    window.history.replaceState({}, '', url.toString());
-    // 切换到书签页
+  const handleMoreBookmarks = () => {
     onNavigate('bookmarks');
-  };
-
-  const handleEnterSearchMode = () => {
-    if (isSearchMode) return;
-    setIsSearchMode(true);
-  };
-
-  const handleCancelSearch = () => {
-    setSearchQuery('');
-    setIsSearchMode(false);
-  };
-
-  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key !== 'Escape') return;
-    event.preventDefault();
-    handleCancelSearch();
-    // 避免退出后仍保持焦点，触发 onFocus 又进入搜索模式
-    (event.currentTarget as HTMLInputElement).blur();
-  };
-
-  // 导航到bookmark列表页，带query搜索关键词
-  const navigateToBookmarksWithQuery = (query: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('tab', 'bookmarks');
-    url.searchParams.set('query', query);
-    window.history.replaceState({}, '', url.toString());
-    onNavigate('bookmarks');
-  };
-
-  // bookmark搜索结果：单击跳转到bookmark列表页，双击打开书签网页
-  const handleBookmarkResultClick = (bookmark: BookmarkItem) => {
-    navigateToBookmarksWithQuery(bookmark.title);
-  };
-
-  const handleBookmarkResultDoubleClick = async (bookmark: BookmarkItem) => {
-    await incrementBookmarkClick(bookmark.id);
-    setBookmarks((prev) =>
-      prev.map((b) => (b.id === bookmark.id ? { ...b, clickCount: (b.clickCount ?? 0) + 1 } : b))
-    );
-    const mode = await getBrowserDefaultOpenMode();
-    await openUrlWithMode(bookmark.url, mode);
-  };
-
-  // tag搜索结果：单击跳转到bookmark列表页，双击打开tag所有书签网页
-  const handleTagResultClick = (tagId: string) => {
-    setIsSearchMode(false);
-    handleTagClick(tagId);
-  };
-
-  const handleTagResultDoubleClick = async (tagId: string) => {
-    // 双击打开标签下的所有书签
-    const tagBookmarks = bookmarks.filter((bookmark) => bookmark.tags.includes(tagId));
-    if (tagBookmarks.length === 0) return;
-
-    // 获取所有书签的URL
-    const urls = tagBookmarks.map((bookmark) => bookmark.url).filter(Boolean);
-    if (urls.length > 0) {
-      const mode = await getBrowserTagWorkstationOpenMode();
-      await openUrlsWithMode(urls, mode);
-      
-      // 更新标签的点击计数
-      const tag = allTags.find((t) => t.id === tagId);
-      if (tag) {
-        const tagsMap = await getTagsMap();
-        const targetTag = tagsMap[tagId];
-        if (targetTag) {
-          targetTag.clickCount += 1;
-          targetTag.updatedAt = Date.now();
-          await saveTagsMap(tagsMap);
-          await loadData();
-        }
-      }
-    }
-  };
-
-  const tagById = useMemo(() => {
-    const map = new Map<string, Tag>();
-    allTags.forEach((t) => map.set(t.id, t));
-    return map;
-  }, [allTags]);
-
-  const { bookmarkResults, tagResults } = useMemo(() => {
-    const q = normalizeQuery(searchQuery);
-    if (!q) {
-      return { bookmarkResults: [] as BookmarkSearchResult[], tagResults: [] as TagSearchResult[] };
-    }
-
-    const scoredBookmarks: BookmarkSearchResult[] = [];
-    for (const bookmark of bookmarks) {
-      const titleHit = includesCI(bookmark.title, q);
-      const urlHit = includesCI(bookmark.url, q);
-      const matchScore = (titleHit ? 1.2 : 0) + (urlHit ? 1.0 : 0);
-      if (matchScore <= 0) continue;
-      const frequencyScore = (bookmark.clickCount ?? 0) / 100;
-      const sortScore = 0.75 * matchScore + 0.25 * frequencyScore;
-      scoredBookmarks.push({ bookmark, matchScore, sortScore });
-    }
-    scoredBookmarks.sort((a, b) => {
-      const scoreDiff = b.sortScore - a.sortScore;
-      if (scoreDiff !== 0) return scoreDiff;
-      return b.bookmark.createdAt - a.bookmark.createdAt;
-    });
-
-    const scoredTags: TagSearchResult[] = [];
-    for (const tag of allTags) {
-      const nameHit = includesCI(tag.name, q);
-      const descHit = includesCI(tag.description ?? '', q);
-      const matchScore = (nameHit ? 1.5 : 0) + (descHit ? 1.0 : 0);
-      if (matchScore <= 0) continue;
-      const sortScore = matchScore; // alpha=1, frequency=0
-      scoredTags.push({ tag, matchScore, sortScore });
-    }
-    scoredTags.sort((a, b) => {
-      const scoreDiff = b.sortScore - a.sortScore;
-      if (scoreDiff !== 0) return scoreDiff;
-      return b.tag.createdAt - a.tag.createdAt;
-    });
-
-    return { bookmarkResults: scoredBookmarks, tagResults: scoredTags };
-  }, [searchQuery, bookmarks, allTags]);
-
-  const handleMoreWorkstations = () => {
-    onNavigate('workstations');
-  };
-
-  const handleDeleteWorkstation = async (workstationId: string) => {
-    await deleteWorkstation(workstationId);
-    await loadData();
   };
 
   const handleCreateBookmark = async (data: { title: string; url: string; tags: string[]; pinned: boolean }) => {
@@ -494,8 +220,8 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     }, 1600);
   };
 
-  const handleCreateWorkstation = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
-    await createWorkstation(data);
+  const handleCreateWorkstation = async (data: { name: string; description?: string; pinned: boolean }) => {
+    await createWorkstation({ name: data.name, description: data.description, pinned: data.pinned });
     // 延迟刷新数据，让成功提示先显示
     setTimeout(() => {
       void loadData();
@@ -506,154 +232,136 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     return <div className="homepage-page" aria-busy="true" />;
   }
 
+  const selectedWorkstation = workstations.find((w) => w.id === selectedWorkstationId);
+  const selectedTag = allTags.find((t) => t.id === selectedTagId);
+
   return (
-    <div className={`homepage-page ${isSearchMode ? 'homepage-page--search-mode' : ''}`} ref={pageRef}>
-      {isSearchMode ? (
-        <div className="homepage-search__topbar">
-          <div className="homepage-search__input">
-            <SearchInput
-              value={searchQuery}
-              placeholder={t('homepage.searchPlaceholder')}
-              onChange={setSearchQuery}
-              onFocus={handleEnterSearchMode}
-              onKeyDown={handleSearchKeyDown}
-              autoFocus
+    <div className="homepage-page" ref={pageRef}>
+      <div className="homepage-page__header-section">
+        <div className="homepage-page__header">
+          <h1 className="homepage-page__title">{t('app.title')}</h1>
+          <p className="homepage-page__slogan">{t('homepage.slogan')}</p>
+        </div>
+      </div>
+
+      <div className="homepage-content-wrapper">
+        <div className="homepage-page__content" ref={homepageContentRef}>
+          {pinnedWorkstations.length > 0 && (
+            <HorizontalScrollList
+              title={t('homepage.pinnedWorkstations')}
+              onMoreClick={handleMoreWorkstations}
+            >
+              {pinnedWorkstations.map((workstation) => (
+                <HomepagePinnedWorkstationCard
+                  key={workstation.id}
+                  workstation={workstation}
+                  bookmarks={bookmarks}
+                  onClick={handleWorkstationClick}
+                  onDoubleClick={handleWorkstationDoubleClick}
+                  onTogglePin={handleToggleWorkstationPin}
+                />
+              ))}
+            </HorizontalScrollList>
+          )}
+
+          {pinnedTags.length > 0 && (
+            <HorizontalScrollList
+              title={t('homepage.pinnedTags')}
+              onMoreClick={handleMoreTags}
+            >
+              {pinnedTags.map((tag) => (
+                <HomepagePinnedTagCard
+                  key={tag.id}
+                  tag={tag}
+                  onClick={handleTagClick}
+                  onDoubleClick={handleTagDoubleClick}
+                  onTogglePin={handleToggleTagPin}
+                />
+              ))}
+            </HorizontalScrollList>
+          )}
+
+          {pinnedBookmarks.length > 0 && (
+            <HorizontalScrollList
+              title={t('homepage.pinnedBookmarks')}
+              onMoreClick={handleMoreBookmarks}
+            >
+              {pinnedBookmarks.map((bookmark) => (
+                <HomepagePinnedBookmarkCard
+                  key={bookmark.id}
+                  bookmark={bookmark}
+                  onClick={handleBookmarkClick}
+                  onDoubleClick={handleBookmarkDoubleClick}
+                  onTogglePin={handleToggleBookmarkPin}
+                />
+              ))}
+            </HorizontalScrollList>
+          )}
+        </div>
+
+        {isWorkstationSidebarOpen && selectedWorkstation && (
+          <div ref={sidebarRef} className="homepage-sidebar-wrapper">
+            <WorkstationBookmarkSidebar
+              workstationId={selectedWorkstationId}
+              workstation={selectedWorkstation}
+              bookmarks={bookmarks}
+              tags={allTags}
+              onClose={handleCloseWorkstationSidebar}
+              onRemoveBookmark={async () => {}}
+              onRefresh={() => void loadData()}
+              onAddBookmarkClick={() => {}}
+              onWorkstationUpdated={() => void loadData()}
+              onDeleteClick={() => {}}
             />
           </div>
-          <button type="button" className="homepage-search__cancel" onClick={handleCancelSearch}>
-            {t('common.cancel')}
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="homepage-page__header-section">
-            <div className="homepage-page__header">
-              <h1 className="homepage-page__title">{t('app.title')}</h1>
-              <p className="homepage-page__slogan">{t('homepage.slogan')}</p>
-            </div>
-          </div>
+        )}
 
-          <div className="homepage-page__search-tags-container">
-            <div className="homepage-page__search">
-              <SearchInput
-                value={searchQuery}
-                placeholder={t('homepage.searchPlaceholder')}
-                onChange={setSearchQuery}
-                onFocus={handleEnterSearchMode}
-                onKeyDown={handleSearchKeyDown}
+        {isTagSidebarOpen && selectedTag && (
+          <div ref={sidebarRef} className="homepage-sidebar-wrapper">
+            <BookmarkSidebar
+              tagId={selectedTagId}
+              tag={selectedTag}
+              bookmarks={bookmarks}
+              tags={allTags}
+              onClose={handleCloseTagSidebar}
+              onRefresh={() => void loadData()}
+              onTagUpdated={() => void loadData()}
+            />
+          </div>
+        )}
+
+        {editingBookmark && (
+          <div ref={sidebarRef} className="homepage-sidebar-wrapper">
+            <BookmarkEditSidebar
+              bookmark={editingBookmark}
+              workstations={workstations}
+              tags={allTags}
+              onClose={handleCloseBookmarkEditSidebar}
+              onBookmarkUpdated={() => void loadData()}
+              onDelete={handleDeleteBookmark}
+            />
+          </div>
+        )}
+      </div>
+
+      {showScrollToTop && (
+        <IconButton
+          variant="secondary"
+          className="homepage-scroll-to-top"
+          aria-label={t('common.backToTop')}
+          onClick={handleScrollToTop}
+          icon={
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 5l-7 7m7-7l7 7M12 5v14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
-            </div>
-
-            <div className="homepage-page__tags-section">
-              <div className="homepage-page__tags-label">{t('homepage.chooseTags')}</div>
-              <div className="homepage-page__tags-list" ref={tagsListRef}>
-                {hotTags.map((tag, index) => {
-                  const isVisible = index < visibleTagCount;
-                  return (
-                    <div
-                      key={tag.id}
-                      ref={(el) => {
-                        tagRefs.current[index] = el;
-                      }}
-                      style={{ display: isVisible ? 'block' : 'none' }}
-                    >
-                      <TagPill
-                        label={tag.name}
-                        color={tag.color}
-                        size="default"
-                        onClick={() => handleTagClick(tag.id)}
-                      />
-                    </div>
-                  );
-                })}
-                {hotTags.length > 0 && (
-                  <button
-                    type="button"
-                    className="homepage-page__tags-more-button"
-                    onClick={handleMoreTags}
-                  >
-                    {t('homepage.viewAll')}
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {workstations.length > 0 && (
-            <div className="homepage-page__workstations-section">
-              {workstations.length > visibleWorkstationCount && (
-                <div className="homepage-page__workstations-header">
-                  <button
-                    type="button"
-                    className="homepage-page__workstations-more"
-                    onClick={handleMoreWorkstations}
-                  >
-                    {t('homepage.viewAll')}
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-              <div className="homepage-page__workstations-list" ref={workstationsListRef}>
-                {workstations.slice(0, visibleWorkstationCount).map((workstation) => (
-                  <HomepageWorkstationCard
-                    key={workstation.id}
-                    workstation={workstation}
-                    bookmarks={bookmarks}
-                    onOpenAll={handleOpenAll}
-                    onDelete={handleDeleteWorkstation}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {isSearchMode && (
-        <div className="homepage-search__results">
-          <div className="homepage-search__section">
-            <div className="homepage-search__section-title">{t('bookmark.title')}</div>
-            <div className="homepage-search__list">
-              {bookmarkResults.length === 0 ? (
-                <div className="homepage-search__empty">{t('homepage.noResults')}</div>
-              ) : (
-                bookmarkResults.map(({ bookmark }) => (
-                  <BookmarkSearchResultItem
-                    key={bookmark.id}
-                    bookmark={bookmark}
-                    tagById={tagById}
-                    searchQuery={searchQuery}
-                    renderHighlighted={renderHighlighted}
-                    onSingleClick={handleBookmarkResultClick}
-                    onDoubleClick={handleBookmarkResultDoubleClick}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="homepage-search__section">
-            <div className="homepage-search__section-title">{t('tag.title')}</div>
-            <div className="homepage-search__list">
-              {tagResults.length === 0 ? (
-                <div className="homepage-search__empty">{t('homepage.noResults')}</div>
-              ) : (
-                tagResults.map(({ tag }) => (
-                  <TagSearchResultItem
-                    key={tag.id}
-                    tag={tag}
-                    searchQuery={searchQuery}
-                    renderHighlighted={renderHighlighted}
-                    onSingleClick={handleTagResultClick}
-                    onDoubleClick={handleTagResultDoubleClick}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+            </svg>
+          }
+        />
       )}
 
       <FloatingActionButton

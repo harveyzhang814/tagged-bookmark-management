@@ -1,4 +1,5 @@
 .tags-page {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -43,6 +44,14 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+/* 侧边栏吸住：高度由视口减去顶栏与工具栏决定，内部书签列表单独滚动 */
+.tags-sidebar-wrapper {
+  height: calc(100vh - var(--ws-sidebar-offset, 180px));
+  overflow: hidden;
+  align-self: flex-start;
+  flex-shrink: 0;
 }
 
 .tags-content {

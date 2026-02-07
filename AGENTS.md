@@ -3,6 +3,11 @@
 This repo is a Chrome Extension (Manifest V3) built with Vite + React + TypeScript.
 It ships two UI entrypoints (Popup + Options) and one background service worker.
 
+## 修改代码后必须构建（Chrome 扩展）
+
+- 在本会话中**只要对源码或配置做了修改**，在结束该轮修改或建议用户到 Chrome 里验证前，**必须在本会话内执行一次** `npm run build`。
+- 不要仅提示用户“记得 build”——由 Agent **主动执行** `npm run build`，确保 `dist/` 已更新后再让用户去 Chrome 重新加载扩展。
+
 ## Quick Commands
 
 ### Install
@@ -29,6 +34,7 @@ npm run build
 - Outputs to `dist/` via `@crxjs/vite-plugin` and uses:
   - `src/pages/popup/main.html`
   - `src/pages/options/main.html`
+- **Chrome 内测试**：修改源码或配置后，Agent 必须**主动执行** `npm run build`（不要只提醒用户）；完成后再建议用户在 Chrome 中重新加载扩展。
 
 ### Package (release zip)
 
@@ -158,6 +164,7 @@ npx tsc -p tsconfig.json --noEmit
 
 ## Repo-Specific Rules (Cursor/Copilot)
 
+- **Build after code changes**：凡在本会话中修改了源码或配置，必须**由 Agent 执行** `npm run build`，再建议用户在 Chrome 中验证；不得只做文字提醒。
 - **Design guide** (`.cursor/rules/design-guide.mdc`): 设计与开发组件须遵循 `docs/design/DESIGN_GUIDE.md`；新增标准须与用户确认后写入该文件。`alwaysApply: true`。
 - **Commit & docs workflow** (`.cursor/rules/commit-docs-workflow.mdc`): 提交 / PR / 总结更新时：按代码与 chat 总结功能变更；功能变更同步到 `docs/product/PRD.md`；新功能模块在 `docs/feature/` 独立成文，老模块保持更新；遗留问题与风险记入 `docs/risks/`（含涉及代码、位置、触发条件）；自动生成 `feat|fix|docs|chore|...` 前缀的 commit 文案。`alwaysApply: true`。
 - No Copilot instructions found (`.github/copilot-instructions.md` is absent).

@@ -3,16 +3,17 @@
   background: var(--bg-card);
   display: flex;
   flex-direction: column;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   min-width: 0;
   transition: all 0.2s ease;
   padding: 16px;
   gap: 12px;
-  width: 200px;
-  max-width: 200px;
+  width: 100%;
+  min-width: 200px;
+  max-width: none;
   cursor: pointer;
-  flex-shrink: 0;
+  justify-self: stretch;
 }
 
 .homepage-workstation-card:hover {

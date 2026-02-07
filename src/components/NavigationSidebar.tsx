@@ -6,9 +6,11 @@ import './navigationSidebar.css';
 interface NavigationSidebarProps {
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void | Promise<void>;
+  iconUrl?: string;
+  appTitle?: string;
 }
 
-export const NavigationSidebar = ({ activeTab, onTabChange }: NavigationSidebarProps) => {
+export const NavigationSidebar = ({ activeTab, onTabChange, iconUrl, appTitle }: NavigationSidebarProps) => {
   const { t } = useTranslation();
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
@@ -95,6 +97,15 @@ export const NavigationSidebar = ({ activeTab, onTabChange }: NavigationSidebarP
 
   return (
     <nav className="navigation-sidebar">
+      {iconUrl ? (
+        <div className="navigation-sidebar__brand">
+          <img
+            src={iconUrl}
+            alt={appTitle ?? ''}
+            className="navigation-sidebar__icon"
+          />
+        </div>
+      ) : null}
       {tabs.map((tab) => (
         <Tooltip key={tab.key} content={tab.label} position="right">
           <button

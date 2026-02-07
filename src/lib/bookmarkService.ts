@@ -3,8 +3,11 @@ import {
   getSnapshot,
   getTagsMap,
   saveBookmarksMap,
-  saveTagsMap
+  saveTagsMap,
+  getDefaultsInitialized,
+  setDefaultsInitialized
 } from './storage';
+import { syncTagCooccurrence } from './tagCooccurrenceService';
 import type {
   BookmarkInput,
   BookmarkItem,
@@ -143,54 +146,64 @@ const normalizeBookmark = (bookmark: BookmarkItem): BookmarkItem => {
 };
 
 export const ensureDefaults = async () => {
-  const [bookmarks, tags] = await Promise.all([getBookmarksMap(), getTagsMap()]);
+  const [bookmarks, tags, defaultsInitialized] = await Promise.all([
+    getBookmarksMap(),
+    getTagsMap(),
+    getDefaultsInitialized()
+  ]);
 
-  if (Object.keys(tags).length === 0) {
-    const now = Date.now();
-    // 为默认标签分配不同的颜色
-    const defaultTagColors = [
-      TAG_COLOR_PALETTE_24[0], // green-1
-      TAG_COLOR_PALETTE_24[7], // blue-1
-      TAG_COLOR_PALETTE_24[12], // purple-1
-    ];
-    const defaultTags: Tag[] = [
-      {
-        id: generateId('tag'),
-        name: '灵感',
-        color: defaultTagColors[0],
-        usageCount: 0,
-        clickCount: 0,
-        pinned: false,
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: generateId('tag'),
-        name: '阅读清单',
-        color: defaultTagColors[1],
-        usageCount: 0,
-        clickCount: 0,
-        pinned: false,
-        createdAt: now,
-        updatedAt: now
-      },
-      {
-        id: generateId('tag'),
-        name: '工具',
-        color: defaultTagColors[2],
-        usageCount: 0,
-        clickCount: 0,
-        pinned: false,
-        createdAt: now,
-        updatedAt: now
-      }
-    ];
+  // defaultsInitialized=false 代表首次初始化（或历史版本未写过该标记）。
+  // 一旦用户清空数据，我们会设置 defaultsInitialized=true，以保证清空后保持完全空（不再回填默认标签）。
+  if (!defaultsInitialized) {
+    if (Object.keys(tags).length === 0) {
+      const now = Date.now();
+      // 为默认标签分配不同的颜色
+      const defaultTagColors = [
+        TAG_COLOR_PALETTE_24[0], // green-1
+        TAG_COLOR_PALETTE_24[7], // blue-1
+        TAG_COLOR_PALETTE_24[12], // purple-1
+      ];
+      const defaultTags: Tag[] = [
+        {
+          id: generateId('tag'),
+          name: '灵感',
+          color: defaultTagColors[0],
+          usageCount: 0,
+          clickCount: 0,
+          pinned: false,
+          createdAt: now,
+          updatedAt: now
+        },
+        {
+          id: generateId('tag'),
+          name: '阅读清单',
+          color: defaultTagColors[1],
+          usageCount: 0,
+          clickCount: 0,
+          pinned: false,
+          createdAt: now,
+          updatedAt: now
+        },
+        {
+          id: generateId('tag'),
+          name: '工具',
+          color: defaultTagColors[2],
+          usageCount: 0,
+          clickCount: 0,
+          pinned: false,
+          createdAt: now,
+          updatedAt: now
+        }
+      ];
 
-    const tagMap: Record<string, Tag> = {};
-    defaultTags.forEach((tag) => {
-      tagMap[tag.id] = tag;
-    });
-    await saveTagsMap(tagMap);
+      const tagMap: Record<string, Tag> = {};
+      defaultTags.forEach((tag) => {
+        tagMap[tag.id] = tag;
+      });
+      await saveTagsMap(tagMap);
+    }
+
+    await setDefaultsInitialized(true);
   }
 
   if (Object.keys(bookmarks).length === 0) {
@@ -301,6 +314,7 @@ export const createBookmark = async (payload: BookmarkInput): Promise<BookmarkIt
   bookmarks[id] = bookmark;
   await saveBookmarksMap(bookmarks);
   await syncUsageCounts();
+  await syncTagCooccurrence();
   return bookmark;
 };
 
@@ -322,6 +336,7 @@ export const updateBookmark = async (bookmarkId: string, patch: Partial<Bookmark
   bookmarks[bookmarkId] = updated;
   await saveBookmarksMap(bookmarks);
   await syncUsageCounts();
+  await syncTagCooccurrence();
   return updated;
 };
 
@@ -331,6 +346,7 @@ export const deleteBookmark = async (bookmarkId: string) => {
   delete bookmarks[bookmarkId];
   await saveBookmarksMap(bookmarks);
   await syncUsageCounts();
+  await syncTagCooccurrence();
 };
 
 export const incrementBookmarkClick = async (bookmarkId: string) => {
@@ -656,6 +672,7 @@ export const importChromeBookmarks = async (
   }
   if (tagsChanged || bookmarksChanged) {
     await syncUsageCounts();
+    await syncTagCooccurrence();
   }
 
   return {

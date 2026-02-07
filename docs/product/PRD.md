@@ -32,10 +32,11 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - Tag（`src/lib/types.ts#L1`）
   - `name/color/description/pinned/usageCount/clickCount`
 - Workstation（`src/lib/types.ts#L46`）
-  - `name/color/description/pinned/bookmarks[]/clickCount`
+  - `name/description/pinned/bookmarks[]/clickCount`
 
 此外还包含少量“偏好/元信息”类 key（示例）：
 
+- `tbm.tagCooccurrence`：标签共现次数（key: `tagId1|tagId2`，value: 共现次数），用于关系图
 - `tbm.locale`：界面语言
 - `tbm.theme`：主题模式
 - `tbm.settings.browser.*`：打开方式偏好
@@ -65,6 +66,8 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 - 页面入口：`src/pages/options/main.html` / `src/pages/options/main.tsx`
 - Shell：`src/pages/options/OptionsApp.tsx`
+- 布局：左侧为导航栏（`NavigationSidebar`，含品牌图标/标题 + Tab 按钮），右侧为内容区；内容区顶栏（header）左侧为可输入全局搜索框（带搜索图标、偏灰背景），宽度约 30% header，有输入时在搜索框正下方以下拉形式展示书签/标签结果，无输入或点击外部或按 Escape 关闭；顶栏右侧为主题切换与设置按钮。
+- 全局搜索（`GlobalSearchOverlay`）：在 header 搜索框内输入即展开下拉结果；书签/标签结果交互与原先一致（单击跳转 Bookmarks 或按标签筛选，双击打开并计数）。
 - Tab（左侧导航）：
   - Home：`src/pages/options/pages/HomepagePage.tsx`
   - Bookmarks：`src/pages/options/pages/BookmarksPage.tsx`
@@ -79,9 +82,21 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 文件：`src/pages/options/pages/HomepagePage.tsx`
 
-- 聚合展示
-  - 热门标签（基于 tag.clickCount 排序）
-  - 工作区卡片（横向展示，支持“一键打开全部”）
+- 布局
+  - 标题和副标题：左上对齐，上下排列
+- 聚合展示（三个置顶列表，横向滚动）
+  - **置顶工作区**：标题行（工作区置顶+更多按钮）+ Card横向列表，可以左右滑动
+    - Card元素：标题、说明、bookmark的icon缩略图（横向排列，最多4个）、置顶按钮
+    - 交互：单击打开workstation侧边栏，双击浏览器打开所有网页，点击置顶按钮取消置顶
+    - 排序：按点击次数倒序
+  - **置顶Tag**：标题行（置顶标签+更多按钮）+ Card横向列表，可以左右滑动
+    - Card元素：标题tag pill、说明、置顶按钮、使用次数+点击次数（icon+数字）
+    - 交互：单击打开tag侧边栏，双击浏览器打开所有网页，点击置顶按钮取消置顶
+    - 排序：按点击次数倒序
+  - **置顶Bookmark**：标题行（置顶书签+更多按钮）+ Card横向列表，可以左右滑动
+    - Card元素：缩略图+标题、网址（单行省略）、置顶按钮、点击次数（icon+数字）
+    - 交互：单击打开bookmark侧边栏，双击浏览器打开网页，点击置顶按钮取消置顶
+    - 排序：按点击次数倒序
 - 搜索模式
   - 搜索书签（title/url 命中 + clickCount 参与排序）
   - 搜索标签（name/description 命中）
@@ -130,6 +145,14 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - 关联浏览
   - 标签双击：打开该标签下所有书签（按“标签/工作区打开方式”设置）并累加标签 clickCount
   - BookmarkSidebar：按标签查看书签列表；支持拖拽书签到侧边栏外移除标签绑定
+- 关系图
+  - 入口：Tags 页工具栏「关系图」按钮，打开悬浮关系图（`TagGraphOverlay`），仅覆盖内容区
+  - 数据：标签共现（`tbm.tagCooccurrence`），书签增/改/删后自动同步，支持手动「刷新关系数据」
+  - 全局模式：所有标签与边，按连通分量分簇布局（簇越大越靠近中心），边线宽 1–6 随共现强度变化
+  - 中心模式：以选中标签为中心、仅显示其邻居；中心节点固定于画布中央；边上显示「概率 (数量)」；边线宽 1–6 随概率变化；点击节点可切换中心
+- 添加书签到标签
+  - 入口：Tags 页某标签的「添加书签」等入口，打开 `AddBookmarkToTagModal`
+  - 弹窗：搜索匹配标题/URL/标签名，选中区与结果区，添加/移除立即写入书签 tags
 
 ### 5.4 Workstations（工作区管理）
 
@@ -139,13 +162,16 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
   - 搜索（name）
   - 排序：创建时间 / 书签数量 / 点击次数；升序/降序；置顶优先
   - 分页（每页 40）
+  - 工作区卡片：单击打开详情侧栏；无编辑按钮，编辑入口在侧栏内
 - CRUD
-  - 新建/编辑/删除（`WorkstationEditModal`）
-  - 颜色：预设色板 + 智能分配默认色
-  - 置顶切换
-- 关联浏览
-  - WorkstationBookmarkSidebar：查看工作区内书签；支持拖拽书签到侧边栏外移除绑定
-  - 一键打开工作区全部书签（Home 中提供；打开方式由设置决定）
+  - 新建（`WorkstationEditModal`）/ 删除（由侧栏「删除工作区」打开 `WorkstationEditModal` 执行）
+  - 置顶切换（卡片与侧栏均可）
+- 关联浏览（侧栏定位为工作区编辑窗口）
+  - 侧边栏吸住：高度由视口减去顶栏与工具栏决定（workstations-sidebar-wrapper），内部书签列表单独滚动，不随主列表增高
+  - WorkstationBookmarkSidebar 上半部分为主信息区：标题、描述可编辑（默认展示 + 单击编辑，blur/Enter 保存）；功能区同一行图标按钮：置顶（有状态）、全部打开（按当前列表批量打开，复用标签/工作区打开方式）、删除工作区（打开编辑弹窗执行删除）
+  - 下半部分为绑定书签区：搜索（占位符「Search/搜索」）、排序（文案缩短：Created Time/创建时间等）、添加书签（icon 加号）同一行；无下分割线；书签列表可滚动、不分页；支持拖拽到侧边栏外移除绑定；列表项紧凑（标题单行省略，标签与点击次数同一行）
+  - 添加书签到工作区弹窗（AddBookmarkToWorkstationModal）：入口为绑定区加号按钮；居中悬浮；搜索匹配标题/URL/标签名，默认置顶书签、有关键词时展示搜索结果；选中区与结果区共用加号按钮；添加/移除立即写入；关闭时刷新页面数据
+  - 一键打开工作区全部书签：侧栏主信息区「全部打开」按钮按当前（含搜索/排序后）列表批量打开；Home 中工作区卡片也可一键打开；打开方式由设置决定
 
 ### 5.5 Ranking（统计与榜单）
 
@@ -166,9 +192,14 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 - 语言切换（i18n）
   - 语言存储：`tbm.locale`（`src/lib/storage.ts`）
+- 主题模式（外观）
+  - 主题存储：`tbm.theme`（`system|light|dark`）
 - 浏览器打开方式
   - 单个书签：新标签页 / 新窗口
   - 标签/工作区批量打开：新标签页 / 新窗口
+- 数据管理
+  - 数据迁移：导入/导出（入口已迁移到 Settings）
+  - 删除所有数据：清空书签/标签/工作区/点击历史，但保留设置项（语言/主题/打开方式等）
 - 关于信息
   - 版本号：读取 `chrome.runtime.getManifest().version`
   - 安装/更新时间：读取 `tbm.installUpdateTime`（在 `chrome.runtime.onInstalled` 时写入；显示到“日”维度）
@@ -190,6 +221,8 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - Chrome 原生书签导入：可选“路径转标签”、可选更新已存在书签的路径标签
 - 主题与国际化：主题切换、语言切换
 - 交互增强：拖拽赋值/移除、侧边栏辅助管理
+- 标签关系图：共现图全局/中心模式、簇布局与边线宽、边标签「概率 (数量)」
+- 全局搜索：Options 右侧顶栏内可输入搜索框，下拉展示书签/标签结果并跳转或打开
 
 ## 7. 权限与隐私
 

@@ -6,6 +6,7 @@ import { SortDropdown, type SortField } from '../../../components/SortDropdown';
 import { WorkstationCard } from '../../../components/WorkstationCard';
 import { WorkstationEditModal } from '../../../components/WorkstationEditModal';
 import { Pagination } from '../../../components/Pagination';
+import { AddBookmarkToWorkstationModal } from '../../../components/AddBookmarkToWorkstationModal';
 import { WorkstationBookmarkSidebar } from '../../../components/WorkstationBookmarkSidebar';
 import {
   getAllWorkstations,
@@ -31,6 +32,7 @@ export const WorkstationsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
   const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
+  const [isAddBookmarkModalOpen, setIsAddBookmarkModalOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const ITEMS_PER_PAGE = 40;
 
@@ -100,10 +102,9 @@ export const WorkstationsPage = () => {
     }
   }, [totalPages, currentPage]);
 
-  const handleCreateWorkstation = async (data: { name: string; color: string; description?: string; pinned: boolean }) => {
-    const newWorkstation = await createWorkstation({ 
-      name: data.name, 
-      color: data.color, 
+  const handleCreateWorkstation = async (data: { name: string; description?: string; pinned: boolean }) => {
+    const newWorkstation = await createWorkstation({
+      name: data.name,
       description: data.description,
       pinned: data.pinned
     });
@@ -128,7 +129,7 @@ export const WorkstationsPage = () => {
 
   const handleSaveEdit = async (
     workstationId: string,
-    data: { name: string; color: string; description?: string; pinned: boolean }
+    data: { name: string; description?: string; pinned: boolean }
   ) => {
     await updateWorkstation(workstationId, data);
     await refresh();
@@ -137,6 +138,10 @@ export const WorkstationsPage = () => {
   const handleDeleteWorkstation = async (workstationId: string) => {
     await deleteWorkstation(workstationId);
     await refresh();
+    if (selectedWorkstationId === workstationId) {
+      setIsBookmarkSidebarOpen(false);
+      setSelectedWorkstationId(null);
+    }
   };
 
   const handleTogglePin = async (workstationId: string) => {
@@ -242,7 +247,6 @@ export const WorkstationsPage = () => {
                   <WorkstationCard
                     key={workstation.id}
                     workstation={workstation}
-                    onEdit={handleEdit}
                     onTogglePin={handleTogglePin}
                     onClick={handleWorkstationClick}
                   />
@@ -264,7 +268,7 @@ export const WorkstationsPage = () => {
         </div>
 
         {isBookmarkSidebarOpen && selectedWorkstation && (
-          <div ref={sidebarRef}>
+          <div ref={sidebarRef} className="workstations-sidebar-wrapper">
             <WorkstationBookmarkSidebar
               workstationId={selectedWorkstationId}
               workstation={selectedWorkstation}
@@ -272,6 +276,9 @@ export const WorkstationsPage = () => {
               tags={tags}
               onClose={handleCloseSidebar}
               onRemoveBookmark={handleRemoveBookmark}
+              onAddBookmarkClick={() => setIsAddBookmarkModalOpen(true)}
+              onWorkstationUpdated={() => void refresh()}
+              onDeleteClick={handleEdit}
             />
           </div>
         )}
@@ -292,6 +299,20 @@ export const WorkstationsPage = () => {
           mode="create"
           onClose={handleCloseCreateModal}
           onCreate={handleCreateWorkstation}
+        />
+      )}
+
+      {isAddBookmarkModalOpen && selectedWorkstationId && selectedWorkstation && (
+        <AddBookmarkToWorkstationModal
+          isOpen={isAddBookmarkModalOpen}
+          onClose={async () => {
+            await refresh();
+            setIsAddBookmarkModalOpen(false);
+          }}
+          workstationId={selectedWorkstationId}
+          workstation={selectedWorkstation}
+          bookmarks={bookmarks}
+          tags={tags}
         />
       )}
     </div>

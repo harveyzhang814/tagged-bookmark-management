@@ -6,6 +6,8 @@ import { SearchInput } from '../../../components/SearchInput';
 import { SortDropdown, type SortField } from '../../../components/SortDropdown';
 import { TagCard } from '../../../components/TagCard';
 import { TagEditModal } from '../../../components/TagEditModal';
+import { TagGraphOverlay } from '../../../components/TagGraphOverlay';
+import { AddBookmarkToTagModal } from '../../../components/AddBookmarkToTagModal';
 import { IconButton } from '../../../components/IconButton';
 import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import {
@@ -29,9 +31,10 @@ export const TagsPage = () => {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
+  const [isAddBookmarkModalOpen, setIsAddBookmarkModalOpen] = useState(false);
+  const [isGraphOpen, setIsGraphOpen] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -174,24 +177,8 @@ export const TagsPage = () => {
     }, 1600);
   };
 
-  const handleEdit = (tag: Tag) => {
-    setEditingTag(tag);
-  };
-
-  const handleCloseEditModal = () => {
-    setEditingTag(null);
-  };
-
   const handleCloseCreateModal = () => {
     setIsCreateModalOpen(false);
-  };
-
-  const handleSaveEdit = async (
-    tagId: string,
-    data: { name: string; color: string; description?: string; pinned: boolean }
-  ) => {
-    await updateTag(tagId, data);
-    await refresh();
   };
 
   const handleDeleteTag = async (tagId: string) => {
@@ -208,11 +195,23 @@ export const TagsPage = () => {
   };
 
   const handleTagClick = (tagId: string) => {
-    // 单点击打开编辑窗口
-    const tag = tags.find((t) => t.id === tagId);
-    if (tag) {
-      handleEdit(tag);
+    // 单点击打开侧边栏
+    if (!isBookmarkSidebarOpen || selectedTagId !== tagId) {
+      setSelectedTagId(tagId);
+      setIsBookmarkSidebarOpen(true);
+    } else {
+      void refresh();
     }
+  };
+
+  const handleDeleteTagFromSidebar = (tag: Tag) => {
+    const confirmed = window.confirm(t('tag.deleteConfirm'));
+    if (!confirmed) return;
+    void handleDeleteTag(tag.id).then(() => {
+      if (selectedTagId === tag.id) {
+        handleCloseSidebar();
+      }
+    });
   };
 
   const handleTagDoubleClick = async (tagId: string) => {
@@ -324,6 +323,13 @@ export const TagsPage = () => {
           />
         </div>
         <div className="tags-actions">
+          <PixelButton
+            variant="secondary"
+            onClick={() => setIsGraphOpen(true)}
+            aria-label={t('tag.graph')}
+          >
+            {t('tag.graph')}
+          </PixelButton>
           <PixelButton onClick={() => setIsCreateModalOpen(true)}>
             {t('tag.new')}
           </PixelButton>
@@ -394,28 +400,22 @@ export const TagsPage = () => {
           />
         )}
 
-        {isBookmarkSidebarOpen && (
-          <div ref={sidebarRef}>
+        {isBookmarkSidebarOpen && selectedTagId && (
+          <div ref={sidebarRef} className="tags-sidebar-wrapper">
             <BookmarkSidebar
               tagId={selectedTagId}
+              tag={tags.find((t) => t.id === selectedTagId) ?? null}
               bookmarks={bookmarks}
               tags={tags}
               onClose={handleCloseSidebar}
               onRemoveTag={handleRemoveTag}
+              onTagUpdated={() => void refresh()}
+              onAddBookmarkClick={() => setIsAddBookmarkModalOpen(true)}
+              onDeleteClick={handleDeleteTagFromSidebar}
             />
           </div>
         )}
       </div>
-
-      {editingTag && (
-        <TagEditModal
-          mode="edit"
-          tag={editingTag}
-          onClose={handleCloseEditModal}
-          onSave={handleSaveEdit}
-          onDelete={handleDeleteTag}
-        />
-      )}
 
       {isCreateModalOpen && (
         <TagEditModal
@@ -424,6 +424,22 @@ export const TagsPage = () => {
           onCreate={handleCreateTag}
         />
       )}
+
+      {isAddBookmarkModalOpen && selectedTagId && (
+        <AddBookmarkToTagModal
+          isOpen={isAddBookmarkModalOpen}
+          onClose={async () => {
+            await refresh();
+            setIsAddBookmarkModalOpen(false);
+          }}
+          tagId={selectedTagId}
+          tag={tags.find((t) => t.id === selectedTagId)!}
+          bookmarks={bookmarks}
+          tags={tags}
+        />
+      )}
+
+      <TagGraphOverlay isOpen={isGraphOpen} onClose={() => setIsGraphOpen(false)} />
     </div>
   );
 };

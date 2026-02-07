@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookmarksPage } from './pages/BookmarksPage';
 import { TagsPage } from './pages/TagsPage';
@@ -6,10 +6,11 @@ import { HomepagePage } from './pages/HomepagePage';
 import { RankingPage } from './pages/RankingPage';
 import { WorkstationsPage } from './pages/WorkstationsPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { ThemeToggle } from '../../components/ThemeToggle';
-import { ImportExportModal } from '../../components/ImportExportModal';
+import { GlobalSearchOverlay } from '../../components/GlobalSearchOverlay';
 import { IconButton } from '../../components/IconButton';
 import { NavigationSidebar } from '../../components/NavigationSidebar';
+import { SearchInput } from '../../components/SearchInput';
+import { ThemeToggle } from '../../components/ThemeToggle';
 import { initTheme } from '../../lib/theme';
 import { type ActiveTab, getActiveTab, saveActiveTab } from '../../lib/storage';
 import './optionsApp.css';
@@ -24,7 +25,8 @@ export const OptionsApp = () => {
   const [lastNonSettingsTab, setLastNonSettingsTab] = useState<ActiveTab>('home');
   const [isInitialized, setIsInitialized] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
+  const [headerSearchQuery, setHeaderSearchQuery] = useState('');
+  const headerSearchWrapRef = useRef<HTMLDivElement>(null);
 
   // 获取图标 URL
   const getIconUrl = (size: '16' | '48' | '128' = '48') => {
@@ -107,6 +109,36 @@ export const OptionsApp = () => {
     setRefreshKey((prev) => prev + 1);
   }, []);
 
+  const handleNavigateToBookmarks = useCallback(
+    (params?: { tag?: string; query?: string }) => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'bookmarks');
+      if (params?.tag) url.searchParams.set('tag', params.tag);
+      if (params?.query) url.searchParams.set('query', params.query);
+      window.history.replaceState({}, '', url.toString());
+      setHeaderSearchQuery('');
+      setActiveTab('bookmarks');
+      void saveActiveTab('bookmarks');
+      setLastNonSettingsTab('bookmarks');
+      if (params?.tag || params?.query) setRefreshKey((k) => k + 1);
+    },
+    []
+  );
+
+  // 点击搜索区域外关闭下拉（清空输入）
+  useEffect(() => {
+    const hasQuery = headerSearchQuery.trim() !== '';
+    if (!hasQuery) return;
+    const onMouseDown = (e: MouseEvent) => {
+      const wrap = headerSearchWrapRef.current;
+      if (wrap && !wrap.contains(e.target as Node)) {
+        setHeaderSearchQuery('');
+      }
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [headerSearchQuery]);
+
   const renderContent = useMemo(() => {
     if (!isInitialized) {
       return null; // 等待初始化完成
@@ -122,7 +154,12 @@ export const OptionsApp = () => {
       case 'ranking':
         return <RankingPage key={refreshKey} onNavigate={(tab) => void handleTabChange(tab)} onRefresh={handleRefresh} />;
       case 'settings':
-        return <SettingsPage onClose={() => void handleTabChange(lastNonSettingsTab)} />;
+        return (
+          <SettingsPage
+            onClose={() => void handleTabChange(lastNonSettingsTab)}
+            onDataCleared={handleRefresh}
+          />
+        );
       case 'bookmarks':
       default:
         return <BookmarksPage key={refreshKey} onRefresh={handleRefresh} />;
@@ -131,87 +168,68 @@ export const OptionsApp = () => {
 
   return (
     <div className="options-shell">
-      <header className="options-navigator">
-        <div className="options-navigator__brand">
-          <img 
-            src={getIconUrl('48')} 
-            alt="CrossTag Bookmarks" 
-            className="options-navigator__icon"
-          />
-          <h1>{t('app.title')}</h1>
-        </div>
-
-        <div className="options-navigator__actions">
-          <IconButton
-            variant="secondary"
-            icon={
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M8 12h8M8 12l-2-2m2 2l-2 2M16 12l2-2m-2 2l2 2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle
-                  cx="4"
-                  cy="12"
-                  r="2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
-                <circle
-                  cx="20"
-                  cy="12"
-                  r="2"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                />
+      <NavigationSidebar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        iconUrl={getIconUrl('48')}
+        appTitle={t('app.title')}
+      />
+      <div className="options-right">
+        <header className="options-navigator">
+          <div className="options-navigator__search-wrap" ref={headerSearchWrapRef}>
+            <div className="options-navigator__search-input-wrap">
+              <svg className="options-navigator__search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-            }
-            aria-label={t('tooltip.importExport')}
-            onClick={() => setIsImportExportModalOpen(true)}
-          />
-          <ThemeToggle />
-          <IconButton
-            variant="secondary"
-            icon={
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M10 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M15.2 12.2a1.2 1.2 0 0 0 .25 1.3l.04.04a1.5 1.5 0 0 1 0 2.12 1.5 1.5 0 0 1-2.12 0l-.04-.04a1.2 1.2 0 0 0-1.3-.25 1.2 1.2 0 0 0-.72 1.08v.04a1.5 1.5 0 0 1-1.5 1.5 1.5 1.5 0 0 1-1.5-1.5v-.04a1.2 1.2 0 0 0-.72-1.08 1.2 1.2 0 0 0-1.3.25l-.04.04a1.5 1.5 0 0 1-2.12 0 1.5 1.5 0 0 1 0-2.12l.04-.04a1.2 1.2 0 0 0 .25-1.3 1.2 1.2 0 0 0-1.08-.72h-.04a1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5h.04a1.2 1.2 0 0 0 1.08-.72 1.2 1.2 0 0 0-.25-1.3l-.04-.04a1.5 1.5 0 0 1 0-2.12 1.5 1.5 0 0 1 2.12 0l.04.04a1.2 1.2 0 0 0 1.3.25h0a1.2 1.2 0 0 0 .72-1.08v-.04a1.5 1.5 0 0 1 1.5-1.5 1.5 1.5 0 0 1 1.5 1.5v.04a1.2 1.2 0 0 0 .72 1.08 1.2 1.2 0 0 0 1.3-.25l.04-.04a1.5 1.5 0 0 1 2.12 0 1.5 1.5 0 0 1 0 2.12l-.04.04a1.2 1.2 0 0 0-.25 1.3v0a1.2 1.2 0 0 0 1.08.72h.04a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5h-.04a1.2 1.2 0 0 0-1.08.72Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            }
-            aria-label={t('tooltip.settings')}
-            onClick={() => void handleTabChange('settings')}
-          />
-        </div>
-      </header>
-
-      <div className="options-content-wrapper">
-        <NavigationSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-        
+              <SearchInput
+                value={headerSearchQuery}
+                placeholder={t('globalSearch.placeholder')}
+                onChange={setHeaderSearchQuery}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    e.preventDefault();
+                    setHeaderSearchQuery('');
+                    (e.currentTarget as HTMLInputElement).blur();
+                  }
+                }}
+              />
+            </div>
+            <GlobalSearchOverlay
+              searchQuery={headerSearchQuery}
+              onNavigateToBookmarks={handleNavigateToBookmarks}
+            />
+          </div>
+          <div className="options-navigator__actions">
+            <ThemeToggle />
+            <IconButton
+              variant="secondary"
+              icon={
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M10 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M15.2 12.2a1.2 1.2 0 0 0 .25 1.3l.04.04a1.5 1.5 0 0 1 0 2.12 1.5 1.5 0 0 1-2.12 0l-.04-.04a1.2 1.2 0 0 0-1.3-.25 1.2 1.2 0 0 0-.72 1.08v.04a1.5 1.5 0 0 1-1.5 1.5 1.5 1.5 0 0 1-1.5-1.5v-.04a1.2 1.2 0 0 0-.72-1.08 1.2 1.2 0 0 0-1.3.25l-.04.04a1.5 1.5 0 0 1-2.12 0 1.5 1.5 0 0 1 0-2.12l.04-.04a1.2 1.2 0 0 0 .25-1.3 1.2 1.2 0 0 0-1.08-.72h-.04a1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5h.04a1.2 1.2 0 0 0 1.08-.72 1.2 1.2 0 0 0-.25-1.3l-.04-.04a1.5 1.5 0 0 1 0-2.12 1.5 1.5 0 0 1 2.12 0l.04.04a1.2 1.2 0 0 0 1.3.25h0a1.2 1.2 0 0 0 .72-1.08v-.04a1.5 1.5 0 0 1 1.5-1.5 1.5 1.5 0 0 1 1.5 1.5v.04a1.2 1.2 0 0 0 .72 1.08 1.2 1.2 0 0 0 1.3-.25l.04-.04a1.5 1.5 0 0 1 2.12 0 1.5 1.5 0 0 1 0 2.12l-.04.04a1.2 1.2 0 0 0-.25 1.3v0a1.2 1.2 0 0 0 1.08.72h.04a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5h-.04a1.2 1.2 0 0 0-1.08.72Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              }
+              aria-label={t('tooltip.settings')}
+              onClick={() => void handleTabChange('settings')}
+            />
+          </div>
+        </header>
         <div className="options-content">
           <main>{renderContent}</main>
         </div>
       </div>
-
-      <ImportExportModal
-        isOpen={isImportExportModalOpen}
-        onClose={() => setIsImportExportModalOpen(false)}
-        onImportSuccess={handleRefresh}
-      />
     </div>
   );
 };

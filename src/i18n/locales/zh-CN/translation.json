@@ -13,6 +13,7 @@
     "open": "打开菜单",
     "confirm": "确认",
     "back": "返回",
+    "backToTop": "回到顶部",
     "loading": "加载中...",
     "saving": "保存中...",
     "creating": "新建中...",
@@ -111,8 +112,13 @@
     "selected": "已选择",
     "available": "可选标签",
     "createTag": "创建标签",
+    "addBookmark": "添加书签到标签",
     "showSidebar": "显示标签栏",
-    "hideSidebar": "隐藏标签栏"
+    "hideSidebar": "隐藏标签栏",
+    "graph": "关系图",
+    "graphGlobal": "全局",
+    "graphRefresh": "刷新关系数据",
+    "graphClose": "关闭"
   },
   "workstation": {
     "title": "工作区",
@@ -127,7 +133,6 @@
     "namePlaceholder": "工作区名称",
     "descriptionLabel": "描述",
     "descriptionPlaceholder": "工作区描述（可选）",
-    "colorLabel": "颜色",
     "pinnedLabel": "置顶",
     "createSuccess": "新建成功",
     "saveSuccess": "保存成功",
@@ -146,7 +151,17 @@
     "noMatch": "未找到匹配的工作区",
     "createWorkstation": "创建工作区",
     "closeSidebar": "关闭侧边栏",
-    "noBookmarksInWorkstation": "该工作区下暂无书签"
+    "noBookmarksInWorkstation": "该工作区下暂无书签",
+    "openAll": "全部打开",
+    "sidebarSearchPlaceholder": "搜索",
+    "addBookmark": "添加书签",
+    "selectBookmark": "选择书签",
+    "alreadyAdded": "已添加",
+    "selectedThisSession": "本次已选中",
+    "workstationIncluded": "包含的工作区",
+    "addPlaceholder": "添加工作区",
+    "removeFromIncluded": "从包含中移除",
+    "none": "未绑定"
   },
   "homepage": {
     "title": "首页",
@@ -156,20 +171,22 @@
     "pinnedWorkstations": "置顶工作区",
     "hotTags": "热门标签",
     "hotBookmarks": "热门书签",
-    "searchPlaceholder": "搜索书签、标签...",
-    "searchMode": "搜索模式",
-    "exitSearch": "退出搜索",
     "newBookmark": "新书签",
     "newTag": "新标签",
     "newWorkstation": "新工作区",
-    "noResults": "暂无结果",
     "noPinnedBookmarks": "暂无置顶书签",
     "noPinnedTags": "暂无置顶标签",
     "viewAll": "更多",
     "chooseTags": "选择标签"
   },
+  "globalSearch": {
+    "placeholder": "搜索书签、标签...",
+    "noResults": "暂无结果",
+    "open": "打开全局搜索"
+  },
   "ranking": {
     "title": "榜单",
+    "searchPlaceholder": "搜索书签、标签...",
     "hotTags": "热门标签",
     "hotBookmarks": "热门书签",
     "sortByClickCount": "按点击次数",
@@ -186,6 +203,29 @@
       "title": "关于",
       "version": "版本号",
       "updateTime": "安装/更新时间"
+    },
+    "dataManagement": {
+      "title": "数据管理",
+      "importExport": {
+        "label": "数据迁移",
+        "action": "打开"
+      },
+      "deleteAll": {
+        "label": "删除所有数据",
+        "action": "删除",
+        "modalTitle": "确认删除所有数据？",
+        "modalBody": "这将永久删除本设备上的所有书签、标签、工作区以及点击历史记录，但会保留设置项（语言、打开方式、主题等）。",
+        "confirm": "确认删除",
+        "deleting": "删除中...",
+        "success": "已删除"
+      }
+    },
+    "appearance": {
+      "title": "外观",
+      "theme": "主题",
+      "themeSystem": "跟随系统",
+      "themeLight": "明亮",
+      "themeDark": "暗黑"
     },
     "browser": {
       "title": "浏览器",
@@ -261,8 +301,8 @@
   },
   "sort": {
     "title": "排序",
-    "byCreatedAt": "按创建时间",
-    "byClickCount": "按点击次数",
+    "byCreatedAt": "创建时间",
+    "byClickCount": "点击次数",
     "asc": "升序",
     "desc": "降序",
     "toggleAsc": "切换为升序",
