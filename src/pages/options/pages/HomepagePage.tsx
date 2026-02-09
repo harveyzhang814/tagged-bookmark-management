@@ -14,6 +14,8 @@ import { WorkstationBookmarkSidebar } from '../../../components/WorkstationBookm
 import { BookmarkSidebar } from '../../../components/BookmarkSidebar';
 import { BookmarkEditSidebar } from '../../../components/BookmarkEditSidebar';
 import { FloatingActionButton } from '../../../components/FloatingActionButton';
+import { AddBookmarkToTagModal } from '../../../components/AddBookmarkToTagModal';
+import { AddBookmarkToWorkstationModal } from '../../../components/AddBookmarkToWorkstationModal';
 import { BookmarkEditModal } from '../../../components/BookmarkEditModal';
 import { TagEditModal } from '../../../components/TagEditModal';
 import { WorkstationEditModal } from '../../../components/WorkstationEditModal';
@@ -35,7 +37,9 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const [isBookmarkModalOpen, setIsBookmarkModalOpen] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isWorkstationModalOpen, setIsWorkstationModalOpen] = useState(false);
-  
+  const [isAddBookmarkToTagModalOpen, setIsAddBookmarkToTagModalOpen] = useState(false);
+  const [isAddBookmarkToWorkstationModalOpen, setIsAddBookmarkToWorkstationModalOpen] = useState(false);
+
   // 侧边栏状态
   const [isWorkstationSidebarOpen, setIsWorkstationSidebarOpen] = useState(false);
   const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
@@ -309,7 +313,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
               onClose={handleCloseWorkstationSidebar}
               onRemoveBookmark={async () => {}}
               onRefresh={() => void loadData()}
-              onAddBookmarkClick={() => {}}
+              onAddBookmarkClick={() => setIsAddBookmarkToWorkstationModalOpen(true)}
               onWorkstationUpdated={() => void loadData()}
               onDeleteClick={() => {}}
             />
@@ -326,6 +330,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
               onClose={handleCloseTagSidebar}
               onRefresh={() => void loadData()}
               onTagUpdated={() => void loadData()}
+              onAddBookmarkClick={() => setIsAddBookmarkToTagModalOpen(true)}
             />
           </div>
         )}
@@ -391,6 +396,34 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
           mode="create"
           onClose={() => setIsWorkstationModalOpen(false)}
           onCreate={handleCreateWorkstation}
+        />
+      )}
+
+      {isAddBookmarkToTagModalOpen && selectedTagId && selectedTag && (
+        <AddBookmarkToTagModal
+          isOpen={isAddBookmarkToTagModalOpen}
+          onClose={async () => {
+            await loadData();
+            setIsAddBookmarkToTagModalOpen(false);
+          }}
+          tagId={selectedTagId}
+          tag={selectedTag}
+          bookmarks={bookmarks}
+          tags={allTags}
+        />
+      )}
+
+      {isAddBookmarkToWorkstationModalOpen && selectedWorkstationId && selectedWorkstation && (
+        <AddBookmarkToWorkstationModal
+          isOpen={isAddBookmarkToWorkstationModalOpen}
+          onClose={async () => {
+            await loadData();
+            setIsAddBookmarkToWorkstationModalOpen(false);
+          }}
+          workstationId={selectedWorkstationId}
+          workstation={selectedWorkstation}
+          bookmarks={bookmarks}
+          tags={allTags}
         />
       )}
     </div>

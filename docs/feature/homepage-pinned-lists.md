@@ -18,6 +18,7 @@
   - 单击：打开 `WorkstationBookmarkSidebar` 侧边栏
   - 双击：调用 `openWorkstation()` 打开工作区下所有书签
   - 点击置顶按钮：调用 `updateWorkstation()` 取消置顶
+  - 侧边栏内「添加书签」按钮：打开 `AddBookmarkToWorkstationModal`，与 Workstations 页行为一致
 
 ### 2. 置顶Tag列表
 
@@ -31,6 +32,7 @@
   - 单击：打开 `BookmarkSidebar` 侧边栏
   - 双击：获取tag下的所有bookmark URLs，调用 `openUrlsWithMode()` 打开
   - 点击置顶按钮：调用 `updateTag()` 取消置顶
+  - 侧边栏内「添加书签」按钮：打开 `AddBookmarkToTagModal`，与 Tags 页行为一致
 
 ### 3. 置顶Bookmark列表
 
@@ -117,13 +119,15 @@ const handleCardDoubleClick = (e: React.MouseEvent) => {
 };
 ```
 
-#### 侧边栏状态管理
+#### 侧边栏与弹窗状态管理
 
 - `isWorkstationSidebarOpen` / `selectedWorkstationId`
 - `isTagSidebarOpen` / `selectedTagId`
 - `editingBookmark`
+- `isAddBookmarkToTagModalOpen`：添加书签到标签弹窗（`AddBookmarkToTagModal`），关闭时调用 `loadData()` 刷新
+- `isAddBookmarkToWorkstationModalOpen`：添加书签到工作区弹窗（`AddBookmarkToWorkstationModal`），关闭时调用 `loadData()` 刷新
 
-侧边栏在 `homepage-content-wrapper` 内绝对定位，与内容区域并排显示。
+侧边栏在 `homepage-content-wrapper` 内绝对定位，与内容区域并排显示。弹窗复用与 Tags/Workstations 页相同的组件，状态不跨 tab。
 
 ### 样式设计
 
