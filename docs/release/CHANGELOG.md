@@ -10,6 +10,27 @@
 
 ### Fixed
 
+## [0.5.0] - 2025-02-07
+
+### Added
+
+- **标签关系图**：Tags 页新增关系图入口，展示标签共现与簇布局，支持全局/中心模式，边线宽度与概率标注
+- **添加书签弹窗**：标签页与工作区侧栏支持「添加书签」弹窗，按标题/URL/标签搜索并加入当前标签或工作区
+- **Options 全局搜索**：顶栏全局搜索入口，浮层内搜索书签与标签
+- **首页置顶列表**：置顶工作区、置顶标签、置顶书签三组横向滚动列表，单击打开侧栏、双击打开网页
+- **Settings**：数据管理（数据迁移入口、删除全部数据流程）、外观主题选择；导入/导出入口移至 Settings
+- **工作区侧栏**：工作区详情侧栏可添加书签、主信息区标题/描述/置顶可编辑，全部打开与删除入口集中于侧栏
+
+### Changed
+
+- **Options 顶栏**：改为左侧导航 + 右侧搜索框，全局搜索改为 header 下拉
+- **工作区**：侧栏改为编辑窗口，卡片移除编辑按钮；移除工作区颜色设置与相关 UI
+- 设计规范与焦点环 token 对齐，侧栏吸住与列表紧凑化
+
+### Fixed
+
+- （无本版本单独修复项）
+
 ## [0.4.1] - 2026-01-28
 
 ### Added
@@ -24,7 +45,8 @@
 - UI：统一各列表页样式，优化 Header 与首页交互细节（含搜索结果单击/双击行为）
 - 设计体系：全局设计 tokens 与 `DESIGN_GUIDE` 落地，统一 hover/active/focus 等交互规范
 
-[Unreleased]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.4.0...v0.4.1
 
 # Changelog

@@ -308,7 +308,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
               tags={allTags}
               onClose={handleCloseWorkstationSidebar}
               onRemoveBookmark={async () => {}}
-              onRefresh={() => void loadData()}
+              onRefresh={() => loadData()}
               onAddBookmarkClick={() => {}}
               onWorkstationUpdated={() => void loadData()}
               onDeleteClick={() => {}}
@@ -324,7 +324,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
               bookmarks={bookmarks}
               tags={allTags}
               onClose={handleCloseTagSidebar}
-              onRefresh={() => void loadData()}
+              onRefresh={() => loadData()}
               onTagUpdated={() => void loadData()}
             />
           </div>
