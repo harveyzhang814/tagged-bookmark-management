@@ -20,6 +20,10 @@ Options 各页（Home、Bookmarks、Tags、Workstations、Ranking）内的内容
 | WorkstationsPage | `WorkstationsSidebarKind` | `'workstation-bookmark'` |
 | RankingPage | `RankingSidebarKind` | `'tag-bookmark'` |
 
+## 样式规范
+
+内容区侧栏（书签/标签/工作区编辑侧栏、标签列表/工作区列表侧栏）的视觉与控件样式遵循 **DESIGN_GUIDE.md §4.5 侧边栏**：主信息区可编辑字段使用无边框控件（默认透明边框，hover/focus 显 accent）；列表区列表项（card）使用有边框样式；容器、搜索/工具栏、分页的 token 与 padding 统一。实现见各组件 CSS（如 `bookmarkSidebar.css`、`tagSidebar.css`、`bookmarkEditSidebar.css`）及 `TagInput`/`WorkstationInput` 无边框容器与 pill 移除按钮在外的布局。
+
 ## 涉及代码
 
 - `src/pages/options/pages/HomepagePage.tsx`：`HomepageSidebarKind`、`openSidebar`、Esc effect、打开/关闭 handler

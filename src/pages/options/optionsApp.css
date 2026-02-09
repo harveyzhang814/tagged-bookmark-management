@@ -1,5 +1,5 @@
 .options-shell {
-  --options-header-h: 48px;
+  --options-header-h: 56px;
   min-height: 100vh;
   display: flex;
   flex-direction: row;

@@ -75,7 +75,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
   - Workstations：`src/pages/options/pages/WorkstationsPage.tsx`
   - Ranking：`src/pages/options/pages/RankingPage.tsx`
   - Settings（隐藏 tab，仅通过按钮/URL 进入）：`src/pages/options/pages/SettingsPage.tsx`
-- 内容区侧边栏（各页内的 tag/工作区/书签编辑等，不含左侧全局导航）：同一时间仅允许一个打开；按 Esc 关闭当前打开的侧边栏。新增侧栏时在对应页扩展枚举即可，不写死优先级。
+- 内容区侧边栏（各页内的 tag/工作区/书签编辑等，不含左侧全局导航）：同一时间仅允许一个打开；按 Esc 关闭当前打开的侧边栏。新增侧栏时在对应页扩展枚举即可，不写死优先级。侧栏与主信息区控件样式（无边框/有边框分区、列表区块间隔等）见 DESIGN_GUIDE §4.5 与 §2.6。
 
 ## 5. 页面与功能点明细
 

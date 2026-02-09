@@ -31,7 +31,9 @@
   --control-h-lg: 36px;
   --scrollbar-w: 8px;
   --scrollbar-w-sm: 6px;
-  
+  /* 列表区块之间间隔（与列表页 pinned/unpinned 分隔一致） */
+  --list-section-gap: 8px;
+
   /* Light mode (default) */
   --bg-main: #fafafa;
   --bg-panel: #ffffff;

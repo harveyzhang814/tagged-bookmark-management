@@ -40,7 +40,7 @@
   font-family: var(--font-family);
   color: var(--text-main);
   background: var(--bg-card);
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   letter-spacing: -0.01em;
 }
@@ -98,7 +98,7 @@
   font-family: var(--font-family);
   color: var(--text-main);
   background: var(--bg-card);
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   resize: none;
   overflow-y: auto;

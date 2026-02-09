@@ -50,6 +50,11 @@
 - 主滚动区：`--scrollbar-w`
 - 小列表/下拉：`--scrollbar-w-sm`
 
+### 2.6 列表区块间隔
+
+- 同一页内多个列表区块之间的垂直间隔（例如：列表页的 pinned 与 unpinned 之间、首页的「置顶工作区 / 置顶标签 / 置顶书签」各区块之间）统一使用：`--list-section-gap`。
+- 该 token 与列表页 virtual-divider 的间距一致，保证首页与书签/标签列表页的视觉节奏统一。
+
 ## 3. 页面布局规范
 
 ### 3.1 Options（设置/管理界面）
@@ -100,6 +105,17 @@
 - backdrop：固定定位 + 0.5 遮罩；移动端可全屏。
 - 内容：`--bg-card` + `--shadow-lg` + `--radius-md` + 头/体/底 padding 统一。
 - 成功/错误状态：使用 `--success-*` / `--danger-*` token。
+
+### 4.5 侧边栏（Sidebar）
+
+适用于书签页的标签列表/工作区列表侧栏与编辑类书签/标签/工作区侧栏，保持视觉与 token 一致。
+
+- **容器**：宽度 300px，背景 `--bg-panel`，左边框 `1px solid var(--border-muted)`，圆角 `var(--radius-md) 0 0 var(--radius-md)`，滚动条使用 `--scrollbar-w`。
+- **主信息区（仅编辑类）**：可编辑字段（标题、描述、颜色等）使用**无边框控件**——默认 `border: 1px solid transparent`，hover/focus 时 `border-color: var(--accent)`；**仅主信息区适用，列表 card 不适用无边框样式**。
+- **列表区**：列表项（card）使用**有边框**样式：默认 `border: 1px solid var(--border-muted)`，hover 时 `border-color: var(--accent)`，圆角 `var(--radius-sm)`，hover 可配合 `box-shadow: var(--shadow-sm)`、轻微位移。
+- **标题**：若为不可编辑字段，直接展示文案或控件，不套用可编辑区「点击变输入框」交互。
+- **搜索 / 工具栏**：区块 padding 统一为 12px 16px，与主信息区/编辑侧栏 toolbar 一致；控件高度与字号可依密度使用 `--control-h` 或略小（如 26px）。
+- **分页 / 底栏**：padding 12px 16px，border-top 使用 `--border-muted`。
 
 ## 5. 排版与密度
 
