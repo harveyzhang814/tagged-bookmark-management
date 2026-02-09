@@ -121,9 +121,8 @@ const handleCardDoubleClick = (e: React.MouseEvent) => {
 
 #### 侧边栏与弹窗状态管理
 
-- `isWorkstationSidebarOpen` / `selectedWorkstationId`
-- `isTagSidebarOpen` / `selectedTagId`
-- `editingBookmark`
+- `openSidebar: HomepageSidebarKind | null`（`'workstation' | 'tag' | 'bookmark-edit'`）：同一时间只允许一个内容区侧边栏打开，不写死优先级；Esc 关闭当前侧栏。
+- `selectedWorkstationId` / `selectedTagId` / `editingBookmark`：当前打开侧栏对应的数据。
 - `isAddBookmarkToTagModalOpen`：添加书签到标签弹窗（`AddBookmarkToTagModal`），关闭时调用 `loadData()` 刷新
 - `isAddBookmarkToWorkstationModalOpen`：添加书签到工作区弹窗（`AddBookmarkToWorkstationModal`），关闭时调用 `loadData()` 刷新
 

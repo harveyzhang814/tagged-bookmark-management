@@ -19,6 +19,9 @@ import { getAllTags, getAllBookmarks } from '../../../lib/bookmarkService';
 import type { Workstation, BookmarkItem, Tag } from '../../../lib/types';
 import './workstationsPage.css';
 
+/** 内容区侧边栏类型（与左侧全局导航无关）；新增侧栏时在此扩展 */
+type WorkstationsSidebarKind = 'workstation-bookmark';
+
 export const WorkstationsPage = () => {
   const { t } = useTranslation();
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
@@ -30,7 +33,7 @@ export const WorkstationsPage = () => {
   const [editingWorkstation, setEditingWorkstation] = useState<Workstation | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
+  const [openSidebar, setOpenSidebar] = useState<WorkstationsSidebarKind | null>(null);
   const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
   const [isAddBookmarkModalOpen, setIsAddBookmarkModalOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -102,6 +105,17 @@ export const WorkstationsPage = () => {
     }
   }, [totalPages, currentPage]);
 
+  /* Esc 关闭当前打开的侧边栏（不写死优先级，仅关闭当前） */
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !openSidebar) return;
+      setOpenSidebar(null);
+      setSelectedWorkstationId(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [openSidebar]);
+
   const handleCreateWorkstation = async (data: { name: string; description?: string; pinned: boolean }) => {
     const newWorkstation = await createWorkstation({
       name: data.name,
@@ -139,7 +153,7 @@ export const WorkstationsPage = () => {
     await deleteWorkstation(workstationId);
     await refresh();
     if (selectedWorkstationId === workstationId) {
-      setIsBookmarkSidebarOpen(false);
+      setOpenSidebar(null);
       setSelectedWorkstationId(null);
     }
   };
@@ -153,9 +167,9 @@ export const WorkstationsPage = () => {
   };
 
   const handleWorkstationClick = (workstationId: string) => {
-    if (!isBookmarkSidebarOpen || selectedWorkstationId !== workstationId) {
+    if (openSidebar !== 'workstation-bookmark' || selectedWorkstationId !== workstationId) {
       setSelectedWorkstationId(workstationId);
-      setIsBookmarkSidebarOpen(true);
+      setOpenSidebar('workstation-bookmark');
     } else {
       // 如果已经打开且是同一个工作区，刷新数据
       void refresh();
@@ -163,7 +177,7 @@ export const WorkstationsPage = () => {
   };
 
   const handleCloseSidebar = () => {
-    setIsBookmarkSidebarOpen(false);
+    setOpenSidebar(null);
     setSelectedWorkstationId(null);
   };
 
@@ -267,7 +281,7 @@ export const WorkstationsPage = () => {
           )}
         </div>
 
-        {isBookmarkSidebarOpen && selectedWorkstation && (
+        {openSidebar === 'workstation-bookmark' && selectedWorkstation && (
           <div ref={sidebarRef} className="workstations-sidebar-wrapper">
             <WorkstationBookmarkSidebar
               workstationId={selectedWorkstationId}

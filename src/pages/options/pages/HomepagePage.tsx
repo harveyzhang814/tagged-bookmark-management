@@ -25,6 +25,9 @@ interface HomepagePageProps {
   onNavigate: (tab: 'bookmarks' | 'tags' | 'workstations') => void;
 }
 
+/** 内容区侧边栏类型（与左侧全局导航无关）；新增侧栏时在此扩展 */
+type HomepageSidebarKind = 'workstation' | 'tag' | 'bookmark-edit';
+
 export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const { t } = useTranslation();
   const [allTags, setAllTags] = useState<Tag[]>([]);
@@ -40,10 +43,9 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   const [isAddBookmarkToTagModalOpen, setIsAddBookmarkToTagModalOpen] = useState(false);
   const [isAddBookmarkToWorkstationModalOpen, setIsAddBookmarkToWorkstationModalOpen] = useState(false);
 
-  // 侧边栏状态
-  const [isWorkstationSidebarOpen, setIsWorkstationSidebarOpen] = useState(false);
+  // 内容区侧边栏：同一时间只允许一个打开，不写死优先级
+  const [openSidebar, setOpenSidebar] = useState<HomepageSidebarKind | null>(null);
   const [selectedWorkstationId, setSelectedWorkstationId] = useState<string | null>(null);
-  const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -103,15 +105,28 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     return () => scrollParent.removeEventListener('scroll', onScroll);
   }, []);
 
+  /* Esc 关闭当前打开的侧边栏（不写死优先级，仅关闭当前） */
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !openSidebar) return;
+      setOpenSidebar(null);
+      if (openSidebar === 'workstation') setSelectedWorkstationId(null);
+      else if (openSidebar === 'tag') setSelectedTagId(null);
+      else if (openSidebar === 'bookmark-edit') setEditingBookmark(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [openSidebar]);
+
   const handleScrollToTop = () => {
     homepageContentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // 工作区交互
   const handleWorkstationClick = (workstationId: string) => {
-    if (!isWorkstationSidebarOpen || selectedWorkstationId !== workstationId) {
+    if (openSidebar !== 'workstation' || selectedWorkstationId !== workstationId) {
       setSelectedWorkstationId(workstationId);
-      setIsWorkstationSidebarOpen(true);
+      setOpenSidebar('workstation');
     } else {
       void loadData();
     }
@@ -131,15 +146,15 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   };
 
   const handleCloseWorkstationSidebar = () => {
-    setIsWorkstationSidebarOpen(false);
+    setOpenSidebar(null);
     setSelectedWorkstationId(null);
   };
 
   // Tag交互
   const handleTagClick = (tagId: string) => {
-    if (!isTagSidebarOpen || selectedTagId !== tagId) {
+    if (openSidebar !== 'tag' || selectedTagId !== tagId) {
       setSelectedTagId(tagId);
-      setIsTagSidebarOpen(true);
+      setOpenSidebar('tag');
     } else {
       void loadData();
     }
@@ -163,13 +178,14 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   };
 
   const handleCloseTagSidebar = () => {
-    setIsTagSidebarOpen(false);
+    setOpenSidebar(null);
     setSelectedTagId(null);
   };
 
   // Bookmark交互
   const handleBookmarkClick = (bookmark: BookmarkItem) => {
     setEditingBookmark(bookmark);
+    setOpenSidebar('bookmark-edit');
   };
 
   const handleBookmarkDoubleClick = async (bookmark: BookmarkItem) => {
@@ -186,12 +202,14 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
   };
 
   const handleCloseBookmarkEditSidebar = () => {
+    setOpenSidebar(null);
     setEditingBookmark(null);
   };
 
   const handleDeleteBookmark = async (bookmarkId: string) => {
     await deleteBookmark(bookmarkId);
     await loadData();
+    setOpenSidebar(null);
     setEditingBookmark(null);
   };
 
@@ -303,7 +321,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
           )}
         </div>
 
-        {isWorkstationSidebarOpen && selectedWorkstation && (
+        {openSidebar === 'workstation' && selectedWorkstation && (
           <div ref={sidebarRef} className="homepage-sidebar-wrapper">
             <WorkstationBookmarkSidebar
               workstationId={selectedWorkstationId}
@@ -320,7 +338,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
           </div>
         )}
 
-        {isTagSidebarOpen && selectedTag && (
+        {openSidebar === 'tag' && selectedTag && (
           <div ref={sidebarRef} className="homepage-sidebar-wrapper">
             <BookmarkSidebar
               tagId={selectedTagId}
@@ -335,7 +353,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
           </div>
         )}
 
-        {editingBookmark && (
+        {openSidebar === 'bookmark-edit' && editingBookmark && (
           <div ref={sidebarRef} className="homepage-sidebar-wrapper">
             <BookmarkEditSidebar
               bookmark={editingBookmark}
