@@ -12,9 +12,9 @@
   flex-wrap: wrap;
   gap: 4px;
   padding: 4px 10px;
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   background: var(--bg-panel);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   min-height: 32px;
   align-items: center;
   transition: all 0.2s ease;
@@ -27,6 +27,10 @@
   box-shadow: var(--focus-ring);
   background: var(--bg-panel);
   outline: none;
+}
+
+.tag-chips:hover {
+  border-color: var(--accent);
 }
 
 .tag-chip {

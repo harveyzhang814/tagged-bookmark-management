@@ -2,7 +2,7 @@
   width: 300px;
   background: var(--bg-panel);
   border-left: 1px solid var(--border-muted);
-  border-radius: 8px 0 0 8px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
   display: flex;
   flex-direction: column;
   align-self: stretch;
@@ -66,7 +66,7 @@
 
 .tag-sidebar__item {
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: grab;
   transition: all 0.2s ease;
   user-select: none;

@@ -79,7 +79,7 @@
   font-family: var(--font-family);
   color: var(--text-main);
   background: var(--bg-card);
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   letter-spacing: -0.01em;
 }
@@ -144,7 +144,7 @@
   font-family: var(--font-family);
   color: var(--text-main);
   background: var(--bg-card);
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   resize: none;
   overflow-y: auto;
@@ -180,7 +180,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   background: var(--bg-panel);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -192,6 +192,10 @@
   background: var(--bg-card);
 }
 
+.bookmark-sidebar__color-trigger:hover .bookmark-sidebar__color-trigger-swatch {
+  border-color: var(--border-muted);
+}
+
 .bookmark-sidebar__color-trigger:focus {
   outline: none;
   box-shadow: var(--focus-ring);
@@ -201,8 +205,9 @@
   width: 18px;
   height: 18px;
   border-radius: 4px;
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   flex-shrink: 0;
+  transition: border-color 0.2s ease;
 }
 
 .bookmark-sidebar__color-trigger-arrow {
@@ -284,6 +289,12 @@
   height: 26px;
   padding: 0 10px;
   font-size: 11px;
+  border: 1px solid transparent;
+}
+
+.bookmark-sidebar__toolbar .sort-dropdown__trigger:hover,
+.bookmark-sidebar__toolbar .sort-dropdown__trigger:focus {
+  border-color: var(--accent);
 }
 
 .bookmark-sidebar__toolbar .search-input input {
@@ -308,7 +319,7 @@
   font-family: var(--font-family);
   color: var(--accent);
   background: var(--bg-panel);
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -342,7 +353,7 @@
 .bookmark-sidebar__sort-select {
   width: 100%;
   padding: 6px 10px;
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-main);
@@ -402,7 +413,7 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1.5px solid var(--border-muted);
+  border: 1px solid var(--border-muted);
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -411,7 +422,7 @@
 }
 
 .bookmark-sidebar__item:hover {
-  border-width: 2px;
+  border-color: var(--accent);
   box-shadow: var(--shadow-sm);
   transform: translateX(2px);
 }
