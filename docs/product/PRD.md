@@ -75,6 +75,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
   - Workstations：`src/pages/options/pages/WorkstationsPage.tsx`
   - Ranking：`src/pages/options/pages/RankingPage.tsx`
   - Settings（隐藏 tab，仅通过按钮/URL 进入）：`src/pages/options/pages/SettingsPage.tsx`
+- 内容区侧边栏（各页内的 tag/工作区/书签编辑等，不含左侧全局导航）：同一时间仅允许一个打开；按 Esc 关闭当前打开的侧边栏。新增侧栏时在对应页扩展枚举即可，不写死优先级。侧栏与主信息区控件样式（无边框/有边框分区、列表区块间隔等）见 DESIGN_GUIDE §4.5 与 §2.6。
 
 ## 5. 页面与功能点明细
 
@@ -87,11 +88,11 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 - 聚合展示（三个置顶列表，横向滚动）
   - **置顶工作区**：标题行（工作区置顶+更多按钮）+ Card横向列表，可以左右滑动
     - Card元素：标题、说明、bookmark的icon缩略图（横向排列，最多4个）、置顶按钮
-    - 交互：单击打开workstation侧边栏，双击浏览器打开所有网页，点击置顶按钮取消置顶
+    - 交互：单击打开workstation侧边栏，双击浏览器打开所有网页，点击置顶按钮取消置顶；侧边栏内「添加书签」按钮可打开添加书签到工作区弹窗（复用 AddBookmarkToWorkstationModal）
     - 排序：按点击次数倒序
   - **置顶Tag**：标题行（置顶标签+更多按钮）+ Card横向列表，可以左右滑动
     - Card元素：标题tag pill、说明、置顶按钮、使用次数+点击次数（icon+数字）
-    - 交互：单击打开tag侧边栏，双击浏览器打开所有网页，点击置顶按钮取消置顶
+    - 交互：单击打开tag侧边栏，双击浏览器打开所有网页，点击置顶按钮取消置顶；侧边栏内「添加书签」按钮可打开添加书签到标签弹窗（复用 AddBookmarkToTagModal）
     - 排序：按点击次数倒序
   - **置顶Bookmark**：标题行（置顶书签+更多按钮）+ Card横向列表，可以左右滑动
     - Card元素：缩略图+标题、网址（单行省略）、置顶按钮、点击次数（icon+数字）

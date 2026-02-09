@@ -24,6 +24,9 @@ import type { Tag, BookmarkItem } from '../../../lib/types';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import './tagsPage.css';
 
+/** 内容区侧边栏类型（与左侧全局导航无关）；新增侧栏时在此扩展 */
+type TagsSidebarKind = 'tag-bookmark';
+
 export const TagsPage = () => {
   const { t } = useTranslation();
   const [tags, setTags] = useState<Tag[]>([]);
@@ -32,7 +35,7 @@ export const TagsPage = () => {
   const [sortBy, setSortBy] = useState<SortField>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
+  const [openSidebar, setOpenSidebar] = useState<TagsSidebarKind | null>(null);
   const [isAddBookmarkModalOpen, setIsAddBookmarkModalOpen] = useState(false);
   const [isGraphOpen, setIsGraphOpen] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
@@ -78,6 +81,17 @@ export const TagsPage = () => {
       scrollParent.removeEventListener('scroll', onScroll);
     };
   }, [scrollParent]);
+
+  /* Esc 关闭当前打开的侧边栏（不写死优先级，仅关闭当前） */
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !openSidebar) return;
+      setOpenSidebar(null);
+      setSelectedTagId(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [openSidebar]);
 
   useEffect(() => {
     if (!gridMeasureRef.current) return;
@@ -196,9 +210,9 @@ export const TagsPage = () => {
 
   const handleTagClick = (tagId: string) => {
     // 单点击打开侧边栏
-    if (!isBookmarkSidebarOpen || selectedTagId !== tagId) {
+    if (openSidebar !== 'tag-bookmark' || selectedTagId !== tagId) {
       setSelectedTagId(tagId);
-      setIsBookmarkSidebarOpen(true);
+      setOpenSidebar('tag-bookmark');
     } else {
       void refresh();
     }
@@ -241,7 +255,7 @@ export const TagsPage = () => {
   };
 
   const handleCloseSidebar = () => {
-    setIsBookmarkSidebarOpen(false);
+    setOpenSidebar(null);
     setSelectedTagId(null);
   };
 
@@ -400,7 +414,7 @@ export const TagsPage = () => {
           />
         )}
 
-        {isBookmarkSidebarOpen && selectedTagId && (
+        {openSidebar === 'tag-bookmark' && selectedTagId && (
           <div ref={sidebarRef} className="tags-sidebar-wrapper">
             <BookmarkSidebar
               tagId={selectedTagId}

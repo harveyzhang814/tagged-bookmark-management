@@ -140,7 +140,7 @@
 }
 
 .bookmarks-virtual-divider {
-  margin-top: 8px;
+  margin-top: var(--list-section-gap);
 }
 
 .bookmark-row {

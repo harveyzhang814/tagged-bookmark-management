@@ -71,7 +71,7 @@ export const WorkstationInput = ({
       <div className="workstation-input-chips">
         {selected.map((ws) => (
           <div key={ws.id} className="workstation-chip">
-            <span className="workstation-chip__name">{ws.name}</span>
+            <span className="workstation-chip__pill">{ws.name}</span>
             <button
               type="button"
               className="workstation-chip-remove"

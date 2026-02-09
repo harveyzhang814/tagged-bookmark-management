@@ -19,6 +19,9 @@ interface RankingPageProps {
   onRefresh?: () => void;
 }
 
+/** 内容区侧边栏类型（与左侧全局导航无关）；新增侧栏时在此扩展 */
+type RankingSidebarKind = 'tag-bookmark';
+
 export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
   const { t } = useTranslation();
   const [pinnedBookmarks, setPinnedBookmarks] = useState<BookmarkItem[]>([]);
@@ -30,7 +33,7 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isBookmarkSidebarOpen, setIsBookmarkSidebarOpen] = useState(false);
+  const [openSidebar, setOpenSidebar] = useState<RankingSidebarKind | null>(null);
   const [selectedTagId, setSelectedTagId] = useState<string | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +70,17 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
     void loadData();
   }, []);
 
+  /* Esc 关闭当前打开的侧边栏（不写死优先级，仅关闭当前） */
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !openSidebar) return;
+      setOpenSidebar(null);
+      setSelectedTagId(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [openSidebar]);
+
   const handlePinnedMoreClick = () => {
     onNavigate('bookmarks');
   };
@@ -76,9 +90,9 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
   };
 
   const handleHotTagClick = (tag: Tag) => {
-    if (!isBookmarkSidebarOpen || selectedTagId !== tag.id) {
+    if (openSidebar !== 'tag-bookmark' || selectedTagId !== tag.id) {
       setSelectedTagId(tag.id);
-      setIsBookmarkSidebarOpen(true);
+      setOpenSidebar('tag-bookmark');
     } else {
       // 如果已经打开且是同一个标签，刷新数据
       void loadData(false);
@@ -155,9 +169,9 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
   }, [searchQuery, pinnedBookmarks, hotTags, hotBookmarks, pinnedTags, allTags]);
 
   const handlePinnedTagClick = (tag: Tag) => {
-    if (!isBookmarkSidebarOpen || selectedTagId !== tag.id) {
+    if (openSidebar !== 'tag-bookmark' || selectedTagId !== tag.id) {
       setSelectedTagId(tag.id);
-      setIsBookmarkSidebarOpen(true);
+      setOpenSidebar('tag-bookmark');
     } else {
       // 如果已经打开且是同一个标签，刷新数据
       void loadData(false);
@@ -165,7 +179,7 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
   };
 
   const handleCloseSidebar = () => {
-    setIsBookmarkSidebarOpen(false);
+    setOpenSidebar(null);
     setSelectedTagId(null);
   };
 
@@ -312,7 +326,7 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
           </div>
         </div>
 
-        {isBookmarkSidebarOpen && selectedTagId && (
+        {openSidebar === 'tag-bookmark' && selectedTagId && (
           <div ref={sidebarRef} className="tags-sidebar-wrapper">
             <BookmarkSidebar
               tagId={selectedTagId}

@@ -13,9 +13,9 @@
   flex-wrap: wrap;
   gap: 4px;
   padding: 4px 10px;
-  border: 1px solid var(--border-muted);
+  border: 1px solid transparent;
   background: var(--bg-panel);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   min-height: 32px;
   align-items: center;
   transition: all 0.2s ease;
@@ -30,18 +30,31 @@
   outline: none;
 }
 
+.workstation-input-chips:hover {
+  border-color: var(--accent);
+}
+
 .workstation-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+}
+
+.workstation-chip__pill {
+  display: inline-block;
   border: 1px solid var(--border-muted);
   background: var(--bg-card);
   border-radius: 12px;
-  padding: 3px 6px 3px 8px;
+  padding: 3px 8px;
   height: 20px;
   line-height: 14px;
   box-sizing: border-box;
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-main);
+  white-space: nowrap;
 }
 
 .workstation-chip__name {

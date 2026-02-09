@@ -24,6 +24,9 @@ interface BookmarksPageProps {
   onRefresh?: () => void;
 }
 
+/** 内容区侧边栏类型（与左侧全局导航无关）；新增侧栏时在此扩展 */
+type BookmarksSidebarKind = 'tag' | 'workstation' | 'bookmark-edit';
+
 export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const { t } = useTranslation();
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
@@ -36,8 +39,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
   const [isChromeSyncModalOpen, setIsChromeSyncModalOpen] = useState(false);
   const [editingBookmark, setEditingBookmark] = useState<BookmarkItem | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isTagSidebarOpen, setIsTagSidebarOpen] = useState(false);
-  const [isWorkstationSidebarOpen, setIsWorkstationSidebarOpen] = useState(false);
+  const [openSidebar, setOpenSidebar] = useState<BookmarksSidebarKind | null>(null);
 
   // Virtual grid (row virtualization)
   const GRID_GAP_PX = 12;
@@ -86,6 +88,17 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
       scrollParent.removeEventListener('scroll', onScroll);
     };
   }, [scrollParent]);
+
+  /* Esc 关闭当前打开的侧边栏（不写死优先级，仅关闭当前） */
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || !openSidebar) return;
+      if (openSidebar === 'bookmark-edit') setEditingBookmark(null);
+      setOpenSidebar(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [openSidebar]);
 
   useEffect(() => {
     if (!gridMeasureRef.current) return;
@@ -287,9 +300,11 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
   const handleEdit = (bookmark: BookmarkItem) => {
     setEditingBookmark(bookmark);
+    setOpenSidebar('bookmark-edit');
   };
 
   const handleCloseEditModal = () => {
+    setOpenSidebar(null);
     setEditingBookmark(null);
   };
 
@@ -408,9 +423,9 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
               {t('chromeSync.syncButton')}
             </PixelButton>
           </Tooltip>
-          <Tooltip content={isTagSidebarOpen ? t('tag.hideSidebar') : t('tag.showSidebar')}>
+          <Tooltip content={openSidebar === 'tag' ? t('tag.hideSidebar') : t('tag.showSidebar')}>
             <IconButton
-              variant={isTagSidebarOpen ? 'primary' : 'secondary'}
+              variant={openSidebar === 'tag' ? 'primary' : 'secondary'}
               icon={
                 <svg 
                   width="16" 
@@ -425,11 +440,11 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    fill={isTagSidebarOpen ? 'currentColor' : 'none'}
+                    fill={openSidebar === 'tag' ? 'currentColor' : 'none'}
                   />
                   <path
                     d="M10 8.5L12.5 11L15 8.5"
-                    stroke={isTagSidebarOpen ? 'var(--bg-card)' : 'currentColor'}
+                    stroke={openSidebar === 'tag' ? 'var(--bg-card)' : 'currentColor'}
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -437,14 +452,14 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                   />
                 </svg>
               }
-              aria-label={isTagSidebarOpen ? t('tag.hideSidebar') : t('tag.showSidebar')}
-              onClick={() => setIsTagSidebarOpen(!isTagSidebarOpen)}
+              aria-label={openSidebar === 'tag' ? t('tag.hideSidebar') : t('tag.showSidebar')}
+              onClick={() => setOpenSidebar(openSidebar === 'tag' ? null : 'tag')}
               className="bookmarks-sidebar-toggle"
             />
           </Tooltip>
-          <Tooltip content={isWorkstationSidebarOpen ? t('workstation.hideSidebar') : t('workstation.showSidebar')}>
+          <Tooltip content={openSidebar === 'workstation' ? t('workstation.hideSidebar') : t('workstation.showSidebar')}>
             <IconButton
-              variant={isWorkstationSidebarOpen ? 'primary' : 'secondary'}
+              variant={openSidebar === 'workstation' ? 'primary' : 'secondary'}
               icon={
                 <svg 
                   width="16" 
@@ -459,7 +474,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                    fill={openSidebar === 'workstation' ? 'currentColor' : 'none'}
                   />
                   <path
                     d="M8 4C8 3.17157 8.67157 2.5 9.5 2.5H12C12.8284 2.5 13.5 3.17157 13.5 4V6.5C13.5 7.32843 12.8284 8 12 8H9.5C8.67157 8 8 7.32843 8 6.5V4Z"
@@ -467,7 +482,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                    fill={openSidebar === 'workstation' ? 'currentColor' : 'none'}
                   />
                   <path
                     d="M2.5 9.5C2.5 8.67157 3.17157 8 4 8H6.5C7.32843 8 8 8.67157 8 9.5V12C8 12.8284 7.32843 13.5 6.5 13.5H4C3.17157 13.5 2.5 12.8284 2.5 12V9.5Z"
@@ -475,7 +490,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                    fill={openSidebar === 'workstation' ? 'currentColor' : 'none'}
                   />
                   <path
                     d="M8 9.5C8 8.67157 8.67157 8 9.5 8H12C12.8284 8 13.5 8.67157 13.5 9.5V12C13.5 12.8284 12.8284 13.5 12 13.5H9.5C8.67157 13.5 8 12.8284 8 12V9.5Z"
@@ -483,12 +498,12 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    fill={isWorkstationSidebarOpen ? 'currentColor' : 'none'}
+                    fill={openSidebar === 'workstation' ? 'currentColor' : 'none'}
                   />
                 </svg>
               }
-              aria-label={isWorkstationSidebarOpen ? t('workstation.hideSidebar') : t('workstation.showSidebar')}
-              onClick={() => setIsWorkstationSidebarOpen(!isWorkstationSidebarOpen)}
+              aria-label={openSidebar === 'workstation' ? t('workstation.hideSidebar') : t('workstation.showSidebar')}
+              onClick={() => setOpenSidebar(openSidebar === 'workstation' ? null : 'workstation')}
               className="bookmarks-sidebar-toggle"
             />
           </Tooltip>
@@ -563,10 +578,10 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           />
         )}
 
-        {isTagSidebarOpen && (
+        {openSidebar === 'tag' && (
           <TagSidebar tags={tags} onCreateTag={handleCreateTag} />
         )}
-        {isWorkstationSidebarOpen && (
+        {openSidebar === 'workstation' && (
           <WorkstationSidebar 
             workstations={workstations} 
             onCreateWorkstation={handleCreateWorkstation}
@@ -574,7 +589,7 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
           />
         )}
 
-        {editingBookmark && (
+        {openSidebar === 'bookmark-edit' && editingBookmark && (
           <div className="bookmarks-edit-sidebar-wrapper">
             <BookmarkEditSidebar
               bookmark={editingBookmark}
