@@ -330,7 +330,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
               tags={allTags}
               onClose={handleCloseWorkstationSidebar}
               onRemoveBookmark={async () => {}}
-              onRefresh={() => void loadData()}
+              onRefresh={() => loadData()}
               onAddBookmarkClick={() => setIsAddBookmarkToWorkstationModalOpen(true)}
               onWorkstationUpdated={() => void loadData()}
               onDeleteClick={() => {}}

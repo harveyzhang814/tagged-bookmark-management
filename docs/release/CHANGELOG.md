@@ -10,6 +10,21 @@
 
 ### Fixed
 
+## [0.5.1] - 2026-02-09
+
+### Added
+
+- （无本版本新增项）
+
+### Changed
+
+- **Options 内容区侧边栏**：各页侧栏统一为单一 `openSidebar` 互斥，同一时间仅一个侧栏打开；Esc 关闭当前侧栏
+- **UI/设计规范**：侧栏与主信息区样式统一（DESIGN_GUIDE 4.5、2.6），主信息区控件默认无边框、hover/focus 显边框，列表区块间隔与 token 统一
+
+### Fixed
+
+- **首页**：Tag/工作区侧栏「添加书签」弹窗可正常打开
+
 ## [0.5.0] - 2025-02-07
 
 ### Added
@@ -45,7 +60,8 @@
 - UI：统一各列表页样式，优化 Header 与首页交互细节（含搜索结果单击/双击行为）
 - 设计体系：全局设计 tokens 与 `DESIGN_GUIDE` 落地，统一 hover/active/focus 等交互规范
 
-[Unreleased]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.4.0...v0.4.1
 
