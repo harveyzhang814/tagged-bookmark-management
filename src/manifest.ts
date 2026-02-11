@@ -4,7 +4,7 @@ const manifest = defineManifest({
   manifest_version: 3,
   name: 'CrossTag Bookmarks',
   description: '快速收藏网页、添加多标签并以简洁优雅的方式管理收藏。',
-  version: '0.5.1',
+  version: '0.5.2',
   action: {
     default_popup: 'src/pages/popup/main.html',
     default_icon: {
