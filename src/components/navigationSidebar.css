@@ -14,7 +14,7 @@
 
 .navigation-sidebar__brand {
   flex-shrink: 0;
-  height: var(--options-header-h, 62px);
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
