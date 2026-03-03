@@ -33,6 +33,7 @@ export const SettingsPage = ({ onClose, onDataCleared }: SettingsPageProps) => {
   const [theme, setThemeValue] = useState<Theme>('system');
   const [version, setVersion] = useState<string>('');
   const [installUpdateTimeMs, setInstallUpdateTimeMs] = useState<number | null>(null);
+  const [globalSearchShortcut, setGlobalSearchShortcut] = useState<string>('');
   const [isImportExportModalOpen, setIsImportExportModalOpen] = useState(false);
   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
   const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -80,6 +81,19 @@ export const SettingsPage = ({ onClose, onDataCleared }: SettingsPageProps) => {
     };
 
     void loadAbout();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (typeof chrome === 'undefined' || !chrome.commands?.getAll) return;
+    chrome.commands.getAll().then((commands) => {
+      if (cancelled) return;
+      const cmd = commands.find((c) => c.name === 'open-global-search');
+      setGlobalSearchShortcut(cmd?.shortcut ?? '');
+    });
     return () => {
       cancelled = true;
     };
@@ -159,7 +173,8 @@ export const SettingsPage = ({ onClose, onDataCleared }: SettingsPageProps) => {
 
   return (
     <div className="settings-page">
-      <div className="settings-toolbar">
+      <div className="page-title-row settings-page__title-row">
+        <h1 className="options-page-title">{t('settings.title')}</h1>
         <IconButton
           variant="secondary"
           aria-label={t('settings.back')}
@@ -176,7 +191,6 @@ export const SettingsPage = ({ onClose, onDataCleared }: SettingsPageProps) => {
             </svg>
           }
         />
-        <div className="settings-toolbar__title">{t('settings.title')}</div>
       </div>
 
       <section className="pixel-panel settings-module">
@@ -239,6 +253,30 @@ export const SettingsPage = ({ onClose, onDataCleared }: SettingsPageProps) => {
             </select>
           </div>
         </div>
+      </section>
+
+      <section className="pixel-panel settings-module">
+        <h3 className="section-title">{t('settings.shortcuts.title')}</h3>
+
+        <div className="settings-row">
+          <label className="settings-row__label" htmlFor="settings-global-search-shortcut">
+            {t('settings.shortcuts.globalSearch')}
+          </label>
+          <div className="settings-row__control">
+            <input
+              id="settings-global-search-shortcut"
+              type="text"
+              className="settings-input settings-input--readonly"
+              value={globalSearchShortcut}
+              readOnly
+              disabled
+              aria-describedby="settings-shortcuts-hint"
+            />
+          </div>
+        </div>
+        <p id="settings-shortcuts-hint" className="settings-hint">
+          {t('settings.shortcuts.hint')}
+        </p>
       </section>
 
       <section className="pixel-panel settings-module">
