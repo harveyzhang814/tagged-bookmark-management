@@ -3,15 +3,11 @@
   position: absolute;
   inset: 0;
   z-index: 50;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--modal-backdrop);
   display: flex;
   flex-direction: column;
   align-items: stretch;
   justify-content: stretch;
-}
-
-[data-theme='dark'] .tag-graph-overlay__backdrop {
-  background: rgba(0, 0, 0, 0.6);
 }
 
 .tag-graph-overlay__panel {

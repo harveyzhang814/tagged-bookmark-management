@@ -195,7 +195,6 @@
   border-radius: 50%;
   flex-shrink: 0;
   border: 1px solid var(--border-muted);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .tag-filter-dropdown__tag-name {
