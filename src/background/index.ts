@@ -1,5 +1,19 @@
-import { createBookmark, ensureDefaults } from '../lib/bookmarkService';
-import { saveInstallUpdateTime } from '../lib/storage';
+import {
+  createBookmark,
+  ensureDefaults,
+  getAllBookmarks,
+  getAllTags,
+  incrementBookmarkClick
+} from '../lib/bookmarkService';
+import { runGlobalSearch } from '../lib/globalSearchLogic';
+import { openUrlWithMode, openUrlsWithMode } from '../lib/chrome';
+import {
+  getBrowserDefaultOpenMode,
+  getBrowserTagWorkstationOpenMode,
+  getTagsMap,
+  saveInstallUpdateTime,
+  saveTagsMap
+} from '../lib/storage';
 
 const QUICK_ADD_MENU_ID = 'tbm.quickAdd';
 
@@ -62,6 +76,81 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     pinned: false
   });
 });
+
+type IncomingMessage =
+  | { type: 'GLOBAL_SEARCH_QUERY'; query: string }
+  | { type: 'OPEN_BOOKMARK'; url: string; bookmarkId?: string }
+  | { type: 'OPEN_TAG_BOOKMARKS'; tagId: string }
+  | { type: 'NAVIGATE_BOOKMARKS'; query?: string; tagId?: string };
+
+chrome.runtime.onMessage.addListener(
+  (msg: IncomingMessage, _sender: chrome.runtime.MessageSender, sendResponse: (r: unknown) => void) => {
+    if (msg.type === 'GLOBAL_SEARCH_QUERY') {
+      (async () => {
+        try {
+          const [bookmarks, tags] = await Promise.all([getAllBookmarks(), getAllTags()]);
+          const { bookmarkResults, tagResults } = runGlobalSearch(msg.query, bookmarks, tags);
+          sendResponse({ bookmarkResults, tagResults });
+        } catch {
+          sendResponse({ error: true });
+        }
+      })();
+      return true;
+    }
+    if (msg.type === 'OPEN_BOOKMARK') {
+      (async () => {
+        try {
+          if (msg.bookmarkId) await incrementBookmarkClick(msg.bookmarkId);
+          const mode = await getBrowserDefaultOpenMode();
+          await openUrlWithMode(msg.url, mode);
+          sendResponse({ ok: true });
+        } catch (e) {
+          console.error('OPEN_BOOKMARK failed:', e);
+          sendResponse({ error: true });
+        }
+      })();
+      return true;
+    }
+    if (msg.type === 'OPEN_TAG_BOOKMARKS') {
+      (async () => {
+        try {
+          const bookmarks = await getAllBookmarks();
+          const tagBookmarks = bookmarks.filter((b) => b.tags.includes(msg.tagId));
+          const urls = tagBookmarks.map((b) => b.url).filter(Boolean);
+          if (urls.length > 0) {
+            const mode = await getBrowserTagWorkstationOpenMode();
+            await openUrlsWithMode(urls, mode);
+            const tagsMap = await getTagsMap();
+            const tag = tagsMap[msg.tagId];
+            if (tag) {
+              tag.clickCount += 1;
+              tag.updatedAt = Date.now();
+              await saveTagsMap(tagsMap);
+            }
+          }
+          sendResponse({ ok: true });
+        } catch (e) {
+          console.error('OPEN_TAG_BOOKMARKS failed:', e);
+          sendResponse({ error: true });
+        }
+      })();
+      return true;
+    }
+    if (msg.type === 'NAVIGATE_BOOKMARKS') {
+      (async () => {
+        try {
+          await openOrFocusOptionsBookmarks({ query: msg.query, tagId: msg.tagId });
+          sendResponse({ ok: true });
+        } catch (e) {
+          console.error('NAVIGATE_BOOKMARKS failed:', e);
+          sendResponse({ error: true });
+        }
+      })();
+      return true;
+    }
+    return false;
+  }
+);
 
 const lastToggleByTab = new Map<number, number>();
 
