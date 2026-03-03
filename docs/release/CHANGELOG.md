@@ -6,6 +6,8 @@
 
 ### Added
 
+- **任意网页全局搜索**：快捷键 Mac Cmd+Shift+K / Win Ctrl+Shift+K 在任意网页唤出悬浮搜索层，与首页全局搜索一致（书签/标签搜索、单击跳转、双击打开）；按需注入 content，不可注入页降级为打开 Options；支持键盘上下键与 Enter、i18n 与无障碍
+
 ### Changed
 
 ### Fixed

@@ -77,6 +77,13 @@ GrapeMark 是一款本地优先（无服务端）的 Chrome 书签管理扩展�
   - Settings（隐藏 tab，仅通过按钮/URL 进入）：`src/pages/options/pages/SettingsPage.tsx`
 - 内容区侧边栏（各页内的 tag/工作区/书签编辑等，不含左侧全局导航）：同一时间仅允许一个打开；按 Esc 关闭当前打开的侧边栏。新增侧栏时在对应页扩展枚举即可，不写死优先级。侧栏与主信息区控件样式（无边框/有边框分区、列表区块间隔等）见 DESIGN_GUIDE §4.5 与 §2.6。
 
+### 4.4 任意网页全局搜索（快捷键）
+
+- 入口：快捷键 **Mac Cmd+Shift+K / Win Ctrl+Shift+K**，可在 Chrome 扩展快捷方式页（`chrome://extensions/shortcuts`）中修改。
+- 行为：在任意 http(s) 网页按下快捷键后，于当前页注入悬浮搜索层（Shadow DOM），与首页 header 全局搜索一致：书签/标签搜索、单击跳转书签页或按标签筛选、双击打开 URL 或该标签下全部书签；支持上下键高亮、Enter 选中；若有已打开的 Options 页则聚焦并切到书签/标签视图，否则新开标签。
+- 实现：按需注入 content 脚本（`src/content/globalSearch.ts`）；Background 监听 `commands`、执行 `scripting.executeScript` 后发 `TOGGLE_GLOBAL_SEARCH`；不可注入页（如 chrome://、扩展商店）降级为打开/聚焦 Options 并聚焦搜索。
+- 文案与无障碍：content 使用 `chrome.i18n`（`_locales`）；Overlay 设 `role="dialog"`、结果列表 `role="listbox"`、高亮项 `aria-selected`。
+
 ## 5. 页面与功能点明细
 
 ### 5.1 Home（首页/聚合 + 搜索入口）
