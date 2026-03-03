@@ -157,7 +157,7 @@
 
 /* 侧边栏包装器 */
 .homepage-sidebar-wrapper {
-  height: calc(100vh - var(--ws-sidebar-offset, 180px));
+  height: calc(100vh - var(--ws-sidebar-offset, 0));
   overflow: hidden;
   align-self: flex-start;
   flex-shrink: 0;
