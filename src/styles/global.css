@@ -72,6 +72,7 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --modal-backdrop: rgba(0, 0, 0, 0.5);
 }
 
 [data-theme='dark'] {
@@ -96,6 +97,7 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --modal-backdrop: rgba(0, 0, 0, 0.6);
   --button-hover-bg: rgba(255, 255, 255, 0.08);
   --button-primary-hover-bg: rgba(25, 118, 210, 0.2);
   --button-danger-hover-bg: rgba(239, 83, 80, 0.15);
@@ -158,7 +160,7 @@ button {
   border: 1px solid var(--border-muted);
   padding: calc(var(--grid-unit) * 1.5);
   box-shadow: var(--shadow-sm);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .pixel-card {
@@ -166,7 +168,7 @@ button {
   background: var(--bg-card);
   padding: calc(var(--grid-unit) * 1.5);
   box-shadow: var(--shadow-sm);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .pixel-grid {
