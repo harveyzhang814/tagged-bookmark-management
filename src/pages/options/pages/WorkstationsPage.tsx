@@ -229,6 +229,9 @@ export const WorkstationsPage = () => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      <div className="page-title-row workstations-page__title-row">
+        <h1 className="options-page-title">{t('navigation.workstations')}</h1>
+      </div>
       <div className="workstations-toolbar-merged">
         <div className="workstations-filters">
           <SearchInput value={search} placeholder={t('workstation.searchPlaceholder')} onChange={setSearch} />
