@@ -1,10 +1,10 @@
-# CrossTag Bookmarks - PRD
+# GrapeMark - PRD
 
 本文档基于当前代码实现（Manifest V3 + Vite + React + TypeScript）梳理页面与功能点，并按“主要功能 / 一般功能”分级。
 
 ## 1. 产品概述
 
-CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管理扩展：用“标签（Tag）”与“工作区（Workstation）”组织书签，并基于点击次数做简单统计与榜单。
+GrapeMark 是一款本地优先（无服务端）的 Chrome 书签管理扩展：用“标签（Tag）”与“工作区（Workstation）”组织书签，并基于点击次数做简单统计与榜单。
 
 ## 2. 目标与非目标
 
@@ -58,7 +58,7 @@ CrossTag Bookmarks 是一款本地优先（无服务端）的 Chrome 书签管�
 
 - Service Worker：`src/background/index.ts`
 - 功能点：
-  - 安装时注册右键菜单“加入 CrossTag Bookmarks”
+  - 安装时注册右键菜单“加入 GrapeMark”
   - 安装/更新时写入 `tbm.installUpdateTime`（用于设置页“关于”展示安装/更新时间）
   - 点击后创建书签；若有选中文本，将其写入 `note`（当前 UI 未提供 note 的展示/编辑入口）
 

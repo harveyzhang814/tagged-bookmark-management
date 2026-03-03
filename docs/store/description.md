@@ -41,7 +41,7 @@ Elegant bookmark manager with workstations, tags, analytics, and modern UI. Pin,
 ### English Version (英文版本)
 
 ```
-CrossTag Bookmarks - A modern, elegant bookmark manager with powerful tagging and smart statistics.
+GrapeMark - A modern, elegant bookmark manager with powerful tagging and smart statistics.
 
 🚀 Key Features
 
@@ -120,7 +120,7 @@ CrossTag Bookmarks - A modern, elegant bookmark manager with powerful tagging an
 ### Chinese Version (中文版本)
 
 ```
-CrossTag Bookmarks - 一款现代优雅的书签管理工具，提供强大的标签系统和智能统计功能。
+GrapeMark - 一款现代优雅的书签管理工具，提供强大的标签系统和智能统计功能。
 
 🚀 核心功能
 

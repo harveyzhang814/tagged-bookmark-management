@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "CrossTag Bookmarks",
-    "name": "CrossTag Bookmarks"
+    "title": "GrapeMark",
+    "name": "GrapeMark"
   },
   "common": {
     "save": "Save",
@@ -165,7 +165,7 @@
   },
   "homepage": {
     "title": "Home",
-    "slogan": "Your Best Cross-Tag Bookmark Manager",
+    "slogan": "Your bookmarks, tagged simple.",
     "pinnedBookmarks": "Pinned Bookmarks",
     "pinnedTags": "Pinned Tags",
     "pinnedWorkstations": "Pinned Workstations",

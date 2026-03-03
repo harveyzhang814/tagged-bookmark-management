@@ -1,6 +1,6 @@
 # Changelog
 
-本文件记录 CrossTag Bookmarks 的重要变更，格式参考 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)。
+本文件记录 GrapeMark 的重要变更，格式参考 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)。
 
 ## [Unreleased]
 

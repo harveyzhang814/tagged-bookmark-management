@@ -10,7 +10,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   // 如果菜单项已存在，Chrome会报错，但这是正常的，可以忽略
   chrome.contextMenus.create({
     id: QUICK_ADD_MENU_ID,
-    title: '加入 CrossTag Bookmarks',
+    title: '加入 GrapeMark',
     contexts: ['page', 'selection']
   }, () => {
     // 忽略创建时的错误（如果菜单项已存在）

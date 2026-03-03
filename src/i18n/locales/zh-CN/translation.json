@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "CrossTag Bookmarks",
-    "name": "CrossTag Bookmarks"
+    "title": "GrapeMark",
+    "name": "GrapeMark"
   },
   "common": {
     "save": "保存",
@@ -165,7 +165,7 @@
   },
   "homepage": {
     "title": "首页",
-    "slogan": "您最好的跨标签书签管理器",
+    "slogan": "用标签，轻松管理书签。",
     "pinnedBookmarks": "置顶书签",
     "pinnedTags": "置顶标签",
     "pinnedWorkstations": "置顶工作区",
