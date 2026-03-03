@@ -4,8 +4,13 @@ import { saveInstallUpdateTime } from '../lib/storage';
 const QUICK_ADD_MENU_ID = 'tbm.quickAdd';
 
 const OPTIONS_BASE = 'src/pages/options/main.html';
-const CONTENT_SCRIPT_GLOBAL_SEARCH = 'content/globalSearch.js';
 const TOGGLE_DEBOUNCE_MS = 200;
+
+function getGlobalSearchContentScriptPath(): string | null {
+  const manifest = chrome.runtime.getManifest();
+  const scripts = manifest.content_scripts?.[0]?.js;
+  return scripts?.[0] ?? null;
+}
 
 function isInjectableUrl(url: string | undefined): boolean {
   if (!url) return false;
@@ -75,10 +80,15 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (now - (lastToggleByTab.get(tab.id) ?? 0) < TOGGLE_DEBOUNCE_MS) return;
   lastToggleByTab.set(tab.id, now);
 
+  const scriptPath = getGlobalSearchContentScriptPath();
+  if (!scriptPath) {
+    await openOrFocusOptionsBookmarks();
+    return;
+  }
   try {
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      files: [CONTENT_SCRIPT_GLOBAL_SEARCH]
+      files: [scriptPath]
     });
     await chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_GLOBAL_SEARCH' });
   } catch {

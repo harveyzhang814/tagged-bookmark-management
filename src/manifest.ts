@@ -28,6 +28,12 @@ const manifest = defineManifest({
       description: '打开全局搜索（任意网页）'
     }
   },
+  content_scripts: [
+    {
+      matches: ['https://none.invalid/*'],
+      js: ['src/content/globalSearch.ts']
+    }
+  ],
   icons: {
     '16': 'icons/icon-16.png',
     '48': 'icons/icon-48.png',
