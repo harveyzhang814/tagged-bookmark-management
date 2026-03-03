@@ -232,11 +232,11 @@
 .add-bookmark-modal__highlight {
   padding: 0 2px;
   border-radius: 4px;
-  background: rgba(91, 155, 213, 0.14);
+  background: var(--button-primary-hover-bg);
 }
 
 [data-theme='dark'] .add-bookmark-modal__highlight {
-  background: rgba(91, 155, 213, 0.22);
+  background: var(--button-primary-hover-bg);
 }
 
 @media (max-width: 640px) {
