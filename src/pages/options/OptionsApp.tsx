@@ -173,6 +173,8 @@ export const OptionsApp = () => {
         onTabChange={handleTabChange}
         iconUrl={getIconUrl('48')}
         appTitle={t('app.title')}
+        onOpenSettings={() => void handleTabChange('settings')}
+        isSettingsActive={activeTab === 'settings'}
       />
       <div className="options-right">
         <header className="options-navigator">

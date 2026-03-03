@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { TabKey } from '../pages/options/OptionsApp';
+import { IconButton } from './IconButton';
+import { ThemeToggle } from './ThemeToggle';
 import { Tooltip } from './Tooltip';
 import './navigationSidebar.css';
 
@@ -8,9 +10,37 @@ interface NavigationSidebarProps {
   onTabChange: (tab: TabKey) => void | Promise<void>;
   iconUrl?: string;
   appTitle?: string;
+  onOpenSettings?: () => void;
+  isSettingsActive?: boolean;
 }
 
-export const NavigationSidebar = ({ activeTab, onTabChange, iconUrl, appTitle }: NavigationSidebarProps) => {
+const SettingsIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M10 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M15.2 12.2a1.2 1.2 0 0 0 .25 1.3l.04.04a1.5 1.5 0 0 1 0 2.12 1.5 1.5 0 0 1-2.12 0l-.04-.04a1.2 1.2 0 0 0-1.3-.25 1.2 1.2 0 0 0-.72 1.08v.04a1.5 1.5 0 0 1-1.5 1.5 1.5 1.5 0 0 1-1.5-1.5v-.04a1.2 1.2 0 0 0-.72-1.08 1.2 1.2 0 0 0-1.3.25l-.04.04a1.5 1.5 0 0 1-2.12 0 1.5 1.5 0 0 1 0-2.12l.04-.04a1.2 1.2 0 0 0 .25-1.3 1.2 1.2 0 0 0-1.08-.72h-.04a1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5h.04a1.2 1.2 0 0 0 1.08-.72 1.2 1.2 0 0 0-.25-1.3l-.04-.04a1.5 1.5 0 0 1 0-2.12 1.5 1.5 0 0 1 2.12 0l.04.04a1.2 1.2 0 0 0 1.3.25h0a1.2 1.2 0 0 0 .72-1.08v-.04a1.5 1.5 0 0 1 1.5-1.5 1.5 1.5 0 0 1 1.5 1.5v.04a1.2 1.2 0 0 0 .72 1.08 1.2 1.2 0 0 0 1.3-.25l.04-.04a1.5 1.5 0 0 1 2.12 0 1.5 1.5 0 0 1 0 2.12l-.04.04a1.2 1.2 0 0 0-.25 1.3v0a1.2 1.2 0 0 0 1.08.72h.04a1.5 1.5 0 0 1 1.5 1.5 1.5 1.5 0 0 1-1.5 1.5h-.04a1.2 1.2 0 0 0-1.08.72Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+export const NavigationSidebar = ({
+  activeTab,
+  onTabChange,
+  iconUrl,
+  appTitle,
+  onOpenSettings,
+  isSettingsActive = false,
+}: NavigationSidebarProps) => {
   const { t } = useTranslation();
 
   const tabs: { key: TabKey; label: string; icon: React.ReactNode }[] = [
@@ -119,6 +149,20 @@ export const NavigationSidebar = ({ activeTab, onTabChange, iconUrl, appTitle }:
           </button>
         </Tooltip>
       ))}
+      <div className="navigation-sidebar__footer">
+        <ThemeToggle />
+        {onOpenSettings ? (
+          <Tooltip content={t('tooltip.settings')} position="right">
+            <IconButton
+              variant="secondary"
+              icon={<SettingsIcon />}
+              aria-label={t('tooltip.settings')}
+              onClick={() => void onOpenSettings()}
+              className={isSettingsActive ? 'navigation-sidebar__button--active' : undefined}
+            />
+          </Tooltip>
+        ) : null}
+      </div>
     </nav>
   );
 };
