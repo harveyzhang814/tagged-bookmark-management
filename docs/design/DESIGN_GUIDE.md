@@ -67,8 +67,9 @@
 ### 3.1 Options（设置/管理界面）
 
 - 无顶栏。左侧边栏即 **NavigationSidebar**（48px），含品牌、导航 tab、底部设置与主题入口；右侧为内容区。
+- **第一行为标题行**：高度由 `--options-title-row-h`（56px）控制，与左栏 brand 等高对齐；各页顶部使用 `.page-title-row` + 主标题（`.options-page-title`），其下再排 toolbar / 内容。
 - 内容滚动应发生在“内容区域容器”，避免整个页面滚动造成侧栏跳动。
-- 页面骨架建议：`content-wrapper`（主内容 + 可选 sidebar）、`content`（仅这里滚动）；各页可有 `toolbar`（固定/粘性）。
+- 页面骨架建议：标题行（`page-title-row`）→ `content-wrapper`（主内容 + 可选 sidebar）、`content`（仅这里滚动）；各页可有 `toolbar`（固定/粘性）。
 - 全局搜索当前暂时从 UI 移除，组件与逻辑保留，恢复时需根据新入口位置调整定位。
 
 ### 3.2 Popup
@@ -141,6 +142,7 @@
 - 默认正文：13px
 - 辅助说明：12px（`--text-muted`）
 - section 标题：16px/600（列表区块）或 `.section-title`（设置页模块标题）
+- **Options 页面主标题**：18px、字重 600、颜色 `var(--accent)`；用于各页标题行（`.options-page-title`），与左栏 brand 行对齐。
 
 避免：同一页面同时出现多套标题体系。
 
