@@ -4,6 +4,13 @@
 
 本指南用于统一后续页面与组件的视觉与交互实现。
 
+## 设计风格分类（参考）
+
+- **产品形态**：Chrome 扩展 UI（Popup + Options）
+- **界面类型**：工具型 / 管理型界面（Utility / Management UI）
+- **视觉风格**：Minimalism 为主（高信息密度但不压迫、留白与层级、Token 优先）；轻量 Soft UI（柔和阴影、圆角、hover 轻微上浮与阴影）；Swiss-inspired（网格化布局、清晰层级、留白与理性间距）
+- **交互风格**：可预测的控件式交互（hover/active/focus/disabled 统一）、双主题一致（`data-theme='dark'`）
+
 ## 1. 设计原则
 
 - 信息密度高但不压迫：通过分组、层级、留白解决复杂度；避免大面积强对比色块。
@@ -59,12 +66,10 @@
 
 ### 3.1 Options（设置/管理界面）
 
-- 保持现有结构：左侧导航（48px）+ 内容区。
-- 内容滚动应发生在“内容区域容器”，避免整个页面滚动造成顶栏/侧栏跳动。
-- 页面骨架建议：
-  - `toolbar`（固定/粘性）
-  - `content-wrapper`（主内容 + 可选 sidebar）
-  - `content`（仅这里滚动）
+- 无顶栏。左侧边栏即 **NavigationSidebar**（48px），含品牌、导航 tab、底部设置与主题入口；右侧为内容区。
+- 内容滚动应发生在“内容区域容器”，避免整个页面滚动造成侧栏跳动。
+- 页面骨架建议：`content-wrapper`（主内容 + 可选 sidebar）、`content`（仅这里滚动）；各页可有 `toolbar`（固定/粘性）。
+- 全局搜索当前暂时从 UI 移除，组件与逻辑保留，恢复时需根据新入口位置调整定位。
 
 ### 3.2 Popup
 
@@ -98,6 +103,7 @@
 - 卡片层级：
   - `pixel-panel`：模块容器
   - `pixel-card`：列表项/内容卡片
+- 圆角统一使用 `var(--radius-md)`（与 token 一致）。
 - hover 行为与按钮一致（描边+阴影+上浮）。
 
 ### 4.4 Modal
@@ -124,6 +130,12 @@
 - **搜索 / 工具栏**：区块 padding 统一为 12px 16px，与主信息区/编辑侧栏 toolbar 一致；控件高度与字号可依密度使用 `--control-h` 或略小（如 26px）。
 - **分页 / 底栏**：padding 12px 16px，border-top 使用 `--border-muted`。
 
+### 4.6 图标与交互通则
+
+- 不使用 emoji 作为 UI 图标；使用统一图标集（如 Heroicons、Lucide）。
+- 所有可点击元素需设置 `cursor: pointer`；hover 须有明确视觉反馈。
+- 过渡时长 150–300ms；尊重 `prefers-reduced-motion`（已在 global.css 中统一处理）。
+
 ## 5. 排版与密度
 
 - 默认正文：13px
@@ -131,6 +143,14 @@
 - section 标题：16px/600（列表区块）或 `.section-title`（设置页模块标题）
 
 避免：同一页面同时出现多套标题体系。
+
+浅色模式下正文与背景对比度至少 4.5:1；辅助（muted）文本避免过浅，保证可读性。
+
+## 5.5 可访问性
+
+- **焦点**：所有可交互元素须有可见 focus（`--focus-ring` / `--focus-ring-lg`）；禁止仅使用 `outline: none` 且无替代。
+- **键盘**：Tab 顺序与视觉顺序一致；无键盘陷阱；复杂页面可提供「跳到主内容」链接。
+- **对比度**：正文与背景 ≥ 4.5:1；边框在浅色/深色下均可见。
 
 ## 6. 暗色模式（Theme）
 
@@ -184,8 +204,11 @@
 
 ## 9. 交付检查清单（PR/提交前）
 
-- 新增 UI 是否只使用 token（`src/styles/global.css`）而非硬编码颜色/阴影/焦点环？
+- 新增/修改 UI 是否只使用 token（`src/styles/global.css`）而非硬编码颜色/阴影/焦点环？
 - 是否同时覆盖 light/dark？
 - 所有可交互元素是否具备 hover/active/focus/disabled？
+- 焦点环是否可见（键盘可用）？正文对比度是否 ≥ 4.5:1？
 - 滚动是否发生在正确容器（不会导致顶栏/侧栏抖动）？
 - 是否复用了现有组件（PixelButton/IconButton/SearchInput/Modal）？
+- 是否未使用 emoji 作图标、是否使用统一图标集？
+- 过渡是否 150–300ms、是否尊重 `prefers-reduced-motion`？
