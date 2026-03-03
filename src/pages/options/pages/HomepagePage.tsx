@@ -261,7 +261,7 @@ export const HomepagePage = ({ onNavigate }: HomepagePageProps) => {
     <div className="homepage-page" ref={pageRef}>
       <div className="homepage-page__header-section page-title-row">
         <div className="homepage-page__header">
-          <h1 className="homepage-page__title options-page-title">{t('app.title')}</h1>
+          <h1 className="homepage-page__title options-page-title">{t('navigation.home')}</h1>
           <p className="homepage-page__slogan">{t('homepage.slogan')}</p>
         </div>
       </div>
