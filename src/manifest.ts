@@ -18,7 +18,16 @@ const manifest = defineManifest({
     service_worker: 'src/background/index.ts',
     type: 'module'
   },
-  permissions: ['storage', 'tabs', 'bookmarks', 'contextMenus'],
+  permissions: ['storage', 'tabs', 'bookmarks', 'contextMenus', 'scripting', 'activeTab'],
+  commands: {
+    'open-global-search': {
+      suggested_key: {
+        default: 'Ctrl+Shift+K',
+        mac: 'Command+Shift+K'
+      },
+      description: '打开全局搜索（任意网页）'
+    }
+  },
   icons: {
     '16': 'icons/icon-16.png',
     '48': 'icons/icon-48.png',
