@@ -8,13 +8,14 @@
   overflow: hidden;
 }
 
-.homepage-page__header-section {
+.homepage-page__header-section.page-title-row {
+  min-height: var(--options-title-row-h, 56px);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   flex-shrink: 0;
   width: 100%;
-  padding: 20px 20px 16px 20px;
+  padding: 0 0 12px 0;
 }
 
 .homepage-page__header {
@@ -34,15 +35,12 @@
 }
 
 .homepage-page__title {
-  font-size: 32px;
-  font-weight: 600;
-  color: var(--accent);
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
   letter-spacing: -0.02em;
 }
 
 .homepage-page__slogan {
-  font-size: 16px;
+  font-size: 12px;
   color: var(--text-muted);
   margin: 0;
   font-weight: 400;

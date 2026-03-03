@@ -26,6 +26,14 @@
   position: relative;
 }
 
+/* 标题行容器：与左栏 brand 等高，各页首行使用 */
+.page-title-row {
+  min-height: var(--options-title-row-h, 56px);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 /* Options 页面主标题：与左栏 brand 行对齐的标题行内使用 */
 .options-page-title {
   font-size: 18px;
