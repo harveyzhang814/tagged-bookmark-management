@@ -3,6 +3,34 @@ import { saveInstallUpdateTime } from '../lib/storage';
 
 const QUICK_ADD_MENU_ID = 'tbm.quickAdd';
 
+const OPTIONS_BASE = 'src/pages/options/main.html';
+const CONTENT_SCRIPT_GLOBAL_SEARCH = 'content/globalSearch.js';
+const TOGGLE_DEBOUNCE_MS = 200;
+
+function isInjectableUrl(url: string | undefined): boolean {
+  if (!url) return false;
+  return url.startsWith('http://') || url.startsWith('https://');
+}
+
+async function openOrFocusOptionsBookmarks(params?: { query?: string; tagId?: string }): Promise<void> {
+  const baseUrl = chrome.runtime.getURL(OPTIONS_BASE);
+  const search = new URLSearchParams();
+  search.set('tab', 'bookmarks');
+  if (params?.query) search.set('query', params.query);
+  if (params?.tagId) search.set('tag', params.tagId);
+  const targetUrl = `${baseUrl}?${search.toString()}`;
+
+  const tabs = await chrome.tabs.query({ url: baseUrl + '*' });
+  if (tabs.length > 0 && tabs[0].id != null) {
+    await chrome.tabs.update(tabs[0].id, { active: true, url: targetUrl });
+    if (tabs[0].windowId != null) {
+      await chrome.windows.update(tabs[0].windowId, { focused: true });
+    }
+  } else {
+    await chrome.tabs.create({ url: targetUrl });
+  }
+}
+
 chrome.runtime.onInstalled.addListener(async () => {
   await ensureDefaults();
   await saveInstallUpdateTime(Date.now());
@@ -28,6 +56,34 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     note: typeof info.selectionText === 'string' ? info.selectionText : undefined,
     pinned: false
   });
+});
+
+const lastToggleByTab = new Map<number, number>();
+
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command !== 'open-global-search') return;
+
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+
+  if (!isInjectableUrl(tab.url)) {
+    await openOrFocusOptionsBookmarks();
+    return;
+  }
+
+  const now = Date.now();
+  if (now - (lastToggleByTab.get(tab.id) ?? 0) < TOGGLE_DEBOUNCE_MS) return;
+  lastToggleByTab.set(tab.id, now);
+
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: [CONTENT_SCRIPT_GLOBAL_SEARCH]
+    });
+    await chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_GLOBAL_SEARCH' });
+  } catch {
+    await openOrFocusOptionsBookmarks();
+  }
 });
 
 
