@@ -22,8 +22,17 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px;
+  padding: 0 20px 20px 20px;
   position: relative;
+}
+
+/* Options 页面主标题：与左栏 brand 行对齐的标题行内使用 */
+.options-page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+  letter-spacing: -0.02em;
 }
 
 main {
