@@ -1,0 +1,9 @@
+{
+  "globalSearchPlaceholder": { "message": "搜索书签、标签..." },
+  "globalSearchNoResults": { "message": "暂无结果" },
+  "globalSearchLoadFailed": { "message": "加载失败" },
+  "bookmarkTitle": { "message": "书签" },
+  "tagTitle": { "message": "标签" },
+  "globalSearchAriaLabel": { "message": "全局搜索" },
+  "searchResultsAriaLabel": { "message": "搜索结果" }
+}

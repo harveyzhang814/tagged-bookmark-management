@@ -3,6 +3,7 @@ import { defineManifest } from '@crxjs/vite-plugin';
 const manifest = defineManifest({
   manifest_version: 3,
   name: 'GrapeMark',
+  default_locale: 'en',
   description: '快速收藏网页、添加多标签并以简洁优雅的方式管理收藏。',
   version: '0.5.2',
   action: {

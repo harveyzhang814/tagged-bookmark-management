@@ -19,9 +19,15 @@ type FlatItem =
   | { type: 'tag'; index: number; tagId: string; name: string };
 
 const DEBOUNCE_MS = 180;
-const PLACEHOLDER = 'Search bookmarks and tags…';
-const NO_RESULTS = 'No results';
-const LOAD_FAILED = 'Load failed';
+
+function i18n(key: string): string {
+  try {
+    const s = chrome.i18n.getMessage(key);
+    return s || key;
+  } catch {
+    return key;
+  }
+}
 
 let overlayHost: HTMLDivElement | null = null;
 let savedActiveElement: HTMLElement | null = null;
@@ -86,7 +92,7 @@ function renderResults(
   if (data.error || !data.bookmarkResults || !data.tagResults) {
     const empty = document.createElement('div');
     empty.className = 'empty-msg';
-    empty.textContent = data.error ? LOAD_FAILED : NO_RESULTS;
+    empty.textContent = data.error ? i18n('globalSearchLoadFailed') : i18n('globalSearchNoResults');
     resultsPanel.appendChild(empty);
     return;
   }
@@ -95,7 +101,7 @@ function renderResults(
   if (bookmarkResults.length === 0 && tagResults.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-msg';
-    empty.textContent = NO_RESULTS;
+    empty.textContent = i18n('globalSearchNoResults');
     resultsPanel.appendChild(empty);
     return;
   }
@@ -105,7 +111,7 @@ function renderResults(
   if (bookmarkResults.length > 0) {
     const sectionTitle = document.createElement('div');
     sectionTitle.className = 'section-title';
-    sectionTitle.textContent = 'Bookmarks';
+    sectionTitle.textContent = i18n('bookmarkTitle');
     resultsPanel.appendChild(sectionTitle);
     const list = document.createElement('div');
     list.className = 'result-list';
@@ -145,7 +151,7 @@ function renderResults(
   if (tagResults.length > 0) {
     const sectionTitle = document.createElement('div');
     sectionTitle.className = 'section-title';
-    sectionTitle.textContent = 'Tags';
+    sectionTitle.textContent = i18n('tagTitle');
     resultsPanel.appendChild(sectionTitle);
     const list = document.createElement('div');
     list.className = 'result-list';
@@ -232,7 +238,7 @@ function createOverlay(): HTMLDivElement {
   const card = document.createElement('div');
   card.className = 'card';
   card.setAttribute('role', 'dialog');
-  card.setAttribute('aria-label', 'Global search');
+  card.setAttribute('aria-label', i18n('globalSearchAriaLabel'));
 
   const searchWrap = document.createElement('div');
   searchWrap.className = 'search-wrap';
@@ -240,14 +246,14 @@ function createOverlay(): HTMLDivElement {
   input.type = 'text';
   input.autocomplete = 'off';
   input.setAttribute('aria-label', 'Search');
-  input.placeholder = PLACEHOLDER;
+  input.placeholder = i18n('globalSearchPlaceholder');
   searchWrap.appendChild(input);
   card.appendChild(searchWrap);
 
   const resultsPanel = document.createElement('div');
   resultsPanel.className = 'results-panel';
   resultsPanel.setAttribute('role', 'listbox');
-  resultsPanel.setAttribute('aria-label', 'Search results');
+  resultsPanel.setAttribute('aria-label', i18n('searchResultsAriaLabel'));
   card.appendChild(resultsPanel);
 
   shadow.appendChild(card);
