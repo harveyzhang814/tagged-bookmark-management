@@ -44,10 +44,16 @@
 .settings-button {
   opacity: 0.6;
   transition: opacity 0.2s ease;
+  cursor: pointer;
 }
 
 .settings-button:hover {
   opacity: 1;
+}
+
+.settings-button:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 /* Content */
@@ -68,7 +74,7 @@
   padding: 12px;
   background: var(--bg-panel);
   border: 1px solid var(--border-muted);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   transition: all 0.2s ease;
 }
 
@@ -85,7 +91,7 @@
   align-items: center;
   justify-content: center;
   background: var(--button-primary-hover-bg);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -151,7 +157,7 @@
   border: 1.5px solid var(--border-muted);
   background: var(--bg-panel);
   color: var(--text-main);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-family: var(--font-family);
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -180,7 +186,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 500;
   animation: slideIn 0.3s ease;
@@ -223,7 +229,7 @@
   padding: 10px 20px;
   font-size: 14px;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
   box-sizing: border-box;
 }

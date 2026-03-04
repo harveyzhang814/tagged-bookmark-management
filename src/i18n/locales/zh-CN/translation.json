@@ -239,6 +239,11 @@
       "selectLabel": "界面语言",
       "zh-CN": "中文 (简体)",
       "en": "English"
+    },
+    "shortcuts": {
+      "title": "快捷键",
+      "globalSearch": "全局搜索（任意网页）",
+      "hint": "修改快捷键请于浏览器地址栏打开 chrome://extensions/shortcuts，找到 GrapeMark 进行设置。"
     }
   },
   "importExport": {

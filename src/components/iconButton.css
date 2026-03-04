@@ -26,6 +26,11 @@
   transform: scale(0.96);
 }
 
+.icon-button:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .icon-button--danger {
   border-color: var(--border-muted);
   color: var(--danger);

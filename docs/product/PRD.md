@@ -66,8 +66,8 @@ GrapeMark 是一款本地优先（无服务端）的 Chrome 书签管理扩展�
 
 - 页面入口：`src/pages/options/main.html` / `src/pages/options/main.tsx`
 - Shell：`src/pages/options/OptionsApp.tsx`
-- 布局：左侧为导航栏（`NavigationSidebar`，含品牌图标/标题 + Tab 按钮），右侧为内容区；内容区顶栏（header）左侧为可输入全局搜索框（带搜索图标、偏灰背景），宽度约 30% header，有输入时在搜索框正下方以下拉形式展示书签/标签结果，无输入或点击外部或按 Escape 关闭；顶栏右侧为主题切换与设置按钮。
-- 全局搜索（`GlobalSearchOverlay`）：在 header 搜索框内输入即展开下拉结果；书签/标签结果交互与原先一致（单击跳转 Bookmarks 或按标签筛选，双击打开并计数）。
+- 布局：无顶栏。左侧为导航栏（`NavigationSidebar`，含品牌区 + Tab 按钮 + 底部主题切换与设置按钮），右侧为内容区；各页第一行为标题行（与左栏 brand 等高），其下为 toolbar/内容。全局搜索当前暂不在 UI 展示，组件保留便于恢复。
+- 全局搜索（`GlobalSearchOverlay`）：逻辑与交互保留；恢复时需根据新入口调整定位。
 - Tab（左侧导航）：
   - Home：`src/pages/options/pages/HomepagePage.tsx`
   - Bookmarks：`src/pages/options/pages/BookmarksPage.tsx`
@@ -91,7 +91,7 @@ GrapeMark 是一款本地优先（无服务端）的 Chrome 书签管理扩展�
 文件：`src/pages/options/pages/HomepagePage.tsx`
 
 - 布局
-  - 标题和副标题：左上对齐，上下排列
+  - 第一行为标题行（与左栏 brand 等高）：主标题（navigation.home）+ 副标题（slogan）左对齐、同行、副标题下移 4px；其下为置顶列表与内容
 - 聚合展示（三个置顶列表，横向滚动）
   - **置顶工作区**：标题行（工作区置顶+更多按钮）+ Card横向列表，可以左右滑动
     - Card元素：标题、说明、bookmark的icon缩略图（横向排列，最多4个）、置顶按钮
@@ -208,6 +208,8 @@ GrapeMark 是一款本地优先（无服务端）的 Chrome 书签管理扩展�
 - 数据管理
   - 数据迁移：导入/导出（入口已迁移到 Settings）
   - 删除所有数据：清空书签/标签/工作区/点击历史，但保留设置项（语言/主题/打开方式等）
+- 快捷键说明
+  - 设置页展示「快捷键」区块：全局搜索（任意网页）及修改入口提示（`chrome://extensions/shortcuts`，文案见 i18n `settings.shortcuts`）
 - 关于信息
   - 版本号：读取 `chrome.runtime.getManifest().version`
   - 安装/更新时间：读取 `tbm.installUpdateTime`（在 `chrome.runtime.onInstalled` 时写入；显示到“日”维度）
@@ -230,7 +232,7 @@ GrapeMark 是一款本地优先（无服务端）的 Chrome 书签管理扩展�
 - 主题与国际化：主题切换、语言切换
 - 交互增强：拖拽赋值/移除、侧边栏辅助管理
 - 标签关系图：共现图全局/中心模式、簇布局与边线宽、边标签「概率 (数量)」
-- 全局搜索：Options 右侧顶栏内可输入搜索框，下拉展示书签/标签结果并跳转或打开
+- 全局搜索：当前暂不在 Options UI 展示；任意网页快捷键浮层见 4.4
 
 ## 7. 权限与隐私
 

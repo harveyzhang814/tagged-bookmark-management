@@ -76,21 +76,28 @@
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--border-muted);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--bg-card);
   color: var(--text-main);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .global-search__bookmark-item:hover,
 .global-search__tag-item:hover {
   border-color: var(--accent);
+  background: var(--button-hover-bg);
 }
 
-[data-theme='dark'] .global-search__bookmark-item:hover,
-[data-theme='dark'] .global-search__tag-item:hover {
-  background: var(--button-hover-bg);
+.global-search__bookmark-item:focus,
+.global-search__tag-item:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.global-search__bookmark-item:active,
+.global-search__tag-item:active {
+  transform: scale(0.98);
 }
 
 .global-search__bookmark-main {

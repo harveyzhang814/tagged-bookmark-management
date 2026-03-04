@@ -240,6 +240,12 @@ function createOverlay(): HTMLDivElement {
   card.setAttribute('role', 'dialog');
   card.setAttribute('aria-label', i18n('globalSearchAriaLabel'));
 
+  const titleEl = document.createElement('div');
+  titleEl.className = 'card-title';
+  titleEl.textContent =
+    (typeof chrome !== 'undefined' && chrome.runtime?.getManifest?.()?.name) || 'GrapeMark';
+  card.appendChild(titleEl);
+
   const searchWrap = document.createElement('div');
   searchWrap.className = 'search-wrap';
   const input = document.createElement('input');

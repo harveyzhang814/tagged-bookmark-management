@@ -239,6 +239,11 @@
       "selectLabel": "Interface Language",
       "zh-CN": "Chinese (Simplified)",
       "en": "English"
+    },
+    "shortcuts": {
+      "title": "Keyboard Shortcuts",
+      "globalSearch": "Global search (any page)",
+      "hint": "To change shortcuts, open chrome://extensions/shortcuts in the browser address bar and find GrapeMark."
     }
   },
   "importExport": {

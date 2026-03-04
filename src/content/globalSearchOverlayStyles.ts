@@ -1,9 +1,11 @@
 /**
  * Minimal tokens + overlay styles for content script Shadow DOM.
+ * Aligned with DESIGN_GUIDE §4.4 Modal and src/styles/global.css.
  * Sourced from src/styles/global.css and src/components/globalSearchOverlay.css.
  */
 export const overlayStyles = `
 :host {
+  --radius-sm: 6px;
   --radius-md: 8px;
   --scrollbar-w: 8px;
   --bg-main: #fafafa;
@@ -15,6 +17,8 @@ export const overlayStyles = `
   --text-muted: #6b6b6b;
   --accent: #5b9bd5;
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --modal-backdrop: rgba(0, 0, 0, 0.5);
+  --focus-ring: 0 0 0 3px rgba(91, 155, 213, 0.35);
   --button-hover-bg: rgba(0, 0, 0, 0.04);
   --button-primary-hover-bg: rgba(91, 155, 213, 0.1);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -39,6 +43,8 @@ export const overlayStyles = `
   --text-muted: #9e9e9e;
   --accent: #1976d2;
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --modal-backdrop: rgba(0, 0, 0, 0.6);
+  --focus-ring: 0 0 0 3px rgba(25, 118, 210, 0.4);
   --button-hover-bg: rgba(255, 255, 255, 0.08);
   --button-primary-hover-bg: rgba(25, 118, 210, 0.2);
 }
@@ -46,8 +52,9 @@ export const overlayStyles = `
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--modal-backdrop);
   cursor: pointer;
+  transition: opacity 0.2s ease;
 }
 .card {
   position: relative;
@@ -55,11 +62,20 @@ export const overlayStyles = `
   max-height: 70vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg-main);
+  background: var(--bg-card);
   color: var(--text-main);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card-title {
+  text-align: center;
+  padding: 14px 16px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 .search-wrap {
   padding: 12px 16px;
@@ -71,17 +87,22 @@ export const overlayStyles = `
   padding: 0 12px;
   font-size: 14px;
   border: 1px solid var(--border-muted);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   background: var(--bg-panel);
   color: var(--text-main);
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.search-wrap input:hover {
+  border-color: var(--border-color);
 }
 .search-wrap input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--button-primary-hover-bg);
+  box-shadow: var(--focus-ring);
 }
 .search-wrap input::placeholder {
   color: var(--text-muted);
+  opacity: 0.9;
 }
 .results-panel {
   overflow-x: hidden;
@@ -96,9 +117,15 @@ export const overlayStyles = `
 .results-panel::-webkit-scrollbar {
   width: var(--scrollbar-w);
 }
+.results-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
 .results-panel::-webkit-scrollbar-thumb {
   background: var(--border-muted);
   border-radius: 4px;
+}
+.results-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color);
 }
 .section-title {
   font-size: 12px;
@@ -119,19 +146,27 @@ export const overlayStyles = `
   gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--border-muted);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: var(--bg-card);
   color: var(--text-main);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
   font: inherit;
 }
-.item:hover, .item.highlight {
+.item:hover,
+.item.highlight {
   border-color: var(--accent);
-}
-:host([data-theme="dark"]) .item:hover,
-:host([data-theme="dark"]) .item.highlight {
   background: var(--button-hover-bg);
+}
+.item:active {
+  transform: scale(0.98);
+}
+.item:focus {
+  outline: none;
+}
+.item:focus-visible,
+.item.highlight:focus-visible {
+  box-shadow: var(--focus-ring);
 }
 .item-main {
   flex: 1;
