@@ -42,7 +42,7 @@
 }
 
 .tag-chip-remove {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--button-hover-bg);
   border: none;
   color: var(--text-muted);
   font-size: 12px;
@@ -62,7 +62,7 @@
 }
 
 .tag-chip-remove:hover {
-  background: rgba(229, 115, 115, 0.15);
+  background: var(--danger-surface);
   color: var(--danger);
 }
 

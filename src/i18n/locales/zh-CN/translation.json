@@ -1,7 +1,7 @@
 {
   "app": {
-    "title": "CrossTag Bookmarks",
-    "name": "CrossTag Bookmarks"
+    "title": "GrapeMark",
+    "name": "GrapeMark"
   },
   "common": {
     "save": "保存",
@@ -165,7 +165,7 @@
   },
   "homepage": {
     "title": "首页",
-    "slogan": "您最好的跨标签书签管理器",
+    "slogan": "用标签，轻松管理书签。",
     "pinnedBookmarks": "置顶书签",
     "pinnedTags": "置顶标签",
     "pinnedWorkstations": "置顶工作区",
@@ -239,6 +239,11 @@
       "selectLabel": "界面语言",
       "zh-CN": "中文 (简体)",
       "en": "English"
+    },
+    "shortcuts": {
+      "title": "快捷键",
+      "globalSearch": "全局搜索（任意网页）",
+      "hint": "修改快捷键请于浏览器地址栏打开 chrome://extensions/shortcuts，找到 GrapeMark 进行设置。"
     }
   },
   "importExport": {

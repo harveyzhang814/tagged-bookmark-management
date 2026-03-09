@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,11 +232,11 @@
 .add-bookmark-tag-modal__highlight {
   padding: 0 2px;
   border-radius: 4px;
-  background: rgba(91, 155, 213, 0.14);
+  background: var(--button-primary-hover-bg);
 }
 
 [data-theme='dark'] .add-bookmark-tag-modal__highlight {
-  background: rgba(91, 155, 213, 0.22);
+  background: var(--button-primary-hover-bg);
 }
 
 @media (max-width: 640px) {

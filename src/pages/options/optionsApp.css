@@ -1,5 +1,6 @@
 .options-shell {
-  --options-header-h: 56px;
+  --options-title-row-h: 56px;
+  --ws-sidebar-offset: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: row;
@@ -15,87 +16,31 @@
   flex-direction: column;
 }
 
-.options-navigator {
-  min-height: var(--options-header-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 24px;
-  background: var(--bg-panel);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  flex-shrink: 0;
-  box-sizing: border-box;
-}
-
-.options-navigator__search-wrap {
-  position: relative;
-  flex: 0 0 30%;
-  min-width: 0;
-}
-
-.options-navigator__search-input-wrap {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 8px 2px 6px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-muted);
-  border-radius: var(--radius-sm);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.options-navigator__search-input-wrap:focus-within {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: var(--focus-ring);
-}
-
-.options-navigator__search-icon {
-  flex-shrink: 0;
-  color: var(--text-muted);
-}
-
-.options-navigator__search-input-wrap .search-input {
-  flex: 1;
-  min-width: 0;
-}
-
-.options-navigator__search-input-wrap .search-input input {
-  background: transparent;
-  border: none;
-  padding: 2px 0;
-  padding-left: 0;
-  font-size: 12px;
-  line-height: 1.3;
-}
-
-.options-navigator__search-input-wrap .search-input input:focus {
-  box-shadow: none;
-}
-
 .options-content {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 20px;
+  padding: 0 20px 20px 20px;
   position: relative;
 }
 
-[data-theme='dark'] .options-navigator {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.options-navigator__actions {
-  flex-shrink: 0;
+/* 标题行容器：与左栏 brand 等高，各页首行使用 */
+.page-title-row {
+  min-height: var(--options-title-row-h, 56px);
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Options 页面主标题：与左栏 brand 行对齐的标题行内使用 */
+.options-page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 0;
+  letter-spacing: -0.02em;
 }
 
 main {
@@ -109,7 +54,6 @@ main {
 }
 
 main > .homepage-page {
-  margin: -16px 0;
   width: 100%;
 }
 

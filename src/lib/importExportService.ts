@@ -10,7 +10,7 @@ import type {
   Workstation
 } from './types';
 
-const PRODUCT_NAME = 'CrossTag Bookmarks';
+const PRODUCT_NAME = 'GrapeMark';
 const VERSION = '1.0';
 
 /**

@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,14 +299,11 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-main);
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--button-hover-bg);
   padding: 1px 4px;
   border-radius: 4px;
 }
 
-[data-theme='dark'] .chrome-sync-modal__info-body code {
-  background: rgba(255, 255, 255, 0.08);
-}
 
 @media (max-width: 640px) {
   .chrome-sync-modal {

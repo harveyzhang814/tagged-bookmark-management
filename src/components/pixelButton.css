@@ -44,6 +44,11 @@
   box-shadow: var(--shadow-sm);
 }
 
+.pixel-btn:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
 .pixel-btn--primary {
   background: var(--accent) !important;
   color: #ffffff !important;

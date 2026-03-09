@@ -4,6 +4,13 @@
 
 本指南用于统一后续页面与组件的视觉与交互实现。
 
+## 设计风格分类（参考）
+
+- **产品形态**：Chrome 扩展 UI（Popup + Options）
+- **界面类型**：工具型 / 管理型界面（Utility / Management UI）
+- **视觉风格**：Minimalism 为主（高信息密度但不压迫、留白与层级、Token 优先）；轻量 Soft UI（柔和阴影、圆角、hover 轻微上浮与阴影）；Swiss-inspired（网格化布局、清晰层级、留白与理性间距）
+- **交互风格**：可预测的控件式交互（hover/active/focus/disabled 统一）、双主题一致（`data-theme='dark'`）
+
 ## 1. 设计原则
 
 - 信息密度高但不压迫：通过分组、层级、留白解决复杂度；避免大面积强对比色块。
@@ -59,12 +66,11 @@
 
 ### 3.1 Options（设置/管理界面）
 
-- 保持现有结构：左侧导航（48px）+ 内容区。
-- 内容滚动应发生在“内容区域容器”，避免整个页面滚动造成顶栏/侧栏跳动。
-- 页面骨架建议：
-  - `toolbar`（固定/粘性）
-  - `content-wrapper`（主内容 + 可选 sidebar）
-  - `content`（仅这里滚动）
+- 无顶栏。左侧边栏即 **NavigationSidebar**（48px），含品牌、导航 tab、底部设置与主题入口；右侧为内容区。
+- **第一行为标题行**：高度由 `--options-title-row-h`（56px）控制，与左栏 brand 等高对齐；各页顶部使用 `.page-title-row` + 主标题（`.options-page-title`），其下再排 toolbar / 内容。
+- 内容滚动应发生在“内容区域容器”，避免整个页面滚动造成侧栏跳动。
+- 页面骨架建议：标题行（`page-title-row`）→ `content-wrapper`（主内容 + 可选 sidebar）、`content`（仅这里滚动）；各页可有 `toolbar`（固定/粘性）。
+- 全局搜索当前暂时从 UI 移除，组件与逻辑保留，恢复时需根据新入口位置调整定位。
 
 ### 3.2 Popup
 
@@ -98,6 +104,7 @@
 - 卡片层级：
   - `pixel-panel`：模块容器
   - `pixel-card`：列表项/内容卡片
+- 圆角统一使用 `var(--radius-md)`（与 token 一致）。
 - hover 行为与按钮一致（描边+阴影+上浮）。
 
 ### 4.4 Modal
@@ -105,6 +112,13 @@
 - backdrop：固定定位 + 0.5 遮罩；移动端可全屏。
 - 内容：`--bg-card` + `--shadow-lg` + `--radius-md` + 头/体/底 padding 统一。
 - 成功/错误状态：使用 `--success-*` / `--danger-*` token。
+
+**操作性弹窗一致性（导入/导出/同步/删除/保存等）：**
+
+- **进行中**：展示加载动画（spinner），并禁用关闭与重复触发（含 Esc、遮罩点击、关闭按钮）。
+- **成功**：展示成功提示（如打勾 + 文案），短暂停留后自动关闭或回到可继续操作的状态。
+- **危险操作确认弹窗**：同上进行中/成功反馈；文案须明确不可逆风险。
+- 统一样式：复用现有弹窗结构（backdrop + header + content + actions）与全局 token（颜色/圆角/阴影/焦点环），避免引入新视觉语言。
 
 ### 4.5 侧边栏（Sidebar）
 
@@ -117,13 +131,28 @@
 - **搜索 / 工具栏**：区块 padding 统一为 12px 16px，与主信息区/编辑侧栏 toolbar 一致；控件高度与字号可依密度使用 `--control-h` 或略小（如 26px）。
 - **分页 / 底栏**：padding 12px 16px，border-top 使用 `--border-muted`。
 
+### 4.6 图标与交互通则
+
+- 不使用 emoji 作为 UI 图标；使用统一图标集（如 Heroicons、Lucide）。
+- 所有可点击元素需设置 `cursor: pointer`；hover 须有明确视觉反馈。
+- 过渡时长 150–300ms；尊重 `prefers-reduced-motion`（已在 global.css 中统一处理）。
+
 ## 5. 排版与密度
 
 - 默认正文：13px
 - 辅助说明：12px（`--text-muted`）
 - section 标题：16px/600（列表区块）或 `.section-title`（设置页模块标题）
+- **Options 页面主标题**：18px、字重 600、颜色 `var(--accent)`；用于各页标题行（`.options-page-title`），与左栏 brand 行对齐。
 
 避免：同一页面同时出现多套标题体系。
+
+浅色模式下正文与背景对比度至少 4.5:1；辅助（muted）文本避免过浅，保证可读性。
+
+## 5.5 可访问性
+
+- **焦点**：所有可交互元素须有可见 focus（`--focus-ring` / `--focus-ring-lg`）；禁止仅使用 `outline: none` 且无替代。
+- **键盘**：Tab 顺序与视觉顺序一致；无键盘陷阱；复杂页面可提供「跳到主内容」链接。
+- **对比度**：正文与背景 ≥ 4.5:1；边框在浅色/深色下均可见。
 
 ## 6. 暗色模式（Theme）
 
@@ -136,10 +165,52 @@
 - 避免全局选择器污染；优先 `.component-name__part`。
 - 禁止在页面内复制粘贴一套新的按钮/输入框样式；应复用组件或抽公共样式。
 
-## 8. 交付检查清单（PR/提交前）
+## 8. 列表与网格设计
 
-- 新增 UI 是否只使用 token（`src/styles/global.css`）而非硬编码颜色/阴影/焦点环？
+适用于 Options 管理页内的卡片列表/书签列表/标签列表等大数据量场景（上百～上千条）。
+
+### 8.1 渲染策略（性能优先）
+
+- 默认使用虚拟化列表/虚拟化网格，避免一次性渲染全部 item。
+- 推荐实现：**按行虚拟化**（row virtualization）——先根据容器宽度计算列数 `columnCount`，将数据按列数分组为 `rows`，虚拟化组件渲染 rows，行内用 CSS grid 排列卡片。
+- 分组标题/分隔行（如 pinned/normal）优先作为虚拟项插入，保持可滚动一致性。
+
+### 8.2 滚动容器（布局稳定）
+
+- 滚动应发生在页面「内容区域容器」（如 `.bookmarks-content` / `.tags-content`），而非整个页面，避免 sticky 顶栏/侧栏抖动。
+- 虚拟化组件应接管该滚动容器（custom scroll parent），保持滚动条与行为一致。
+
+### 8.3 回到顶部（可用性）
+
+- 主滚动区 `scrollTop` 超过阈值时显示悬浮「回到顶部」按钮。
+- 点击后优先调用虚拟化组件 API（如 `scrollToIndex({ index: 0, behavior: 'smooth' })`），并对滚动容器 `scrollTo({ top: 0 })` 做兜底。
+- 悬浮按钮需预留底部空间（如 `padding-bottom`），避免遮挡内容与分页/操作区。
+
+### 8.4 响应式布局：列数与卡片宽度
+
+**默认方案（推荐）：断点范围 + 卡片宽度约束**
+
+- 列数基于容器宽度：`<720px` 为 1 列，`720–959px` 为 2 列，`960–1279px` 为 3–4 列（自动选择），`≥1280px` 为 4–5 列（自动选择）。
+- 用最小卡片宽度与目标最大可读宽度控制列数，避免卡片过宽导致行长过长。
+- 超大尺寸下不限制卡片最大宽度（`max-width: none`，卡片 `justify-self: stretch`），避免居中 + max-width 造成视觉间距变大。
+
+**可选方案（opt-in）：固定卡片宽度推导列数**
+
+- 适用于标签等信息密度较低、希望列数完全由卡片宽度决定的网格。
+- 规则：给定 `cardWidth` 与 `gap`，`cols = max(1, floor((containerWidth + gap) / (cardWidth + gap)))`；行内 grid 使用 `grid-template-columns: repeat(var(--cols), var(--cardWidth))`，`justify-content: start`。仅当需求明确要求「固定卡片宽度推导列数」时采用。
+
+### 8.5 卡片高度规则化（虚拟化友好）
+
+- 卡片高度尽量稳定（标题/URL/标签 clamp、meta 区贴底等），减少滚动跳动与测量误差。
+- 若移除缩略图，需同步移除缩略图区与占位样式，避免大面积空白。
+
+## 9. 交付检查清单（PR/提交前）
+
+- 新增/修改 UI 是否只使用 token（`src/styles/global.css`）而非硬编码颜色/阴影/焦点环？
 - 是否同时覆盖 light/dark？
 - 所有可交互元素是否具备 hover/active/focus/disabled？
+- 焦点环是否可见（键盘可用）？正文对比度是否 ≥ 4.5:1？
 - 滚动是否发生在正确容器（不会导致顶栏/侧栏抖动）？
 - 是否复用了现有组件（PixelButton/IconButton/SearchInput/Modal）？
+- 是否未使用 emoji 作图标、是否使用统一图标集？
+- 过渡是否 150–300ms、是否尊重 `prefers-reduced-motion`？

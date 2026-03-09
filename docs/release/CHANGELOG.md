@@ -1,6 +1,6 @@
 # Changelog
 
-本文件记录 CrossTag Bookmarks 的重要变更，格式参考 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)。
+本文件记录 GrapeMark 的重要变更，格式参考 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)。
 
 ## [Unreleased]
 
@@ -9,6 +9,22 @@
 ### Changed
 
 ### Fixed
+
+## [0.5.2] - 2026-03-04
+
+### Added
+
+- **任意网页全局搜索**：快捷键 Mac Cmd+Shift+K / Win Ctrl+Shift+K 在任意网页唤出悬浮搜索层，与首页全局搜索一致（书签/标签搜索、单击跳转、双击打开）；按需注入 content，不可注入页降级为打开 Options；支持键盘上下键与 Enter、i18n 与无障碍
+- **Settings 快捷键说明**：设置页增加快捷键说明文案与说明浮层，集中展示当前版本支持的键盘操作
+
+### Changed
+
+- **Options / Settings 设计体系**：统一标题行高度与排版（`--options-title-row-h`）、首页与各页 Title Row 对齐，侧栏与主内容区 spacing/焦点环/hover 状态与 DESIGN_GUIDE 一致
+- **品牌与图标**：产品命名更新为 GrapeMark，并在扩展与文档中统一使用，更新扩展图标以匹配新的品牌视觉
+
+### Fixed
+
+- **Options 首页标题行与分区间距**：修复首页与其他页在标题行左对齐、竖向间距上的不一致问题
 
 ## [0.5.1] - 2026-02-09
 
@@ -60,7 +76,8 @@
 - UI：统一各列表页样式，优化 Header 与首页交互细节（含搜索结果单击/双击行为）
 - 设计体系：全局设计 tokens 与 `DESIGN_GUIDE` 落地，统一 hover/active/focus 等交互规范
 
-[Unreleased]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/harveyzhang814/tagged-bookmark-management/compare/v0.4.0...v0.4.1

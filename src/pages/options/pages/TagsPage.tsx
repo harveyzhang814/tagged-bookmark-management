@@ -321,6 +321,9 @@ export const TagsPage = () => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      <div className="page-title-row tags-page__title-row">
+        <h1 className="options-page-title">{t('navigation.tags')}</h1>
+      </div>
       <div className="tags-toolbar-merged">
         <div className="tags-filters">
           <SearchInput value={search} placeholder={t('tag.searchPlaceholder')} onChange={setSearch} />

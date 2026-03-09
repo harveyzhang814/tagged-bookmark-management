@@ -14,7 +14,7 @@
 
 .navigation-sidebar__brand {
   flex-shrink: 0;
-  height: var(--options-header-h, 62px);
+  height: var(--options-title-row-h, 56px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,6 +77,31 @@
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+}
+
+.navigation-sidebar__footer {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.navigation-sidebar__footer .theme-toggle,
+.navigation-sidebar__footer .icon-button {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navigation-sidebar__footer .icon-button.navigation-sidebar__button--active {
+  background: var(--button-primary-hover-bg);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* 自定义滚动条样式 */

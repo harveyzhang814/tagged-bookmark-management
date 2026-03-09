@@ -2,20 +2,12 @@ import { useEffect, useMemo, useState, useRef, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getAllBookmarks, getAllTags, incrementBookmarkClick } from '../lib/bookmarkService';
 import { openUrlWithMode, openUrlsWithMode } from '../lib/chrome';
+import { normalizeQuery, runGlobalSearch } from '../lib/globalSearchLogic';
 import { getBrowserDefaultOpenMode, getBrowserTagWorkstationOpenMode, getTagsMap, saveTagsMap } from '../lib/storage';
 import type { Tag, BookmarkItem } from '../lib/types';
 import { useClickDoubleClick } from '../lib/hooks/useClickDoubleClick';
 import { TagPill } from './TagPill';
 import './globalSearchOverlay.css';
-
-type BookmarkSearchResult = { bookmark: BookmarkItem; matchScore: number; sortScore: number };
-type TagSearchResult = { tag: Tag; matchScore: number; sortScore: number };
-
-const normalizeQuery = (q: string) => q.trim().toLowerCase();
-const includesCI = (text: string | undefined, q: string) => {
-  if (!text) return false;
-  return text.toLowerCase().includes(q);
-};
 
 const renderHighlighted = (text: string, rawQuery: string, highlightClass: string): ReactNode => {
   const query = normalizeQuery(rawQuery);
@@ -128,30 +120,10 @@ export const GlobalSearchOverlay = ({ searchQuery, onNavigateToBookmarks }: Glob
     return map;
   }, [allTags]);
 
-  const { bookmarkResults, tagResults } = useMemo(() => {
-    const q = normalizeQuery(searchQuery);
-    if (!q) return { bookmarkResults: [] as BookmarkSearchResult[], tagResults: [] as TagSearchResult[] };
-    const scoredBookmarks: BookmarkSearchResult[] = [];
-    for (const bookmark of bookmarks) {
-      const titleHit = includesCI(bookmark.title, q);
-      const urlHit = includesCI(bookmark.url, q);
-      const matchScore = (titleHit ? 1.2 : 0) + (urlHit ? 1.0 : 0);
-      if (matchScore <= 0) continue;
-      const sortScore = 0.75 * matchScore + 0.25 * (bookmark.clickCount ?? 0) / 100;
-      scoredBookmarks.push({ bookmark, matchScore, sortScore });
-    }
-    scoredBookmarks.sort((a, b) => (b.sortScore - a.sortScore) || (b.bookmark.createdAt - a.bookmark.createdAt));
-    const scoredTags: TagSearchResult[] = [];
-    for (const tag of allTags) {
-      const nameHit = includesCI(tag.name, q);
-      const descHit = includesCI(tag.description ?? '', q);
-      const matchScore = (nameHit ? 1.5 : 0) + (descHit ? 1.0 : 0);
-      if (matchScore <= 0) continue;
-      scoredTags.push({ tag, matchScore, sortScore: matchScore });
-    }
-    scoredTags.sort((a, b) => (b.sortScore - a.sortScore) || (b.tag.createdAt - a.tag.createdAt));
-    return { bookmarkResults: scoredBookmarks, tagResults: scoredTags };
-  }, [searchQuery, bookmarks, allTags]);
+  const { bookmarkResults, tagResults } = useMemo(
+    () => runGlobalSearch(searchQuery, bookmarks, allTags),
+    [searchQuery, bookmarks, allTags]
+  );
 
   const handleBookmarkSingle = (bookmark: BookmarkItem) => {
     onNavigateToBookmarks({ query: bookmark.title });

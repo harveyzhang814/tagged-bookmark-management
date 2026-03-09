@@ -244,6 +244,9 @@ export const RankingPage = ({ onNavigate, onRefresh }: RankingPageProps) => {
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
+      <div className="page-title-row ranking-page__title-row">
+        <h1 className="options-page-title">{t('navigation.ranking')}</h1>
+      </div>
       <div className="ranking-toolbar-merged">
         <div className="ranking-filters">
           <SearchInput 

@@ -1,0 +1,9 @@
+{
+  "globalSearchPlaceholder": { "message": "Search bookmarks, tags..." },
+  "globalSearchNoResults": { "message": "No results found" },
+  "globalSearchLoadFailed": { "message": "Load failed" },
+  "bookmarkTitle": { "message": "Bookmarks" },
+  "tagTitle": { "message": "Tags" },
+  "globalSearchAriaLabel": { "message": "Global search" },
+  "searchResultsAriaLabel": { "message": "Search results" }
+}

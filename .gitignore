@@ -6,4 +6,6 @@ dist
 /release/
 tsconfig.tsbuildinfo
 
-
+# Cursor skill (local/cache)
+.cursor/skills/ui-ux-pro-max
+docs/plans/

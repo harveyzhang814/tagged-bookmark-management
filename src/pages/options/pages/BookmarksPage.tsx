@@ -391,6 +391,9 @@ export const BookmarksPage = ({ onRefresh }: BookmarksPageProps) => {
 
   return (
     <div className="bookmarks-page">
+      <div className="page-title-row bookmarks-page__title-row">
+        <h1 className="options-page-title">{t('navigation.bookmarks')}</h1>
+      </div>
       <div className="bookmarks-toolbar-merged">
         <div className="bookmarks-toolbar-left">
           <div className="bookmarks-filters">

@@ -1,4 +1,4 @@
-# CrossTag Bookmarks
+# GrapeMark
 
 基于 **Manifest V3 + Vite + React + TypeScript** 打造的 Chrome 书签管理扩展。采用现代简洁设计，提供强大的标签系统、智能统计和多维度管理功能。
 
@@ -9,7 +9,7 @@
 ### 主要功能
 
 #### 📚 书签管理
-- **快速收藏**：Popup 一键保存当前标签页；右键菜单“加入 CrossTag Bookmarks”快速收藏
+- **快速收藏**：Popup 一键保存当前标签页；右键菜单“加入 GrapeMark”快速收藏
 - **编辑与删除**：支持修改标题、URL、标签与置顶状态；支持删除
 - **置顶功能**：重要书签可置顶显示
 - **点击统计**：累计点击次数，并记录最近 100 次点击时间戳（可在导出时选择包含）
@@ -95,7 +95,7 @@ npm run release
 - **导入导出**：Options 顶部工具栏提供导入/导出入口
 
 #### 上下文菜单
-- 在任意网页右键，选择"加入 CrossTag Bookmarks"
+- 在任意网页右键，选择"加入 GrapeMark"
 - 快速将当前页面添加到书签
 
 ## 📁 项目结构
@@ -190,7 +190,7 @@ npm run release
 - `storage`：保存书签和标签数据到 `chrome.storage.local`（本地存储）
 - `tabs`：获取当前标签页信息，用于快速收藏
 - `bookmarks`：读取 Chrome 原生书签树，用于导入功能
-- `contextMenus`：在右键菜单中添加"加入 CrossTag Bookmarks"选项
+- `contextMenus`：在右键菜单中添加"加入 GrapeMark"选项
 
 ## 🎯 版本历史
 
@@ -202,7 +202,7 @@ npm run release
 ### v0.3.0
 - ✨ 首页增加热门标签和热门书签榜单
 - ✨ 整体数据导入与导出同步功能
-- 🎨 产品重命名为 CrossTag Bookmarks
+- 🎨 产品重命名为 GrapeMark
 
 ### v0.2.0
 - ✨ 标签列表和书签列表添加自定义排序
@@ -227,4 +227,4 @@ MIT License
 
 ---
 
-**CrossTag Bookmarks** - 让书签管理更简单、更优雅 🚀
+**GrapeMark** - 让书签管理更简单、更优雅 🚀
